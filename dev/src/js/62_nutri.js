@@ -48,20 +48,37 @@ function nutriCard(){if(!S.nut.goal)return '<button type="button" class="h7c nu7
   const x=dayTot(TK),left=t.kcal-x.k;
   return '<div class="h7c nu7"><button type="button" class="nu7m" data-nu="go" aria-label="Ouvrir la nutrition"><span class="nu7r">'+nRing(x.k,t.kcal,64)+'<b>'+Math.round(Math.min(100,x.k/t.kcal*100))+'%</b></span><span class="h7b"><span class="kick">Nutrition</span><b>'+(left>=0?nfmt(left)+' kcal restantes':nfmt(-left)+' kcal au-dessus')+'</b><span class="nu7p">Protéines '+nfmt(x.p)+' / '+nfmt(t.p)+' g</span><span class="nbt sm"><i style="width:'+(Math.min(1,x.p/t.p)*100).toFixed(1)+'%"></i></span></span></button><button type="button" class="ib pw7a" data-nu="add" aria-label="Ajouter un aliment">'+ico('add')+'</button></div>'}
 /* ---- page Nutrition ---- */
+/* v7.1 « carnet simple » (retour client) : Kcal et Prot en grand, une liste du jour, un ajout rapide ; le reste replié ou en bouton */
+let nq={f:null};
+function nCount(lab,val,goal,unit,cls){const left=goal-val,p=goal?Math.min(1,val/goal):0,u=unit?' '+unit:'';
+  return '<div class="nc7c '+cls+'"><span class="nc7l">'+lab+'</span><b class="nc7v">'+nfmt(val)+'<small> / '+nfmt(goal)+u+'</small></b><span class="nbt"><i style="width:'+(p*100).toFixed(1)+'%"></i></span><span class="nc7r'+(left<0?' over':'')+'">'+(left>=0?'Reste '+nfmt(left)+u:cls==='p'?'Objectif atteint':nfmt(-left)+u+' au-dessus')+'</span></div>'}
+const nOrder=['b','l','s','d'];
 function renderNut(){const v=$('vNut');if(!v)return;if(!nutD||nutD>TK)nutD=TK;
   if(!S.nut.goal||!nutTgt()){if(!nutDraft)nutDraft=nDraft();v.innerHTML='<section class="panel wide nsu7"><h2 class="t">Ton objectif</h2><p class="nfs">L\'appli estime tes besoins pour démarrer. Tu pourras tout ajuster ensuite.</p><div id="nuForm">'+nFormHtml(nutDraft,0)+'</div><button type="button" class="btn nbig" data-nu="start">Commencer</button></section>';return}
-  const t=nutTgt(),x=dayTot(nutD),day=nDay(nutD),left=t.kcal-x.k,w=+day.w||0;
-  let h='<section class="panel wide nd7"><div class="ndh"><button type="button" class="ib" data-nu="prev" aria-label="Jour précédent">'+ico('left')+'</button><b>'+esc(nutHead())+'</b><button type="button" class="ib" data-nu="next" aria-label="Jour suivant"'+(nutD>=TK?' disabled':'')+'>'+ico('right')+'</button></div>'
-   +'<div class="ndg"><div class="ndr">'+nRing(x.k,t.kcal,128)+'<span><b>'+nfmt(Math.abs(left))+'</b><small>'+(left>=0?'kcal restantes':'kcal au-dessus')+'</small></span></div><div class="ndb"><p class="ndk"><b>'+nfmt(x.k)+'</b> / '+nfmt(t.kcal)+' kcal</p>'+nBar('Protéines',x.p,t.p,'g')+nBar('Glucides',x.c,t.c,'g')+nBar('Lipides',x.f,t.f,'g')+'</div></div>'
-   +'<div class="ndc"><span class="nch">Fibres <b>'+nfmt(x.fib)+' / '+nfmt(t.fib)+' g</b></span><span class="nch nw">'+ico('drop')+'Eau <b>'+gfmt(w/1000)+' / '+gfmt(t.wat/1000)+' L</b><button type="button" class="nwb" data-nu="w-" aria-label="Retirer 250 ml">−</button><button type="button" class="nwb" data-nu="w+" aria-label="Ajouter 250 ml">+</button></span></div></section>';
-  h+='<section class="panel wide nj7"><h2 class="t">Journal</h2>'+NMEAL.map(m=>{const L=arr(day[m[0]]),mt=mealTot(nutD,m[0]);
-    return '<div class="nml"><div class="nmh"><b>'+m[1]+'</b><span>'+(L.length?nfmt(mt.k)+' kcal':'')+'</span><button type="button" class="nadd" data-na="open:'+m[0]+'">'+ico('add')+'Ajouter</button></div>'
-     +(L.length?'<div class="nits">'+L.map((it,i)=>{const f=itFood(it),vv=itv(it);return '<button type="button" class="nit" data-ne="'+m[0]+':'+i+'"><span class="nin">'+esc(f?f.n:'Aliment')+'<small>'+gfmt(it.g)+' g · P '+nfmt(vv.p)+' · G '+nfmt(vv.c)+' · L '+nfmt(vv.f)+'</small></span><b>'+nfmt(vv.k)+'</b></button>'}).join('')+'</div><button type="button" class="nsv" data-nm="save:'+m[0]+'">Enregistrer ce repas</button>':'')+'</div>'}).join('')+'</section>';
-  const R=nutRemain(nutD);
-  h+='<section class="panel wide ni7"><h2 class="t">Idées de repas</h2><p class="nfs">'+(R.k>=150?'Il te reste '+nfmt(R.k)+' kcal · P '+nfmt(Math.max(0,R.p))+' g · G '+nfmt(Math.max(0,R.c))+' g · L '+nfmt(Math.max(0,R.f))+' g.':'Tes objectifs du jour sont presque atteints.')+'</p><button type="button" class="btn ghost nbig" data-nu="ideas">Proposer des repas</button></section>';
+  const t=nutTgt(),x=dayTot(nutD),day=nDay(nutD),w=+day.w||0,rows=[];nOrder.forEach(m=>arr(day[m]).forEach((it,i)=>rows.push([m,i,it])));
+  let h='<section class="panel wide nc7"><div class="ndh"><button type="button" class="ib" data-nu="prev" aria-label="Jour précédent">'+ico('left')+'</button><b>'+esc(nutHead())+'</b><button type="button" class="ib" data-nu="next" aria-label="Jour suivant"'+(nutD>=TK?' disabled':'')+'>'+ico('right')+'</button></div>'
+   +'<div class="nc7g">'+nCount('Kcal',x.k,t.kcal,'','k')+nCount('Prot',x.p,t.p,'g','p')+'</div></section>';
+  h+='<section class="panel wide nl7"><h2 class="t">Journal</h2>'+(rows.length?'<div class="nl7t"><div class="nl7h"><span>Aliment</span><span>Kcal</span><span>Prot</span></div>'
+     +rows.map(([m,i,it])=>{const f=itFood(it),vv=itv(it),qn=it.f==='q'?(it.q||''):gfmt(it.g)+' g';return '<button type="button" class="nl7r" data-ne="'+m+':'+i+'"><span class="nl7n"><span>'+esc(f?f.n:'Aliment')+'</span>'+(qn?'<small>'+esc(qn)+'</small>':'')+'</span><span>'+nfmt(vv.k)+'</span><span>'+gfmt(vv.p)+'</span></button>'}).join('')
+     +'<div class="nl7s"><span>Total</span><span>'+nfmt(x.k)+'</span><span>'+gfmt(x.p)+'</span></div></div>':'<p class="nfs nempty">Rien de noté pour l\'instant. Un nom et des calories suffisent : les protéines et la quantité sont facultatives.</p>')
+   +'<div class="nq7"><div class="nq7a"><label class="nq7f nq7n"><span>Aliment</span><input id="nqN" autocomplete="off" placeholder="Œufs, riz, poulet…"></label><label class="nq7f nq7q"><span>Quantité</span><input id="nqQ" autocomplete="off" placeholder="200 g"></label></div><div class="nq7s" id="nqS" hidden></div>'
+   +'<div class="nq7a"><label class="nq7f"><span>Kcal</span><input id="nqK" type="number" inputmode="decimal" min="0" step="1"></label><label class="nq7f"><span>Prot (g)</span><input id="nqP" type="number" inputmode="decimal" min="0" step="0.1"></label><button type="button" class="btn nq7b" data-nu="qadd">Ajouter</button></div></div></section>';
+  h+='<details class="panel wide nd7x"><summary>Détails : glucides, lipides, fibres, eau</summary><div class="nd7xb">'+nBar('Glucides',x.c,t.c,'g')+nBar('Lipides',x.f,t.f,'g')
+   +'<div class="ndc"><span class="nch">Fibres <b>'+nfmt(x.fib)+' / '+nfmt(t.fib)+' g</b></span><span class="nch nw">'+ico('drop')+'Eau <b>'+gfmt(w/1000)+' / '+gfmt(t.wat/1000)+' L</b><button type="button" class="nwb" data-nu="w-" aria-label="Retirer 250 ml">−</button><button type="button" class="nwb" data-nu="w+" aria-label="Ajouter 250 ml">+</button></span></div></div></details>';
+  h+='<div class="nx7"><button type="button" class="btn ghost" data-nu="lib">'+ico('search')+'Bibliothèque</button><button type="button" class="btn ghost" data-nu="ideas">'+ico('sparkles')+'Idées de repas</button></div>';
   h+=nutHistHtml(t);
-  h+='<section class="panel wide no7"><div class="nob"><div><p class="kick">Objectif</p><b>'+esc(nutGoalLbl())+'</b><p class="nfs">'+nfmt(t.kcal)+' kcal · P '+nfmt(t.p)+' g · G '+nfmt(t.c)+' g · L '+nfmt(t.f)+' g'+(t.man?' · objectifs personnalisés':' · calculé avec '+gfmt(t.w)+' kg')+'</p></div><button type="button" class="btn ghost sm" data-nu="goal">Modifier</button></div>'+nutTwHint()+'<button type="button" class="nlib" data-nu="lib">'+ico('search')+'<span><b>Bibliothèque d\'aliments</b><small>'+FOODS.length+' aliments entiers, critères de qualité, favoris</small></span>'+ico('chev','hcv')+'</button></section>';
-  v.innerHTML=h}
+  h+='<section class="panel wide no7"><div class="nob"><div><p class="kick">Objectif</p><b>'+esc(nutGoalLbl())+'</b><p class="nfs">'+nfmt(t.kcal)+' kcal et '+nfmt(t.p)+' g de protéines par jour'+(t.man?' · objectifs personnalisés':' · calculé avec '+gfmt(t.w)+' kg')+'</p></div><button type="button" class="btn ghost sm" data-nu="goal">Modifier</button></div>'+nutTwHint()+'</section>';
+  v.innerHTML=h;nq={f:null}}
+/* ajout rapide : un aliment de la base (calculé selon la quantité) ou une saisie libre (kcal, prot) */
+const nGrams=t=>{const m=String(t||'').trim().replace(',','.').match(/^(\d+(?:\.\d+)?)\s*(g|gr|grammes?)?$/i);return m?+m[1]:0};
+function nqFill(){const f=nq.f;if(!f)return;const g=nGrams($('nqQ').value)||0;if(!g)return;$('nqK').value=Math.round(f.k*g/100);$('nqP').value=r1(f.p*g/100)}
+function nqAdd(){const n=$('nqN').value.trim(),q=$('nqQ').value.trim(),num=id=>{const s=String($(id).value).trim().replace(',','.');return s===''?null:parseFloat(s)},k=num('nqK'),p=num('nqP'),L=nDayW(nutD)[nutD===TK?nutSlot():'d'];
+  if(nq.f){const f=nq.f,g=nGrams(q)||(f.por[0]?f.por[0][1]:100),ek=f.k*g/100,ep=f.p*g/100;
+    if((k===null||Math.abs(k-ek)<=1.5)&&(p===null||Math.abs(p-ep)<=.6)){const it={f:f.id,g:r1(g)};if(f.my){it.n=f.n;it.v=[f.k,f.p,f.c,f.f,f.fib]}L.push(it);S.nut.rec=[f.id].concat(S.nut.rec.filter(x=>x!==f.id)).slice(0,16)}
+    else L.push({f:'q',n:n||f.n,q:q||gfmt(g)+' g',g:100,v:[k===null?r1(ek):k,p===null?r1(ep):p,0,0,0]})}
+  else{if(k===null||!(k>=0&&k<=5000)){toast('Entre les calories (kcal)');$('nqK').focus();return}if(p!==null&&!(p>=0&&p<=500)){toast('Entre des protéines entre 0 et 500 g');return}
+    L.push({f:'q',n:n||'Aliment',q,g:100,v:[k,p||0,0,0,0]})}
+  nSave();toast('Ajouté');renderNut();if(curV==='home')renderHome();setTimeout(()=>{const i=$('nqN');if(i)i.focus({preventScroll:true})},60)}
 function nutTwHint(){const n=S.nut,w=lastBw();if(n.auto||!n.tw||!w||Math.abs(w-n.tw)<2)return '';return '<p class="nhint">Ton poids a changé de '+sgn(r1(w-n.tw))+' kg depuis que tu as fixé tes objectifs. <button type="button" class="nlink" data-nu="auto">Recalculer</button></p>'}
 function nutRemain(d){const t=nutTgt(),x=dayTot(d);return{k:t.kcal-x.k,p:t.p-x.p,c:t.c-x.c,f:t.f-x.f}}
 /* ---- historique : calories ou protéines sur 7 ou 30 jours, moyennes, lien avec le poids ---- */
@@ -106,7 +123,7 @@ function nSearch(q){const Q=nrm(q).trim();let L=nAll();if(Q){const words=Q.split
   const fav=S.nut.fav,rec=S.nut.rec;return L.sort((a,b)=>(fav.includes(b.id)-fav.includes(a.id))||((rec.indexOf(a.id)+1||99)-(rec.indexOf(b.id)+1||99))||(b.pr-a.pr)||a.n.localeCompare(b.n,'fr'))}
 function nRow(f){const fav=S.nut.fav.includes(f.id);return '<button type="button" class="nfr" data-na="pick:'+f.id+'"><span class="nfn">'+esc(f.n)+'<small>'+nfmt(f.k)+' kcal · P '+gfmt(f.p)+' · G '+gfmt(f.c)+' · L '+gfmt(f.f)+' (100 g)</small></span>'+(f.pr===2?'<i class="nq" title="À privilégier"></i>':'')+(fav?'<span class="nst on">'+ico('star2')+'</span>':'')+'</button>'}
 function nutAdd(meal){naS={meal:meal||nutSlot(),tab:'all',q:'',sel:null,g:0};openSheet('<div class="nsh nash"><div class="nahd"><h2 class="t" id="naT"></h2><button type="button" class="ib" data-na="close" aria-label="Fermer">'+ico('close')+'</button></div><div id="naBody"></div></div>');naRender()}
-function naRender(){const b=$('naBody');if(!b||!naS)return;$('naT').textContent='Ajouter '+NMTO[naS.meal];
+function naRender(){const b=$('naBody');if(!b||!naS)return;$('naT').textContent='Ajouter au journal';
   if(naS.sel){b.innerHTML=naQtyHtml();return}
   const tabs=[['all','Aliments'],['fav','Favoris'],['meals','Repas'],['new','Nouveau']];
   let h='<div class="nmsel">'+NMEAL.map(m=>'<button type="button" data-na="meal:'+m[0]+'" aria-pressed="'+(naS.meal===m[0])+'">'+m[1]+'</button>').join('')+'</div><div class="seg full ntab">'+tabs.map(t=>'<button type="button" data-na="tab:'+t[0]+'" aria-pressed="'+(naS.tab===t[0])+'">'+t[1]+'</button>').join('')+'</div>';
@@ -124,7 +141,7 @@ function naQtyHtml(){const f=nf(naS.sel);if(!f)return '';const g=naS.g||(f.por[0
    +'<p class="nfs">Pour 100 g : '+nfmt(f.k)+' kcal · P '+gfmt(f.p)+' g · G '+gfmt(f.c)+' g · L '+gfmt(f.f)+' g'+(f.fib?' · fibres '+gfmt(f.fib)+' g':'')+'</p>'
    +'<div class="npc">'+f.por.concat([['100 g',100]]).map(p=>'<button type="button" data-na="por:'+p[1]+'" aria-pressed="'+(Math.abs(g-p[1])<.01)+'">'+esc(p[0])+(p[0]!=='100 g'?' <small>'+gfmt(p[1])+' g</small>':'')+'</button>').join('')+'</div>'
    +'<label class="nfl">Quantité (g)<input type="number" inputmode="decimal" step="1" min="1" max="3000" id="naG" value="'+String(r1(g))+'"></label>'
-   +'<div class="ntot" id="naTot">'+naTotHtml(v)+'</div><div class="nqa"><button type="button" class="btn nbig" data-na="add">Ajouter '+NMTO[naS.meal]+'</button>'+(f.my?'':'<button type="button" class="nlink" data-nf="'+f.id+'">Voir la fiche et les critères de qualité</button>')+'</div>'}
+   +'<div class="ntot" id="naTot">'+naTotHtml(v)+'</div><div class="nqa"><button type="button" class="btn nbig" data-na="add">Ajouter au journal</button>'+(f.my?'':'<button type="button" class="nlink" data-nf="'+f.id+'">Voir la fiche et les critères de qualité</button>')+'</div>'}
 const naTotHtml=v=>'<span><b>'+nfmt(v.k)+'</b><small>kcal</small></span><span><b>'+gfmt(v.p)+'</b><small>g P</small></span><span><b>'+gfmt(v.c)+'</b><small>g G</small></span><span><b>'+gfmt(v.f)+'</b><small>g L</small></span>';
 function naNewHtml(){return '<div class="nnew"><p class="nfs">Recopie les valeurs pour 100 g de l\'étiquette : l\'aliment sera gardé dans « Mes aliments ».</p><label class="nfl">Nom<input id="nnN" maxlength="60" autocomplete="off" placeholder="Sardines de ma marque"></label><div class="nfg">'
   +[['k','Calories (kcal)'],['p','Protéines (g)'],['c','Glucides (g)'],['f','Lipides (g)'],['fib','Fibres (g, facultatif)']].map(x=>'<label class="nfl">'+x[1]+'<input type="number" inputmode="decimal" step="0.1" min="0" id="nn'+x[0]+'"></label>').join('')
@@ -138,7 +155,10 @@ function naAddItem(){const f=nf(naS.sel),g=parseFloat(String($('naG').value).rep
   toast('Ajouté');naS.sel=null;naS.g=0;naS.q='';naRender();nutRefresh()}
 function nutRefresh(){if(curV==='nut')renderNut();if(curV==='home')renderHome()}
 /* ---- modifier un aliment du journal ---- */
-function nutEdit(m,i){const it=arr(nDay(nutD)[m])[i];if(!it)return;const f=itFood(it);if(!f)return;const fav=S.nut.fav.includes(f.id),v=itv(it);
+function nutEditQ(m,i){const it=arr(nDay(nutD)[m])[i];if(!it)return;
+  openSheet('<div class="nsh"><h2 class="t">Modifier</h2><div class="nfg"><label class="nfl">Aliment<input id="eqN" maxlength="60" value="'+esc(it.n||'')+'"></label><label class="nfl">Quantité<input id="eqQ" maxlength="30" value="'+esc(it.q||'')+'"></label><label class="nfl">Kcal<input id="eqK" type="number" inputmode="decimal" min="0" value="'+esc(String(it.v[0]))+'"></label><label class="nfl">Prot (g)<input id="eqP" type="number" inputmode="decimal" min="0" step="0.1" value="'+esc(String(it.v[1]))+'"></label></div>'
+   +'<div class="nqa"><button type="button" class="btn nbig" data-eq="save">Enregistrer</button><button type="button" class="btn ghost nbig ndel" data-eq="del">'+ico('trash')+'Retirer du journal</button></div></div>');$('gbox').dataset.ed=m+':'+i}
+function nutEdit(m,i){const it=arr(nDay(nutD)[m])[i];if(!it)return;if(it.f==='q')return nutEditQ(m,i);const f=itFood(it);if(!f)return;const fav=S.nut.fav.includes(f.id),v=itv(it);
   openSheet('<div class="nsh"><div class="nqh"><b>'+esc(f.n)+'</b>'+(f.gone?'':'<button type="button" class="ib nstb'+(fav?' on':'')+'" data-ed="fav" aria-label="Favori" aria-pressed="'+fav+'">'+ico('star2')+'</button>')+'</div><p class="nfs"><span>'+NMN[m]+'</span><span> · </span><span>'+esc(nutHead())+'</span></p>'
    +(f.por&&f.por.length?'<div class="npc">'+f.por.map(p=>'<button type="button" data-ed="por:'+p[1]+'">'+esc(p[0])+' <small>'+gfmt(p[1])+' g</small></button>').join('')+'</div>':'')
    +'<label class="nfl">Quantité (g)<input type="number" inputmode="decimal" step="1" min="1" max="3000" id="edG" value="'+String(it.g)+'"></label><div class="ntot" id="edTot">'+naTotHtml(v)+'</div>'
@@ -181,10 +201,11 @@ function nutIdeas(m,full){m=m||nutSlot();const T=nutMealTarget(m,full),LIST=T.k<
     h+='<p class="nnote">Valeurs approximatives : elles varient selon les marques et la cuisson. Grammes de viande et de poisson crus, féculents cuits sauf mention.</p>'}
   openSheet(h+'</div>');$('gbox')._ideas={m,full,list:LIST}}
 /* ---- événements ---- */
-document.addEventListener('click',e=>{const b=e.target.closest('[data-nu],[data-na],[data-ne],[data-nm],[data-nh],[data-nd],[data-ed],[data-nf],[data-nf2],[data-ni2]');if(!b)return;const d=b.dataset;
+document.addEventListener('click',e=>{const b=e.target.closest('[data-nu],[data-na],[data-ne],[data-nm],[data-nh],[data-nd],[data-ed],[data-eq],[data-nqf],[data-nf],[data-nf2],[data-ni2]');if(!b)return;const d=b.dataset;
   if(d.nu){const a=d.nu;
     if(a==='go'){if(location.hash==='#nutrition')route();else location.hash='#nutrition';return}
-    if(a==='add'){nutD=TK;nutAdd(nutSlot());return}
+    if(a==='add'){nutD=TK;if(location.hash==='#nutrition')renderNut();else location.hash='#nutrition';setTimeout(()=>{const i=$('nqN');if(i){i.scrollIntoView({block:'center'});i.focus({preventScroll:true})}},450);return}
+    if(a==='qadd'){nqAdd();return}
     if(a==='prev'){nutD=key(add(parse(nutD||TK),-1));renderNut();setHead();return}
     if(a==='next'){if(nutD<TK){nutD=key(add(parse(nutD),1));renderNut();setHead()}return}
     if(a.startsWith('day:')){nutD=a.slice(4);renderNut();setHead();scrollTo({top:0,behavior:'smooth'});return}
@@ -216,6 +237,13 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-nu],[data-
     if(k==='add'){naAddItem();return}
     if(k==='create'){naCreate();return}
     return}
+  if(d.nqf){const f=nf(d.nqf);if(!f)return;nq.f=f;$('nqN').value=f.n;$('nqQ').value=gfmt(f.por&&f.por[0]?f.por[0][1]:100)+' g';nqFill();const box=$('nqS');box.hidden=true;box.innerHTML='';const q=$('nqQ');q.focus();q.select();return}
+  if(d.eq){const [m,i]=($('gbox').dataset.ed||':').split(':'),L=arr(nDay(nutD)[m]),it=L[+i];if(!it)return;
+    if(d.eq==='save'){const n2=id=>parseFloat(String($(id).value||'').replace(',','.')),k=n2('eqK'),p=String($('eqP').value).trim()===''?0:n2('eqP');
+      if(!(k>=0&&k<=5000)){toast('Entre les calories (kcal)');return}if(!(p>=0&&p<=500)){toast('Entre des protéines entre 0 et 500 g');return}
+      it.n=String($('eqN').value||'').trim()||'Aliment';it.q=String($('eqQ').value||'').trim();it.v=[k,p,0,0,0];nSave();closeSheet();nutRefresh();return}
+    if(d.eq==='del'){L.splice(+i,1);nSave();closeSheet();nutRefresh();toast('Retiré du journal');return}
+    return}
   if(d.ed){const [m,i]=($('gbox').dataset.ed||':').split(':'),L=arr(nDay(nutD)[m]),it=L[+i];if(!it)return;const [k,v]=d.ed.split(':');
     if(k==='por'){$('edG').value=v;$('edG').dispatchEvent(new Event('input',{bubbles:true}));return}
     if(k==='fav'){const f=it.f;S.nut.fav=S.nut.fav.includes(f)?S.nut.fav.filter(x=>x!==f):S.nut.fav.concat(f);nSave();b.classList.toggle('on');b.setAttribute('aria-pressed',String(S.nut.fav.includes(f)));return}
@@ -232,6 +260,11 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-nu],[data-
     if(k==='m'){nutIdeas(v,I.full);return}
     if(k==='full'){nutIdeas(v,!I.full);return}
     if(k==='add'){const M=(I.list||[])[+w];if(!M)return;const L=nDayW(nutD)[v];M.it.forEach(x=>L.push({f:x.f,g:x.g}));nSave();closeSheet();nutRefresh();toast('Repas ajouté '+NMTO[v]);return}}});
+/* ajout rapide : suggestions de la base pendant la frappe, calcul selon la quantité, Entrée pour ajouter */
+document.addEventListener('input',e=>{const t=e.target;if(t.id==='nqN'){nq.f=null;const q=t.value.trim(),box=$('nqS');if(!box)return;if(q.length<2){box.hidden=true;box.innerHTML='';return}
+    const L=nSearch(q).slice(0,5);box.hidden=!L.length;box.innerHTML=L.map(f=>'<button type="button" class="nq7o" data-nqf="'+esc(f.id)+'"><span>'+esc(f.n)+'</span><small>'+nfmt(f.k)+' kcal · P '+gfmt(f.p)+' g pour 100 g</small></button>').join('');return}
+  if(t.id==='nqQ'){nqFill();return}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.closest&&e.target.closest('.nq7')&&e.target.tagName==='INPUT'){e.preventDefault();nqAdd()}});
 document.addEventListener('input',e=>{const t=e.target;
   if(t.id==='naQ'&&naS){naS.q=t.value;const l=$('naList');if(l)l.innerHTML=naS.lib?naListHtml().replace(/data-na="pick:/g,'data-nf="'):naListHtml();return}
   if(t.id==='naG'&&naS){const f=nf(naS.sel),g=parseFloat(String(t.value).replace(',','.'))||0;naS.g=g;if(f)$('naTot').innerHTML=naTotHtml({k:f.k*g/100,p:f.p*g/100,c:f.c*g/100,f:f.f*g/100});return}

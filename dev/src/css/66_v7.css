@@ -60,9 +60,6 @@ html[data-season] #hStart::after{content:'';position:absolute;right:14px;top:14p
 @media(min-width:900px){#sgr7{bottom:0}}
 #fx7{position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
 /* calendrier : petites illustrations en couleur dans les jours vides + teinte de saison */
-.dco{display:none}
-html[data-season] .day .dco{display:block;position:absolute;right:3px;bottom:3px;width:46%;max-width:30px;aspect-ratio:1;background:no-repeat center/contain;pointer-events:none;z-index:1}
-html[data-season] .wrow .dco{display:block;flex:none;width:30px;height:30px;margin:0 6px 0 auto;align-self:center;background:no-repeat center/contain}
 html[data-season=winter] .day:not(.has):not(.out){background-image:linear-gradient(to top,rgba(230,242,255,.09),transparent 55%)}
 html[data-season=autumn] .day:not(.has):not(.out){background-image:linear-gradient(to top,rgba(232,121,42,.09),transparent 55%)}
 html[data-season=spring] .day:not(.has):not(.out){background-image:linear-gradient(to top,rgba(108,192,112,.12),transparent 55%)}

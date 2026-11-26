@@ -1,5 +1,5 @@
 /* ===================== v6 : base (état, thèmes, typo, ambiance) ===================== */
-const APP6='7.0.0';
+const APP6='7.1.0';
 ['th','accX','todBg','seas','font','fsz','fdyn','dens','masc','splash','cards','tabs','tone','emo','pops','vol','voiceN','lang','char','photo','useP','nick','goalT','meas','chal','chalH','rw','lvSeen','recapW','popLast','musSeen','bdSeen','anim','nut'].forEach(k=>{if(!EXTRA.includes(k))EXTRA.push(k)});
 /* v6.3 : animations « Toujours » (par défaut, même si l'iPhone réduit les animations) ou « Selon l'iPhone » */
 const RM_Q='(prefers-reduced-motion: reduce)';
@@ -79,8 +79,8 @@ const svgUrl=s=>"url('data:image/svg+xml,"+encodeURIComponent(s).replace(/'/g,'%
 const seaTop=(k,g)=>svgUrl(SEAS_SVG[k])+' center bottom/cover no-repeat,'+g;
 Object.assign(THEMES,{
  saison:{n:'Selon la saison',auto:1,acc:'#ff8a2b',v:{bg:'#1b120c',card:'#271a12',card2:'#332217',ink:'#fbefe3',mute:'#c3a58d',line:'#45301f'},top:'',ti:'#ffffff',bgi:'',f:'classique'},
- printemps:{n:'Printemps',season:'spring',acc:'#ff5f9e',light:1,v:{bg:'#f3f8f1',card:'#ffffff',card2:'#eef5ea',ink:'#1f2a22',mute:'#64736a',line:'#dbe7d5'},top:seaTop('spring','#cfeeff'),ti:'#1f2a22',bgi:'radial-gradient(700px 420px at 110% 0%,rgba(255,159,199,.22),transparent 60%),radial-gradient(600px 500px at -10% 80%,rgba(143,210,122,.18),transparent 60%)',f:'rond'},
- ete:{n:'Été',season:'summer',acc:'#ff8f1f',light:1,v:{bg:'#fff8ec',card:'#ffffff',card2:'#fff1d9',ink:'#2a2118',mute:'#7a6a58',line:'#f0e1c6'},top:seaTop('summer','#9fdcff'),ti:'#1d2b3a',bgi:'radial-gradient(700px 420px at 100% -5%,rgba(255,210,63,.28),transparent 60%),radial-gradient(600px 500px at 0% 100%,rgba(44,192,220,.14),transparent 60%)',f:'sport'},
+ printemps:{n:'Printemps',season:'spring',acc:'#2f8a48',light:1,v:{bg:'#ecf6e6',card:'#ffffff',card2:'#e3f1d9',ink:'#1b2a1e',mute:'#5b6f60',line:'#d0e5c4'},top:seaTop('spring','#cfeeff'),ti:'#1f2a22',bgi:'radial-gradient(760px 480px at 105% -5%,rgba(255,163,203,.34),transparent 60%),radial-gradient(700px 520px at -15% 40%,rgba(140,205,110,.24),transparent 62%),linear-gradient(180deg,#eef8e8,#e2f1d6)',f:'rond'},
+ ete:{n:'Été',season:'summer',acc:'#ff8f1f',light:1,v:{bg:'#e8f6ff',card:'#ffffff',card2:'#fff2d9',ink:'#13283a',mute:'#57708a',line:'#d3e7f3'},top:seaTop('summer','#9fdcff'),ti:'#1d2b3a',bgi:'radial-gradient(520px 360px at 100% -4%,rgba(255,214,90,.45),transparent 62%),linear-gradient(180deg,#c9ecff 0%,#e9f8ff 36%,#fffaf0 68%,#ffe9c2 100%)',f:'sport'},
  automne:{n:'Automne',season:'autumn',acc:'#ff8a2b',v:{bg:'#1b120c',card:'#271a12',card2:'#332217',ink:'#fbefe3',mute:'#c3a58d',line:'#45301f'},top:seaTop('autumn','#e2683a'),ti:'#ffffff',bgi:'radial-gradient(800px 500px at 100% 0%,rgba(255,138,43,.18),transparent 60%),radial-gradient(600px 500px at 0% 90%,rgba(217,72,43,.14),transparent 60%)',f:'classique'},
  hiver:{n:'Hiver',season:'winter',acc:'#7fd3ff',v:{bg:'#0a1220',card:'#121e33',card2:'#192841',ink:'#eef5ff',mute:'#93a8c6',line:'#22344f'},top:seaTop('winter','#1a3157'),ti:'#ffffff',bgi:'radial-gradient(800px 500px at 100% 0%,rgba(127,211,255,.16),transparent 60%),radial-gradient(700px 500px at 0% 100%,rgba(140,160,255,.1),transparent 60%)',f:'classique'}
 });
@@ -128,7 +128,7 @@ setInterval(todTick,10*60*1000);
 /* ---- V3 : ambiance de saison (feuilles en automne, neige en hiver) ---- */
 let seasonRaf=0,seasonParts=[];
 const SEA_PART={spring:'petal',summer:'sun',autumn:'leaf',winter:'snow'};
-function seasonKind(){const th=curTh();if(th.season)return SEA_PART[th.season];const m=new Date().getMonth()+1;return m>=3&&m<=5?'petal':m>=6&&m<=8?'sun':m>=9&&m<=11?'leaf':'snow'}
+function seasonKind(){return SEA_PART[seaNow()]} /* même saison que tous les dessins (56_ill7.js) */
 function seasonSync(){const on=S.seas&&seasonKind()&&curV==='home'&&!document.hidden&&!rmOn();let c=$('season');
   if(!on){if(c)c.remove();cancelAnimationFrame(seasonRaf);seasonRaf=0;return}
   if(!c){c=document.createElement('canvas');c.id='season';c.setAttribute('aria-hidden','true');document.querySelector('.top').appendChild(c);seasonParts=[]}

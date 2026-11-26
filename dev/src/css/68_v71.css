@@ -1,0 +1,76 @@
+/* ===================== v7.1 : scènes illustrées, univers de saison, mesures, carnet nutrition ===================== */
+/* ---- calendrier : chaque séance et chaque repos devient une petite scène (56_ill7.js) ---- */
+.day .scn img.ill7{width:100%;height:100%;object-fit:cover;display:block}
+.day.rest .n{color:#fff;background:rgba(0,0,0,.5);padding:4px 6px;border-radius:8px;top:4px;left:4px}
+.day.has .stk{left:auto;right:3px;top:auto;bottom:3px;flex-wrap:nowrap}
+.day.has .stk>*:not(:first-child){display:none}
+.day.has .stk .st{width:16px;height:16px;border-width:1.5px}.day.has .stk .st svg{width:9px;height:9px}
+.wpic img.ill7{width:100%;height:100%;object-fit:cover;object-position:50% 88%;display:block}
+.bedbig.r7{display:block;width:72px;height:131px;border-radius:16px;overflow:hidden;flex:none}
+.bedbig.r7 img{width:100%;height:100%;object-fit:cover;display:block}
+/* ---- quatre univers distincts : couleurs de décor, barre du bas, paysage de bas de page ---- */
+html[data-season=spring]{--sdeco:#ef6aa0;--sline:#5aa84a}
+html[data-season=summer]{--sdeco:#ffa51f;--sline:#1fb3d2}
+html[data-season=autumn]{--sdeco:#f08a3a;--sline:#e8792a}
+html[data-season=winter]{--sdeco:#8fd8ff;--sline:#eef6ff}
+html[data-season] h2.t::after,html[data-season] #month::after{background:var(--sdeco);opacity:.9}
+html[data-season] .tabs::before{background:var(--sline);opacity:.95}
+html[data-season=spring] .tabs{background:color-mix(in srgb,#e1f1d4 94%,transparent)!important}
+html[data-season=summer] .tabs{background:color-mix(in srgb,#ffefcf 95%,transparent)!important}
+html[data-season=autumn] .tabs{background:color-mix(in srgb,#24170f 94%,transparent)!important}
+html[data-season=winter] .tabs{background:color-mix(in srgb,#0e1a2e 94%,transparent)!important}
+#sgr7{height:88px;opacity:.6;background:var(--sband) center bottom/100% 100% no-repeat!important;-webkit-mask:none!important;mask:none!important}
+html[data-theme=dark] #sgr7{opacity:.42}
+/* ---- accueil : le perso se tient dans le décor de la saison ---- */
+#hStart .masc .mgr7{position:absolute;left:11px;right:11px;top:17px;aspect-ratio:1;border-radius:50%;overflow:hidden;pointer-events:none}
+#hStart .masc.mini .mgr7{left:7px;right:7px;top:9px}
+#hStart .masc .mgr7 img{width:100%;height:100%;display:block}
+/* ---- carte « Mesures » : poids et tour de taille côte à côte ---- */
+.mz7g{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0 2px}
+.mz7c{display:flex;flex-direction:column;gap:3px;min-width:0}
+.mz7l{font:700 calc(11.5px*var(--fs,1))/1.2 var(--ft);color:var(--mute)}
+.mz7c b{font:800 calc(26px*var(--fs,1))/1 var(--fd);color:var(--ink)}
+.mz7c b small{font-size:.5em;color:var(--mute);font-weight:700}
+.mz7c b.mz7n{color:var(--mute);opacity:.6}
+.mz7c .pw7d{font-size:calc(12px*var(--fs,1))}
+.mz7how{display:grid;gap:8px;margin:12px 0 4px;padding:12px 14px;border-radius:16px;background:color-mix(in srgb,var(--acct) 9%,var(--card2))}
+.mz7how p{margin:0;font-size:calc(13px*var(--fs,1));line-height:1.4;color:var(--ink)}
+.mz7how b{display:block;font-size:calc(12px*var(--fs,1));color:var(--acct);margin-bottom:2px}
+.mz7tip{margin:8px 2px 0;font-size:calc(12.5px*var(--fs,1));line-height:1.4;color:var(--mute)}
+/* ---- nutrition « carnet simple » : Kcal et Prot en grand, liste du jour, ajout rapide ---- */
+.nc7 .ndh{margin-bottom:12px}
+.nc7g{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nc7c{padding:14px 14px 12px;border-radius:18px;background:var(--card2);display:flex;flex-direction:column;gap:7px;min-width:0}
+.nc7l{font:800 calc(12px*var(--fs,1))/1 var(--ft);letter-spacing:.06em;color:var(--mute)}
+.nc7v{font:800 calc(30px*var(--fs,1))/1 var(--fd);color:var(--ink);white-space:nowrap}
+.nc7v small{font-size:.46em;font-weight:700;color:var(--mute)}
+.nc7c .nbt{height:7px}
+.nc7r{font:700 calc(13px*var(--fs,1))/1.2 var(--ft);color:var(--acct)}
+.nc7r.over{color:#e5484d}
+.nl7t{display:grid;margin-top:6px}
+.nl7h,.nl7r,.nl7s{display:grid;grid-template-columns:minmax(0,1fr) 58px 52px;align-items:center;gap:8px;padding:10px 2px}
+.nl7h{padding:0 2px 6px;font:700 calc(11.5px*var(--fs,1))/1 var(--ft);color:var(--mute)}
+.nl7h>span:not(:first-child),.nl7r>span:not(:first-child),.nl7s>span:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
+.nl7r{width:100%;background:none;border:0;border-top:1px solid var(--line);color:inherit;font:inherit;text-align:left;cursor:pointer;border-radius:0}
+.nl7r>span:not(:first-child){font-weight:700}
+.nl7n{display:flex;flex-direction:column;gap:2px;min-width:0}
+.nl7n>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.nl7n small{color:var(--mute);font-size:calc(12px*var(--fs,1))}
+.nl7s{border-top:2px solid var(--ink)}
+.nl7s>span{font-weight:800}
+.nq7{margin-top:14px;padding:12px;border-radius:18px;background:var(--card2);display:grid;gap:8px}
+.nq7a{display:flex;gap:8px;align-items:flex-end}
+.nq7f{display:flex;flex-direction:column;gap:5px;flex:1;min-width:0;font:700 calc(11.5px*var(--fs,1))/1 var(--ft);color:var(--mute)}
+.nq7f input{width:100%;min-width:0;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:0 10px;font:600 calc(15px*var(--fs,1)) var(--ft)}
+.nq7n{flex:2}
+.nq7b{flex:none;height:44px!important;min-height:44px!important;padding:0 16px!important;width:auto!important;margin:0!important}
+.nq7s{display:grid;gap:4px}
+.nq7o{display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 calc(14px*var(--fs,1)) var(--ft);cursor:pointer}
+.nq7o small{color:var(--mute);font-weight:600;font-size:calc(12px*var(--fs,1))}
+.nd7x summary{cursor:pointer;font-weight:700;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px}
+.nd7x summary::-webkit-details-marker{display:none}
+.nd7x summary::before{content:'';width:7px;height:7px;flex:none;border-right:2px solid var(--mute);border-bottom:2px solid var(--mute);transform:rotate(-45deg);transition:transform .2s}
+.nd7x[open] summary::before{transform:rotate(45deg)}
+.nd7xb{display:grid;gap:10px;margin-top:12px}
+.nx7{display:flex;gap:8px;flex-wrap:wrap}
+.nx7 .btn{flex:1 1 150px;width:auto!important;margin:0!important}

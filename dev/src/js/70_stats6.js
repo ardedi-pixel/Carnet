@@ -24,6 +24,7 @@ function renderBW(){const sec=$('bwIn').closest('section');const h=sec.querySele
   const m=MZ[mzK],L=mzList(mzK),last=L[L.length-1];$('bwIn').placeholder=m[2];$('bwIn').min=m[3];$('bwIn').max=m[4];
   $('bwSub').textContent=last?'Dernière mesure : '+fmtN(last.v)+' '+m[1]+' le '+dLong(last.d)+(L.length>1?' · '+(last.v-L[0].v>=0?'+':'−')+fmtN(Math.abs(last.v-L[0].v))+' '+m[1]+' depuis le '+dLong(L[0].d):'')+'.':(mzK==='poids'?'Note ton poids de temps en temps pour suivre son évolution.':'Mesure au même endroit à chaque fois, muscle relâché.');
   if(mzK==='poids'&&last){const st=bwStatus();if(st){const sp=document.createElement('span');sp.className='bw7s';sp.textContent=st;$('bwSub').appendChild(sp)}}
+  let tp=$('mzTip');if(!tp){tp=document.createElement('p');tp.id='mzTip';tp.className='mz7tip';$('bwIn').parentElement.after(tp)}tp.textContent=mzK==='poids'?'Pèse-toi le matin, à jeun, après être allé aux toilettes et avant de manger ou de boire, dans les mêmes conditions à chaque fois.':'Mesure au niveau du nombril, debout, ventre relâché, en fin d\'expiration.';
   $('cBW').hidden=L.length<2;if(L.length>=2)vChart('cBW',L.map(x=>({v:x.v,l:dShort(x.d),d:x.d})),m[1]);
   $('bwList').innerHTML=L.slice(-6).reverse().map(x=>'<span class="bwi">'+esc(dShort(x.d))+' · <b>'+fmtN(x.v)+' '+m[1]+'</b><button type="button" data-mzdel="'+x.d+'" aria-label="Supprimer cette mesure">×</button></span>').join('')}
 document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;

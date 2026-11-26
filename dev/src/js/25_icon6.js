@@ -4,7 +4,7 @@ const accUnlocked=()=>CH_ACC.filter(a=>lvlNow()>=a[2]).map(a=>a[0]);
 const spUnl=k=>!!CH_SP[k]&&(!CH_SP[k].lock||rwHas('char:'+k));
 /* D10 : le perso se muscle avec la série de semaines (4 puis 12, comme les badges) ; D1 : tenue selon le thème de saison */
 const musLvl=()=>{const w=wStreak();return w>=12?2:w>=4?1:0};
-const seaOf=()=>{const s=(curTh()||{}).season;return s==='winter'?'hiver':s==='summer'?'ete':''};
+const seaOf=()=>{const s=seaNow();return s==='winter'?'hiver':s==='summer'?'ete':''}; /* tenue de saison : suit la saison active (56_ill7.js) */
 function charOf(sp,extra){sp=CH_SP[sp]?sp:'homme';const d=CH_SP[sp].def,c=obj(S.char),col=obj(c.col),pal=CH_SP[sp].pal,np=pal==='skin'?6:pal.length,ci=col[sp];
   const o={sp,acc:curAcc(),c:Number.isInteger(ci)&&ci>=0&&ci<np?ci:d.c,hs:c.hs||d.hs||'court',hc:c.hc||d.hc||'brun',sh:CH_SHIRT[c.sh]!==undefined?c.sh:'',ac:arr(c.ac).filter(a=>accUnlocked().includes(a)),mus:musLvl(),sea:seaOf()};
   if(sp==='femme'&&!c.hs)o.hs='queue';if(sp==='femme'&&!c.hc)o.hc='chatain';

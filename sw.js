@@ -1,5 +1,5 @@
-const C='carnet-v5';
-const F=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-maskable-512.png','./icon-homme-180.png','./icon-femme-180.png','./icon-chat-180.png','./icon-loup-180.png','./apple-touch-icon.png'];
+const C='carnet-v6';
+const F=['./','./index.html','./manifest.webmanifest','./manifest-homme.webmanifest','./icon-192.png','./icon-512.png','./icon-maskable-512.png','./apple-touch-icon.png','./icon-homme-180.png','./icon-femme-180.png','./icon-chat-180.png','./icon-loup-180.png','./icon-ours-180.png','./icon-gorille-180.png','./icon-panda-180.png','./icon-robot-180.png','./icon-ninja-180.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(F)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{if(e.request.method!=='GET'||e.request.url.includes('version.json'))return;

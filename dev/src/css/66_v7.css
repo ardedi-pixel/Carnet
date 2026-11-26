@@ -1,0 +1,81 @@
+/* ===================== v7.0 : refonte minimaliste, poids mis en avant, univers de saison ===================== */
+/* --- cartes v7 (poids, nutrition) --- */
+.h7c{display:flex;gap:12px;align-items:center;width:100%;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:14px 14px 14px 16px;color:var(--ink);position:relative;text-align:left}
+.h7c .h7b{flex:1;min-width:0}
+.h7c b{display:block;font:800 calc(16px*var(--fs,1))/1.25 var(--fd)}
+.h7c p{margin:3px 0 0;font-size:calc(13.5px*var(--fs,1));color:var(--mute);line-height:1.35}
+.h7c .kick{font-size:calc(11px*var(--fs,1));margin:0 0 4px;color:var(--acct)}
+.pw7{align-items:stretch;padding:0}
+.pw7.empty7{padding:14px 14px 14px 16px;align-items:center}
+.pw7 .pw7m{flex:1;min-width:0;text-align:left;background:none;border:0;color:inherit;font:inherit;padding:14px 4px 12px 16px;cursor:pointer;border-radius:22px}
+.pw7v{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.pw7v b{font:800 calc(30px*var(--fs,1))/1 var(--fd);color:var(--ink)}
+.pw7v b small{font-size:.5em;color:var(--mute);font-weight:700}
+.pw7d{font:700 calc(13px*var(--fs,1))/1 var(--ft);color:var(--acct)}
+.spk7{display:block;width:100%;height:40px;margin:10px 0 2px}
+.spk7 .spl{fill:none;stroke:var(--lead);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.spk7 .spa{fill:color-mix(in srgb,var(--lead) 13%,transparent)}
+.pw7 p.pw7s{font-size:calc(12.5px*var(--fs,1))}
+.pw7.st-in p.pw7s{color:var(--acct)}
+.pw7a{align-self:flex-start;margin:12px 12px 0 0;flex:none}
+.pw7add{width:auto!important;min-height:40px!important;height:40px!important;padding:0 16px!important;flex:none;margin:0!important}
+#hCards .une7{border-color:color-mix(in srgb,var(--lead) 28%,var(--line))}
+/* --- Progrès : poids en tête, statistiques secondaires repliées --- */
+.more7{margin:0}
+.more7>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:15px 18px;font:800 calc(15px*var(--fs,1)) var(--fd);color:var(--ink)}
+.more7>summary::-webkit-details-marker{display:none}
+.more7>summary::after{content:'';width:9px;height:9px;border-right:2px solid var(--mute);border-bottom:2px solid var(--mute);transform:rotate(45deg);transition:transform .2s;margin:-4px 4px 0 0}
+.more7[open]>summary::after{transform:rotate(-135deg);margin-top:4px}
+.more7b{display:grid;gap:12px;margin-top:12px}
+@media(min-width:760px){.more7b{grid-template-columns:1fr 1fr}}
+/* --- Outils : sous-onglets des minuteurs plus légers (le choix principal est au-dessus) --- */
+#vTools #tmSeg{background:none;border:0;padding:0;gap:6px;box-shadow:none}
+#vTools #tmSeg button{border:1px solid var(--line);border-radius:999px;min-height:38px}
+#vTools #tmSeg button[aria-pressed=true]{border-color:transparent}
+
+/* ===== univers de saison (motifs générés dans 57_season7.js : --sg glyphe, --snav barre du bas, --sgr sol) ===== */
+html[data-season] h2.t::after,html[data-season] #month::after{content:'';display:inline-block;width:.78em;height:.78em;margin-left:.42em;vertical-align:-.04em;background:var(--acct);opacity:.5;-webkit-mask:var(--sg) no-repeat center/contain;mask:var(--sg) no-repeat center/contain}
+/* barre du bas : liseré de saison + petit glyphe sur l'onglet actif */
+html[data-season] .tabs::before{content:'';position:absolute;left:0;right:0;top:-8px;height:9px;pointer-events:none;background:var(--acct);opacity:.5;-webkit-mask:var(--snav) repeat-x left bottom/auto 100%;mask:var(--snav) repeat-x left bottom/auto 100%}
+html[data-season=winter] .tabs::before{background:#eef6ff;opacity:.92;top:-7px;height:8px}
+@media(min-width:900px){html[data-season] .tabs::before{left:18px;right:18px}}
+html[data-season] .tabs a{position:relative}
+html[data-season] .tabs a[aria-current=page]::after{content:'';position:absolute;top:3px;left:calc(50% + 9px);width:9px;height:9px;background:var(--lead);-webkit-mask:var(--sg) no-repeat center/contain;mask:var(--sg) no-repeat center/contain}
+/* cartes : bordure teintée */
+html[data-season] .panel,html[data-season] .hc,html[data-season] .h7c{border-color:color-mix(in srgb,var(--lead) 16%,var(--line))}
+/* boutons : reflet de saison ; bouton principal de l'accueil et « + » du calendrier avec le glyphe */
+html[data-season=winter]{--sbtn:linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,0) 58%)}
+html[data-season=spring]{--sbtn:linear-gradient(180deg,rgba(255,255,255,.24),rgba(255,255,255,0) 60%)}
+html[data-season=summer]{--sbtn:linear-gradient(120deg,rgba(255,242,170,.4),rgba(255,242,170,0) 55%)}
+html[data-season=autumn]{--sbtn:linear-gradient(180deg,rgba(255,214,170,.2),rgba(255,214,170,0) 60%)}
+html[data-season] .btn:not(.ghost):not(.sm),html[data-season] .fab{background-image:var(--sbtn)}
+html[data-season] #hStart .btn.big{position:relative}
+html[data-season] #hStart .btn.big::after{content:'';position:absolute;right:16px;top:50%;width:20px;height:20px;margin-top:-10px;background:currentColor;opacity:.32;pointer-events:none;-webkit-mask:var(--sg) no-repeat center/contain;mask:var(--sg) no-repeat center/contain}
+html[data-season] .fab::after{content:'';position:absolute;top:7px;right:8px;width:13px;height:13px;background:var(--on-lead,#101010);opacity:.38;pointer-events:none;-webkit-mask:var(--sg) no-repeat center/contain;mask:var(--sg) no-repeat center/contain}
+/* accueil : grand glyphe en filigrane */
+html[data-season] #hStart{position:relative}
+html[data-season] #hStart::after{content:'';position:absolute;right:14px;top:14px;width:62px;height:62px;background:var(--acct);opacity:.08;pointer-events:none;-webkit-mask:var(--sg) no-repeat center/contain;mask:var(--sg) no-repeat center/contain}
+/* fond : sol de saison au trait + ambiance animée (canvas) derrière le contenu */
+#sgr7{position:fixed;left:0;right:0;bottom:calc(58px + env(safe-area-inset-bottom,0px));height:64px;z-index:0;pointer-events:none;background:var(--acct);opacity:.1;-webkit-mask:var(--sgr) repeat-x center bottom/auto 100%;mask:var(--sgr) repeat-x center bottom/auto 100%}
+@media(min-width:900px){#sgr7{bottom:0}}
+#fx7{position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
+/* calendrier : petites illustrations en couleur dans les jours vides + teinte de saison */
+.dco{display:none}
+html[data-season] .day .dco{display:block;position:absolute;right:3px;bottom:3px;width:46%;max-width:30px;aspect-ratio:1;background:no-repeat center/contain;pointer-events:none;z-index:1}
+html[data-season] .wrow .dco{display:block;flex:none;width:30px;height:30px;margin:0 6px 0 auto;align-self:center;background:no-repeat center/contain}
+html[data-season=winter] .day:not(.has):not(.out){background-image:linear-gradient(to top,rgba(230,242,255,.09),transparent 55%)}
+html[data-season=autumn] .day:not(.has):not(.out){background-image:linear-gradient(to top,rgba(232,121,42,.09),transparent 55%)}
+html[data-season=spring] .day:not(.has):not(.out){background-image:linear-gradient(to top,rgba(108,192,112,.12),transparent 55%)}
+html[data-season=summer] .day:not(.has):not(.out){background-image:linear-gradient(to top,rgba(241,211,154,.22),transparent 55%)}
+html.rm #fx7{display:none}
+/* en-tête des pages (plus court que l'accueil) : on montre le ciel de l'illustration de saison, pas le sol clair, pour garder le titre lisible */
+html[data-season] body:not([data-v=home]) .top{background-position:center 22%!important}
+html[data-season=spring] .top :is(h1,.kick),html[data-season=summer] .top :is(h1,.kick){text-shadow:0 0 10px rgba(255,255,255,.75)}
+html[data-season=autumn] .top :is(h1,.kick){text-shadow:0 1px 2px rgba(90,30,10,.5),0 0 8px rgba(120,40,10,.22)}
+html[data-season=winter] .top :is(h1,.kick){text-shadow:0 1px 2px rgba(3,10,25,.6),0 0 10px rgba(3,10,25,.45)}
+/* hiver, pages hors accueil : l'illustration est calée en haut pour que les sommets enneigés passent sous le titre */
+html[data-season=winter] body:not([data-v=home]) .top{background-position:center top!important}
+/* barre Minuteurs · Échauffement · Conseils · Tutos : largeurs selon le texte */
+#plusSeg{display:flex!important}
+#plusSeg button{flex:1 1 auto;padding:0 8px;font-size:calc(14px*var(--fs,1));white-space:nowrap}
+.bw7s{display:block;margin-top:4px;color:var(--acct)}

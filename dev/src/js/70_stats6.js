@@ -18,11 +18,12 @@ function chart6(svg,c){const sig=JSON.stringify(c.pts.map(p=>p.v));const first=s
 const MZ={poids:['Poids','kg','Ton poids en kg',20,400],taille:['Tour de taille','cm','Tour de taille en cm',40,200]};
 let mzK='poids';
 const mzList=k=>(k==='poids'?S.bw:S.meas[k]||[]).slice().sort((a,b)=>a.d<b.d?-1:1);
-function renderBW(){const sec=$('bwIn').closest('section');const h=sec.querySelector('h2');if(h)h.textContent='Mensurations';
+function renderBW(){const sec=$('bwIn').closest('section');const h=sec.querySelector('h2');if(h)h.textContent='Poids et mensurations';
   let sg=$('mzSeg');if(!sg){sg=document.createElement('div');sg.id='mzSeg';sg.className='seg full';h.after(sg)}
   sg.innerHTML=Object.keys(MZ).map(k=>'<button type="button" data-mz="'+k+'" aria-pressed="'+(mzK===k)+'">'+MZ[k][0]+'</button>').join('');
   const m=MZ[mzK],L=mzList(mzK),last=L[L.length-1];$('bwIn').placeholder=m[2];$('bwIn').min=m[3];$('bwIn').max=m[4];
   $('bwSub').textContent=last?'Dernière mesure : '+fmtN(last.v)+' '+m[1]+' le '+dLong(last.d)+(L.length>1?' · '+(last.v-L[0].v>=0?'+':'−')+fmtN(Math.abs(last.v-L[0].v))+' '+m[1]+' depuis le '+dLong(L[0].d):'')+'.':(mzK==='poids'?'Note ton poids de temps en temps pour suivre son évolution.':'Mesure au même endroit à chaque fois, muscle relâché.');
+  if(mzK==='poids'&&last){const st=bwStatus();if(st){const sp=document.createElement('span');sp.className='bw7s';sp.textContent=st;$('bwSub').appendChild(sp)}}
   $('cBW').hidden=L.length<2;if(L.length>=2)vChart('cBW',L.map(x=>({v:x.v,l:dShort(x.d),d:x.d})),m[1]);
   $('bwList').innerHTML=L.slice(-6).reverse().map(x=>'<span class="bwi">'+esc(dShort(x.d))+' · <b>'+fmtN(x.v)+' '+m[1]+'</b><button type="button" data-mzdel="'+x.d+'" aria-label="Supprimer cette mesure">×</button></span>').join('')}
 document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;
@@ -30,7 +31,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)r
   if(t.dataset.mzdel){if(mzK==='poids')S.bw=S.bw.filter(x=>x.d!==t.dataset.mzdel);else S.meas[mzK]=S.meas[mzK].filter(x=>x.d!==t.dataset.mzdel);save();renderBW();e.stopPropagation();return}
   if(t.id==='bwAdd'&&mzK!=='poids'){e.stopPropagation();const m=MZ[mzK],v=parseFloat(String($('bwIn').value).replace(',','.'));if(!(v>=m[3]&&v<=m[4])){toast('Entre une valeur entre '+m[3]+' et '+m[4]+' '+m[1]);return}S.meas[mzK]=S.meas[mzK].filter(x=>x.d!==TK);S.meas[mzK].push({d:TK,v:Math.round(v*10)/10});$('bwIn').value='';save();renderBW();toast('Mesure notée ✓')}},true);
 /* ---- C5 : un graphique à la fois (carrousel) ---- */
-function car6(){const v=$('vGr');if(!v||$('car6'))return;const ids=['cEvo','cProg','cBW'],secs=ids.map(i=>$(i)&&$(i).closest('section')).filter(Boolean);if(secs.length<2)return;
+function car6(){const v=$('vGr');if(!v||$('car6'))return;const ids=['cEvo','cProg'],secs=ids.map(i=>$(i)&&$(i).closest('section')).filter(Boolean);if(secs.length<2)return;
   const w=document.createElement('section');w.className='wide car6w';w.innerHTML='<div class="car6" id="car6"></div><div class="cdots" id="cdots"></div>';secs[0].before(w);const c=w.firstChild;secs.forEach(s=>{s.classList.add('slide6');c.appendChild(s)});
   $('cdots').innerHTML=secs.map((s,i)=>'<button type="button" data-cdot="'+i+'" aria-label="Graphique '+(i+1)+'"'+(i?'':' aria-current="true"')+'></button>').join('');
   c.addEventListener('scroll',()=>{const i=Math.round(c.scrollLeft/c.clientWidth);$('cdots').querySelectorAll('button').forEach((b,j)=>b.setAttribute('aria-current',String(j===i)))},{passive:true})}
@@ -42,14 +43,7 @@ function cmpHtml(D){return '<div class="cmp6">'+D.map(d=>{const df=Math.round((d
 function cmpCard(){const D=cmpData();if(!D.length)return '';return '<div class="hc cmpc"><span class="hcic">'+ico('chart')+'</span><div><p class="kick">Toi il y a 3 mois → aujourd\'hui</p>'+cmpHtml(D)+'</div></div>'}
 function cmpPanel(){const v=$('vGr');if(!v)return;let p=$('cmp6p');if(!p){p=document.createElement('section');p.id='cmp6p';p.className='panel wide';const k=$('mK').closest('section');k.after(p)}const D=cmpData();
   p.innerHTML='<h2 class="t">Toi il y a 3 mois → aujourd\'hui</h2>'+(D.length?'<p class="findsub">Ta meilleure perf sur 30 jours, il y a 3 mois et maintenant.</p>'+cmpHtml(D):emptyArt('Pas encore assez d\'historique','Note tes perfs quelques semaines : la comparaison apparaîtra ici.','idle'))}
-function statsExtras(){car6();cmpPanel();monthGlance();typesDonut()}
-/* ---- v6.1 : le mois en un coup d'œil (calendrier à pastilles) ---- */
-function monthGlance(){const k=$('mK');if(!k)return;k.classList.add('mk6');const y=T.getFullYear(),m=T.getMonth(),dim=new Date(y,m+1,0).getDate(),off=(new Date(y,m,1).getDay()+6)%7,L=fS(),by={};
-  L.forEach(s=>{if(s.date.slice(0,7)===y+'-'+pad(m+1))(by[s.date]=by[s.date]||[]).push(s)});
-  let h='<div class="mgl" aria-hidden="true">'+DOWI().split('').map(d=>'<i class="mgd">'+d+'</i>').join('');for(let i=0;i<off;i++)h+='<span class="mge"></span>';
-  for(let d=1;d<=dim;d++){const dk=y+'-'+pad(m+1)+'-'+pad(d),ss=by[dk],fut=dk>TK,ty=ss&&ss[0].types&&ss[0].types.find(okT),c=ty?(TY.find(t=>t[0]===ty)||[])[3]:'';
-    h+='<span class="mgc'+(ss?' on':'')+(fut?' fut':'')+(dk===TK?' td':'')+(isRest(dk)?' rs':'')+'"'+(ss?' style="--c:'+(c||curAcc())+'"':'')+'>'+(ss&&ss.length>1?'<b>'+ss.length+'</b>':'')+'</span>'}
-  let g=$('mGlance');if(!g){g=document.createElement('div');g.id='mGlance';k.before(g)}g.innerHTML=h+'</div>'}
+function statsExtras(){pr7Layout();car6();cmpPanel();typesDonut()} /* v7 : plus de mini-calendrier ici (doublon de l'onglet Calendrier) */
 /* ---- v6.1 : types de séance en anneau ---- */
 function typesDonut(){const box=$('gTy');if(!box)return;const y=T.getFullYear(),m=T.getMonth(),from=key(new Date(y,m-2,1)),R=stats(fS().filter(s=>s.date>=from)),used=TY.filter(t=>R.t[t[0]]),tot=used.reduce((a,t)=>a+R.t[t[0]],0);if(!tot)return;
   const C=2*Math.PI*40;let acc=0,arcs='';used.forEach(t=>{const v=R.t[t[0]],len=C*v/tot;arcs+='<circle cx="50" cy="50" r="40" fill="none" stroke="'+t[3]+'" stroke-width="16" stroke-dasharray="'+Math.max(0,len-1.5).toFixed(2)+' '+C.toFixed(2)+'" stroke-dashoffset="'+(-acc).toFixed(2)+'" transform="rotate(-90 50 50)"/>';acc+=len});

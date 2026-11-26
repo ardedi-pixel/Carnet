@@ -1,0 +1,60 @@
+
+/* ===================== v6 : thèmes, verre dépoli, typo, ambiance ===================== */
+:root{--fs:1;--fd:"Archivo","Arial Black",system-ui,sans-serif;--ft:"Inter",system-ui,sans-serif;--on-lead:#101010;--glass:color-mix(in srgb,var(--card) 76%,transparent);--bgi:none;--rad:24px;--pd:18px;--gap:20px}
+html{background:var(--bg)}
+body{background:var(--bg) var(--bgi) fixed;background-image:var(--bgi);background-attachment:fixed;font-family:var(--ft)}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;transition:background 1s}
+html[data-tod=morning] body::before{background:linear-gradient(180deg,rgba(255,176,96,.2),rgba(255,120,150,.07) 32%,transparent 55%)}
+html[data-tod=evening] body::before{background:linear-gradient(180deg,rgba(255,110,80,.18),rgba(150,70,180,.1) 36%,transparent 60%)}
+html[data-tod=night] body::before{background:linear-gradient(180deg,rgba(40,70,170,.24),rgba(20,30,90,.09) 42%,transparent 70%)}
+html[data-tod=day] body::before{background:linear-gradient(180deg,rgba(120,190,255,.1),transparent 45%)}
+html[data-theme=light][data-tod=night] body::before{background:linear-gradient(180deg,rgba(40,70,170,.08),transparent 50%)}
+main,header.top,nav.tabs{position:relative;z-index:1}
+nav.tabs{position:fixed}
+.ico{width:22px;height:22px;flex:none;display:inline-block;vertical-align:middle}
+/* en-tête : bandeau du thème */
+.top{background:var(--top-bg,var(--bg))!important;color:var(--top-ink,var(--ink))!important;border-radius:0 0 30px 30px;overflow:hidden;isolation:isolate}
+html[data-th=nuit] .top{background:transparent!important;color:var(--ink)!important}
+.top .kick{color:color-mix(in srgb,var(--top-ink,var(--ink)) 78%,transparent)}
+html[data-th=nuit] .top .kick{color:var(--lead)}
+.top .fig{background:color-mix(in srgb,var(--top-ink,#000) 10%,transparent)!important;color:inherit}
+#season{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.9}
+.top-in{z-index:1}
+/* verre dépoli */
+.panel,.hc,.box,.hey .hbx,.onb.bil .in{background:var(--glass)!important;-webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);border:1px solid color-mix(in srgb,var(--ink) 9%,transparent)!important;box-shadow:0 10px 30px rgba(0,0,0,.18),inset 0 1px 0 color-mix(in srgb,#fff 6%,transparent);border-radius:var(--rad)!important}
+html[data-theme=light] .panel,html[data-theme=light] .hc,html[data-theme=light] .box{box-shadow:0 8px 24px rgba(20,20,30,.07),0 1px 2px rgba(20,20,30,.05)}
+.panel{padding:var(--pd)}
+.gr,.cal{gap:var(--gap)}
+html.compact{--pd:12px;--gap:12px;--rad:18px}
+html.compact .hcards{gap:8px}html.compact .hc{padding:9px}html.compact .chip{min-height:38px;padding:4px 10px}html.compact .btn{height:40px}
+/* néon : halos lumineux */
+html.glow .hbig,html.glow h1,html.glow .fig b,html.glow .kp b,html.glow .tbig{text-shadow:0 0 14px color-mix(in srgb,var(--lead) 70%,transparent),0 0 2px color-mix(in srgb,var(--lead) 60%,transparent)}
+html.glow .btn:not(.ghost){box-shadow:0 0 18px color-mix(in srgb,var(--lead) 55%,transparent),0 3px 0 var(--deep)}
+html.glow .panel,html.glow .hc{border-color:color-mix(in srgb,var(--lead) 22%,transparent)!important}
+/* craie : bordures tracées à la craie */
+html.chalk .panel,html.chalk .hc{border:2px dashed color-mix(in srgb,var(--ink) 22%,transparent)!important;box-shadow:none}
+html.chalk h1,html.chalk h2,html.chalk .hbig{letter-spacing:.01em}
+/* polices : titres en capitales pour la police sportive */
+html[data-th=neon] h1,html[data-th=beton] h1{letter-spacing:.01em}
+/* thème clair minimal : bandeau blanc net */
+html[data-th=minimal] .top{box-shadow:0 1px 0 var(--line)}
+/* boutons sur l'accent */
+.btn{color:var(--on-lead,#101010)}
+.btn.ghost{color:var(--acct)}
+.fab{color:var(--on-lead,#101010)}
+#toast{color:var(--on-lead,#101010)}
+.tabs a[aria-current=page]{color:var(--acct)}
+html[data-theme=light] .tabs{background:color-mix(in srgb,var(--card) 88%,transparent)!important}
+.tabs{background:color-mix(in srgb,var(--bg) 82%,transparent)!important}
+/* ---- v6.1 : thèmes de saison ---- */
+html[data-season]:not([data-season=""]) .top .fig{background:color-mix(in srgb,var(--card) 62%,transparent)!important;-webkit-backdrop-filter:blur(10px) saturate(1.3);backdrop-filter:blur(10px) saturate(1.3);border-color:color-mix(in srgb,var(--ink) 10%,transparent)!important}
+html[data-season]:not([data-season=""]) .top .fig *{color:var(--ink)}
+html[data-season]:not([data-season=""]) .top .fig b,html[data-season]:not([data-season=""]) .top .fig .n{color:var(--hi)}
+html[data-season=spring] .top h1,html[data-season=summer] .top h1{text-shadow:0 1px 0 rgba(255,255,255,.5)}
+html[data-season=autumn] .top h1,html[data-season=winter] .top h1{text-shadow:0 2px 10px rgba(0,0,0,.35)}
+.thg .thc[data-th6=printemps] .thm i,.thg .thc[data-th6=ete] .thm i,.thg .thc[data-th6=automne] .thm i,.thg .thc[data-th6=hiver] .thm i{height:46%;background-size:cover!important}
+.thg .thc[data-th6=printemps] .thm b:first-of-type,.thg .thc[data-th6=ete] .thm b:first-of-type,.thg .thc[data-th6=automne] .thm b:first-of-type,.thg .thc[data-th6=hiver] .thm b:first-of-type{top:54%}
+.thg .thc[data-th6=printemps] .thm b:last-of-type,.thg .thc[data-th6=ete] .thm b:last-of-type,.thg .thc[data-th6=automne] .thm b:last-of-type,.thg .thc[data-th6=hiver] .thm b:last-of-type{top:72%}
+.thc small{display:block;font:500 calc(10px*var(--fs,1))/1.2 var(--ft);color:var(--mute);margin-top:2px}
+.thauto .thm i{height:100%!important;opacity:.85}
+.thauto .thm b{display:none}

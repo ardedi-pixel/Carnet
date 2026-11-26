@@ -1,6 +1,6 @@
 /* ===================== v6 : base (état, thèmes, typo, ambiance) ===================== */
-const APP6='6.1.0';
-['th','accX','todBg','seas','font','fsz','fdyn','dens','masc','splash','cards','tabs','tone','emo','pops','vol','voiceN','lang','char','photo','useP','nick','goalT','meas','chal','chalH','rw','lvSeen','recapW','popLast'].forEach(k=>{if(!EXTRA.includes(k))EXTRA.push(k)});
+const APP6='6.2.0';
+['th','accX','todBg','seas','font','fsz','fdyn','dens','masc','splash','cards','tabs','tone','emo','pops','vol','voiceN','lang','char','photo','useP','nick','goalT','meas','chal','chalH','rw','lvSeen','recapW','popLast','musSeen','bdSeen'].forEach(k=>{if(!EXTRA.includes(k))EXTRA.push(k)});
 /* ---- icônes maison (même trait partout) ---- */
 const ICO={
  home:'<path d="M3.5 11L12 4l8.5 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/>',

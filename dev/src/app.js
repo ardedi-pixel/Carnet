@@ -215,10 +215,10 @@ const CHEERS=['Bien joué ! 💪','Continue comme ça ! 🔥','T\'es fort ! 🦾
 const isLoad=n=>S.exg.some(g=>/halt|charge/i.test(g[0])&&g[1].includes(n));
 const recMax=r=>Math.max(...r.hist.map(h=>h.v));
 function celebrate5(name,v,unit){boomMsg(CHEERS[Math.floor(Math.random()*CHEERS.length)],name+' : '+fmtN(v)+' '+unitL(unit))}
-function boomMsg(msg,sub){const o=$('boom');
+function boomMsg(msg,sub,art){const o=$('boom');
   let parts='';for(let i=0;i<18;i++){const a=i/18*Math.PI*2+Math.random()*.3,d=120+Math.random()*120;parts+='<span class="pt" style="--x:'+Math.round(Math.cos(a)*d)+'px;--y:'+Math.round(Math.sin(a)*d)+'px;--r:'+Math.round(Math.random()*90-45)+'deg;animation-delay:'+(Math.random()*.15).toFixed(2)+'s">'+THUMB+'</span>'}
-  o.innerHTML='<div class="bx">'+parts+'<svg class="smile" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#ffd23f" stroke="#fff" stroke-width="5"/><circle cx="35" cy="40" r="6" fill="#1a1010"/><circle cx="65" cy="40" r="6" fill="#1a1010"/><path d="M28 58q22 24 44 0" stroke="#1a1010" stroke-width="6" fill="#fff" stroke-linecap="round"/></svg><p class="bt">'+esc(msg)+'</p><p class="bs">'+esc(sub)+'</p></div>';
-  o.classList.remove('on');void o.offsetWidth;o.classList.add('on');clearTimeout(o._t);o._t=setTimeout(()=>o.classList.remove('on'),2600)}
+  o.innerHTML='<div class="bx">'+parts+(art||'<svg class="smile" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#ffd23f" stroke="#fff" stroke-width="5"/><circle cx="35" cy="40" r="6" fill="#1a1010"/><circle cx="65" cy="40" r="6" fill="#1a1010"/><path d="M28 58q22 24 44 0" stroke="#1a1010" stroke-width="6" fill="#fff" stroke-linecap="round"/></svg>')+'<p class="bt">'+esc(msg)+'</p><p class="bs">'+esc(sub)+'</p></div>';
+  o.classList.remove('on');void o.offsetWidth;o.classList.add('on');clearTimeout(o._t);o._t=setTimeout(()=>o.classList.remove('on'),art?3000:2600)}
 function setRec(r,v){v=Math.max(0,Math.round(v*10)/10);const prev=recMax(r),last=r.hist[r.hist.length-1];if(last.d===TK)last.v=v;else r.hist.push({d:TK,v});if(v>prev&&v-prev>=1-1e-9||v>prev&&r.unit==='kg')celebrate(r.name,v,r.unit,prev);if(v>prev)r.beat=(r.beat||0)+1;const gh=checkGoals();save();renderRecs();if(gh.length)setTimeout(()=>boomMsg('Objectif atteint !',goalTxt(gh[0])),v>prev?2800:0)}
 function spark(r){const h=r.hist.length>1?r.hist:[r.hist[0],r.hist[0]],W=200,H=56,mn=Math.min(...h.map(x=>x.v)),mx=Math.max(...h.map(x=>x.v)),rg=Math.max(1,mx-mn),X=i=>h.length<2?W/2:6+i*(W-12)/(h.length-1),Y=v=>H-6-(v-mn)/rg*(H-14);
   const d=h.map((x,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(x.v).toFixed(1)).join('');return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none"><path d="'+d+'L'+X(h.length-1)+' '+H+'L'+X(0)+' '+H+'Z" fill="url(#gArea)"/><path d="'+d+'" fill="none" style="stroke:var(--acct)" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>'}
@@ -296,7 +296,7 @@ function showOnb(n){onbStep=n;let o=$('onb');if(!o){o=document.createElement('di
   o.querySelector('input')?.focus()}
 function onbGo(a){if(onbStep===0){const v=($('onbName')||{}).value;S.name=(v||'').trim()}if(a==='done'){S.onb=true;S.lastSeen=Date.now();$('onb')?.remove();save();route();return}save();showOnb(Number(a))}
 /* ===================== v4 ===================== */
-const APP_V='6.1.0';
+const APP_V='6.2.0';
 const ACC={jaune:['#e4ff1a','#7d8c00','Jaune fluo','#5c6800'],vert:['#3dff8b','#0c8a45','Vert','#08773a'],orange:['#ff9f1c','#a35a00','Orange','#9a4f00'],bleu:['#38c8ff','#0a6f99','Bleu','#0a6a92'],rose:['#ff5fa8','#a3245f','Rose','#a3245f'],violet:['#b18cff','#5b3fb0','Violet','#5b3fb0']};
 const arr=x=>Array.isArray(x)?x:[],obj=x=>x&&typeof x==='object'&&!Array.isArray(x)?x:{};
 const EXTRA=['name','fav','onb','live','bw','goals','acc','goal','bilanSeen','restAck','calMode','tmc','v','tset','skills','tests','presets','tpls','snd','voice','theme','cnt','deloads','notes','wuNote','wuMode','wuW','fPl','fTy','evo','ptab','icon','links','lastSeen','xtab'];

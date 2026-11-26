@@ -108,4 +108,4 @@ function afterAdd(ss,beat,c){const gh=checkGoals();if(gh.length)save();v6Saved()
   else if(inWeek&&wn<goal)m=msg2('aLeft',{g:goal-wn});
   else if(ws>=2)m=msg2('aStreak',{k:ws});
   else m=msg2('aGen');
-  boomMsg(m[0],m[1]||'');afterRewards()}
+  boomMsg(m[0],m[1]||'',sessArt(ss));afterRewards()}

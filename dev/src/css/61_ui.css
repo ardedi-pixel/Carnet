@@ -63,15 +63,17 @@ r-c{display:inline-block;line-height:1.05em;white-space:pre}
 .masc{width:118px;height:118px;border:0;padding:0;background:none;cursor:pointer;position:relative;border-radius:24px;overflow:hidden;-webkit-mask-image:linear-gradient(180deg,#000 76%,transparent);mask-image:linear-gradient(180deg,#000 76%,transparent)}
 .masc svg{width:100%;height:100%;display:block;transform-origin:50% 100%}
 .masc.mini{width:64px;height:64px}.hero:has(.masc.mini){grid-template-columns:64px 1fr}
-.masc.m-idle svg,.masc.m-thumbs svg{animation:breathe 3.6s ease-in-out infinite}
+.masc.m-idle svg,.masc.m-thumbs svg{animation:breathe 3.4s ease-in-out infinite}
 .masc.m-sleep svg{animation:breathe 5s ease-in-out infinite}
-.masc.m-cheer svg,.masc.m-flex svg{animation:hop 1.6s cubic-bezier(.3,1.6,.5,1) 2}
+.masc.m-cheer svg,.masc.m-flex svg{animation:bounce 1.5s cubic-bezier(.33,.9,.45,1) 2}
 .masc.m-wave svg{animation:sway 1.4s ease-in-out 3}
-.masc.jump svg{animation:jump .6s cubic-bezier(.3,1.7,.5,1)!important}
-@keyframes breathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.018) translateY(-1px)}}
+.masc.jump svg{animation:jump .75s cubic-bezier(.3,.9,.4,1)!important}
+@keyframes breathe{0%,100%{transform:none}50%{transform:scale(.985,1.03)}}
 @keyframes hop{0%,100%{transform:none}30%{transform:translateY(-8px) scale(1.03)}55%{transform:translateY(0)}}
+/* rebond élastique des persos : écrasement, étirement, petit rebond */
+@keyframes bounce{0%{transform:none}14%{transform:scale(1.1,.88)}36%{transform:translateY(-14px) scale(.93,1.09)}58%{transform:translateY(0) scale(1.12,.88)}74%{transform:scale(.97,1.04)}88%{transform:scale(1.01,.99)}100%{transform:none}}
 @keyframes sway{0%,100%{transform:rotate(0)}30%{transform:rotate(-3deg)}70%{transform:rotate(3deg)}}
-@keyframes jump{0%{transform:none}35%{transform:translateY(-14px) scale(1.06,.96)}70%{transform:translateY(0) scale(.97,1.04)}100%{transform:none}}
+@keyframes jump{0%{transform:none}15%{transform:scale(1.12,.86)}40%{transform:translateY(-6px) scale(.94,1.07)}66%{transform:translateY(0) scale(1.14,.86)}82%{transform:scale(.97,1.04)}100%{transform:none}}
 .hstart{position:relative}
 .mbub{position:absolute;left:12px;top:-8px;max-width:76%;z-index:3;background:var(--paper,#fff);color:#141416;font:700 calc(14px*var(--fs,1))/1.3 var(--ft);padding:10px 14px;border-radius:16px 16px 16px 4px;box-shadow:0 10px 26px rgba(0,0,0,.35);animation:pop2 .35s cubic-bezier(.3,1.6,.5,1) both}
 .mbub.out{opacity:0;transform:translateY(-6px);transition:.3s}
@@ -107,7 +109,7 @@ r-c{display:inline-block;line-height:1.05em;white-space:pre}
 .rba .ra{font:900 calc(84px*var(--fs,1))/1 var(--fd);color:var(--lead);text-shadow:0 0 30px color-mix(in srgb,var(--lead) 60%,transparent)}
 .rba small{font:800 calc(20px*var(--fs,1)) var(--fd);opacity:.8}
 .rws{margin:0;color:rgba(255,255,255,.75);font-size:calc(15px*var(--fs,1))}
-.recch{width:min(240px,62vw);aspect-ratio:1;border-radius:28px;overflow:hidden;margin:8px 0 6px;animation:hop 1.4s .3s cubic-bezier(.3,1.6,.5,1) 2}
+.recch{width:min(240px,62vw);aspect-ratio:1;border-radius:28px;overflow:hidden;margin:8px 0 6px;animation:bounce 1.5s .3s cubic-bezier(.33,.9,.45,1) 2;transform-origin:50% 96%}
 .recch svg{width:100%;height:100%;display:block}
 .rec6 .acts{display:flex;gap:10px;width:100%;margin-top:8px}.rec6 .acts .btn{flex:1;height:52px}
 .rec6 .btn.ghost{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.2)}

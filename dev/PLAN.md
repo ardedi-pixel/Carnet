@@ -79,3 +79,19 @@ Z2 mensurations (bras, taille, poids) + courbe
 - N9 : aides (i) à la place des longs textes (`helpify()`). V2 un peu plus visible.
 - Dossier : sections « Nouvelles idées design (v6.1) » (D1-D14) et « Vérification : où trouver chaque Oui ».
 - Tests : t16.py 79/79.
+
+## v6.2.0 (26/11/2026) : PUBLIÉE
+- Tâche 1 « persos plus dessin animé » : 3 variantes montrées (page https://claude.ai/artifact/LGCvbweZK7A4YJTvxqCEcX, prototype inclus dans la page).
+  Décision de Diego : **style actuel gardé**, démarrage animé **inchangé** (style icône), **pas de changement des yeux ni de clignement**.
+  Gardé : **rebond élastique** (écrasement/étirement) sur la mascotte, l'écran record/accessoire (.recch, keyframes `bounce`) et le perso de la carte des skills (mhop). Saut bas (-6 px + étirement) pour ne pas passer sous la bulle. La mascotte reprend sa respiration après un toucher.
+- Idées D (choix de Diego 26/11 13 h) — Oui : D1 D3 D7 D9 D10 D13 D14 ; Non : D2 D4 D5 D6 D8 D11 D12.
+  - D1 perso de saison (`20_chars.js` : chBeanie, chScarf, chShades ; `o.sea` = 'hiver' | 'ete' ; `seaOf()` dans 25_icon6.js) : bonnet + écharpe avec un thème Hiver (ou « Selon la saison » en hiver), lunettes de soleil en été. Jamais sur l'icône (pose icon) ni sur le démarrage.
+  - D10 perso qui se muscle (`o.mus` 0/1/2, `musLvl()` : série de 4 puis 12 semaines, comme les badges) : épaules, bras, torse en V, pectoraux. Écran « Ton perso prend du muscle / est musclé ! » une fois par niveau (`musCheck()`, clé `musSeen`).
+  - D3 décor selon l'heure derrière la mascotte (`mascScene()` : matin 5-10 h lever de soleil, soir 17-21 h ciel étoilé, nuit étoiles + lune, journée : disque d'origine). Images SVG en CSS (64_v62.css).
+  - D7 respiration guidée pendant le repos : cercle 4 s inspire / 6 s expire dans l'anneau du minuteur (`.tbr`, body.html), masqué pendant les 3 dernières secondes.
+  - D9 badges en pin's sur une veste en jean (`renderJacket()` dans 70_stats6.js, place fixe par badge, nouveaux pin's animés une fois, clé `bdSeen`) ; la liste détaillée reste sous « Voir les 22 badges ».
+  - D13 pochette d'album du mois (format « Pochette » dans le partage du mois, `albumCard()`, titre choisi selon le mois `albumTitle()`).
+  - D14 fin de séance animée : après l'enregistrement, le perso refait l'exercice principal en boucle (`sessArt`, poses dipA/B, pushA/B, sqA/B + traction ; `CH_ANIM`) ; format « Vidéo » dans le partage d'une séance (`sessAnim()` : MediaRecorder + canvas.captureStream, MP4 sur iPhone, image en secours).
+- Correctif : en thème clair, le minuteur (fond sombre) gardait un texte sombre illisible → couleurs sombres forcées pendant les phases.
+- Traductions : 35 textes ajoutés (i18n/extra.json, ajoutés en fin de 94_dict.js).
+- Tests : t16.py 96/96 (17 tests v6.2 en B12b). Les tests posent `musSeen=2` pour que l'écran « perso musclé » n'interrompe pas les autres tests.

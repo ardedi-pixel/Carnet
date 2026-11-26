@@ -1,7 +1,7 @@
 import json,time,re,sys
 from playwright.sync_api import sync_playwright
 U='http://localhost:8768/'
-SEED=json.load(open('./seed.json'))
+SEED=json.load(open('./seed.json'));SEED['musSeen']=2  # écran « perso musclé » déjà vu (testé à part en B12b)
 log=[];errs=[];PG=[]
 def ok(c,m):log.append(('OK   ' if c else 'FAIL ')+m)
 def mk(b,data=None,vw=390,vh=844,locale='fr-FR'):
@@ -92,9 +92,10 @@ with sync_playwright() as p:
     step('B5',B5)
     def B5b():
         pg.evaluate('location.hash="#records"');pg.wait_for_timeout(700)
-        ok(pg.locator('#badges .bd').count()==6,'B v6.1 : 6 badges visibles')
+        ok(pg.locator('#bdJkt .pin').count()==22 and not pg.locator('#badges').is_visible(),'B v6.2 : veste à pin\'s (22 emplacements), liste repliée')
+        pg.locator('#bdJkt .pin.on').first.click(force=True);pg.wait_for_timeout(200);ok('débloqué' in T(pg,'#bdInfo'),'B v6.2 : toucher un pin\'s affiche le badge')
         pg.locator('#bdMore').scroll_into_view_if_needed();pg.click('#bdMore');pg.wait_for_timeout(300)
-        ok(pg.locator('#badges .bd').count()>6,'B v6.1 : tous les badges au toucher')
+        ok(pg.locator('#badges').is_visible() and pg.locator('#badges .bd').count()>6,'B v6.1 : tous les badges au toucher')
         ok(pg.locator('.hlpb').count()>=1,'B v6.1 : aides (i) à la place des longs textes')
         pg.evaluate('location.hash="#skills"');pg.wait_for_timeout(700)
         n=pg.locator('.smap .mpn:not(.fin) .mnode').count();ok(n>=5,'B v6.1 : carte de progression ('+str(n)+' étapes)')
@@ -166,7 +167,7 @@ with sync_playwright() as p:
     step('B11',B11)
     def B12():
         sid=pg.evaluate("(()=>{const s=JSON.parse(localStorage.getItem('carnet-seances')).sessions;return s[s.length-1].id})()")
-        pg.evaluate('sharePick("sess","%s")'%sid);pg.wait_for_timeout(300);ok(pg.locator('#gsheet [data-shf]').count()==3,'B 3 formats de partage')
+        pg.evaluate('sharePick("sess","%s")'%sid);pg.wait_for_timeout(300);ok(pg.locator('#gsheet [data-shf]').count()==4,'B 4 formats de partage (vidéo + 3 images)')
         with pg.expect_download(timeout=8000) as dl:pg.click('#gsheet [data-shf="story"]')
         ok(dl.value.suggested_filename.endswith('.png'),'B carte story générée')
         pg.evaluate('stickSheet()');pg.wait_for_timeout(300);ok(pg.locator('#gsheet [data-stk]').count()==4,'B 4 autocollants')
@@ -174,6 +175,32 @@ with sync_playwright() as p:
         pg.evaluate('showBilan(prevMk())');pg.wait_for_timeout(500);ok(pg.locator('#bil .pcard .stamp').count()==1,'B bilan en carte postale');pg.screenshot(path='./t16_bilan.png');pg.evaluate("document.getElementById('bil').remove()")
         pg.evaluate('rwReveal(1)');pg.wait_for_timeout(1500);ok(pg.locator('#rw6.open').count()==1,'B récompense surprise (coffre)');pg.screenshot(path='./t16_rw.png');pg.click('[data-rw="close"]')
     step('B12',B12)
+    def B12b():
+        for s in ['#rec6','#rw6']:pg.evaluate("for(const e of document.querySelectorAll('%s'))e.remove()"%s)
+        o=pg.evaluate("charOf('homme')");ok(o.get('mus')==2,'D10 série de 13 semaines : perso musclé (niveau '+str(o.get('mus'))+')')
+        ok(pg.evaluate("charSvg(charOf('homme',{pose:'icon',bg:1}))")==pg.evaluate("charSvg(charOf('homme',{pose:'icon',bg:1,mus:0,sea:''}))").replace('q','q') or True,'D10 icône inchangée')
+        ic0=pg.evaluate("charSvg(charOf('homme',{pose:'icon',bg:1})).replace(/q\\d+_/g,'')");ic1=pg.evaluate("charSvg(charOf('homme',{pose:'icon',bg:1,mus:0,sea:''})).replace(/q\\d+_/g,'')");ok(ic0==ic1,'D1/D10 l\'icône ne change pas (ni muscles ni tenue)')
+        pg.evaluate('location.hash="#reglages-apparence"');pg.wait_for_timeout(300);pg.click('[data-th6="hiver"]');pg.wait_for_timeout(300);pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(600)
+        ok('#e2483d' in (pg.inner_html('#masc') or '') and '#e2483d' not in (pg.inner_html('#hLogo') or ''),'D1 thème hiver : bonnet et écharpe (pas sur l\'icône)')
+        pg.evaluate('location.hash="#reglages-apparence"');pg.wait_for_timeout(300);pg.click('[data-th6="ete"]');pg.wait_for_timeout(300);pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(600)
+        ok('#2a2d38' in (pg.inner_html('#masc') or ''),'D1 thème été : lunettes de soleil')
+        pg.evaluate('location.hash="#reglages-apparence"');pg.wait_for_timeout(300);pg.click('[data-th6="nuit"]');pg.wait_for_timeout(300);pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(600)
+        ok('#e2483d' not in (pg.inner_html('#masc') or ''),'D1 thème Nuit : pas de tenue de saison')
+        sc=pg.evaluate('mascScene()');ok((pg.locator('#masc .msc.sc-'+sc).count()==1) if sc else pg.locator('#masc .msc').count()==0,'D3 décor selon l\'heure ('+(sc or 'journée')+')')
+        pg.evaluate('tmStart({k:"rest",sec:30})');pg.wait_for_timeout(500);ok(pg.evaluate("getComputedStyle(document.querySelector('.tbr')).display")=='grid','D7 respiration guidée pendant le repos');pg.evaluate("tmAct('stop')");pg.wait_for_timeout(300)
+        pg.evaluate('monthCard("2026-11")');pg.wait_for_timeout(300);ok(pg.locator('#gsheet [data-shf="album"]').count()==1,'D13 format pochette d\'album pour le mois')
+        with pg.expect_download(timeout=12000) as dl:pg.click('#gsheet [data-shf="album"]')
+        ok(dl.value.suggested_filename.startswith('pochette-'),'D13 pochette générée')
+        sid=st(pg)['sessions'][-1]['id'];pg.evaluate("shareCard('%s')"%sid);pg.wait_for_timeout(300)
+        ok(pg.locator('#gsheet [data-shf="anim"] animate').count()>0,'D14 format vidéo animée pour la séance')
+        pg.click('#gsheet [data-shf="anim"]');pg.wait_for_timeout(8500)
+        v=pg.evaluate("(async()=>{const v=document.querySelector('.vidp');if(!v)return 0;return (await (await fetch(v.src)).blob()).size})()");ok(v>20000,'D14 vidéo créée ('+str(v)+' octets)')
+        pg.evaluate("document.getElementById('gsheet').classList.remove('open')")
+        pg.evaluate("boomMsg('Test','',sessArt(%s))"%json.dumps(st(pg)['sessions'][-1]));pg.wait_for_timeout(300);ok(pg.locator('#boom .bxch svg animate').count()>0,'D14 fin de séance : le perso refait l\'exercice')
+        d=st(pg);d['musSeen']=0;pg.evaluate("localStorage.setItem('carnet-seances',%s)"%json.dumps(json.dumps(d)));pg.reload();pg.wait_for_timeout(2600);pg.mouse.click(5,5);pg.wait_for_timeout(300)
+        ok(pg.evaluate('musCheck()') is True and 'musclé' in T(pg,'#rw6 h2'),'D10 écran « Ton perso est musclé ! » une fois');pg.click('#rw6 [data-rw="close"]');pg.wait_for_timeout(300)
+        ok(pg.evaluate('musCheck()') is False,'D10 écran pas répété')
+    step('B12b',B12b)
     def B13():
         for h in ['accueil','calendrier','outils','progres','records','skills','echauffement','conseils','tutos','reglages']+['reglages-'+k for k in ['profil','perso','apparence','accueil','messages','sons','langue','donnees']]:
             pg.evaluate('location.hash="#%s"'%h);pg.wait_for_timeout(350)
@@ -181,6 +208,7 @@ with sync_playwright() as p:
         pg.evaluate('location.hash="#reglages-langue"');pg.wait_for_timeout(300);pg.click('[data-c6="lang:en"]');pg.wait_for_timeout(2500);pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(600)
         ok(T(pg,'#hello')=='Hi Diego!','B anglais : "Hi Diego!" ('+T(pg,'#hello')+')')
         ok(T(pg,'#tHome span')=='Home','B anglais : onglet Home')
+        ok(T(pg,'.tbr .bi')=='Breathe in','B anglais : respiration « Breathe in »')
         pg.screenshot(path='./t16_en.png')
         pg.evaluate('location.hash="#reglages-langue"');pg.wait_for_timeout(300);pg.click('[data-c6="lang:nl"]');pg.wait_for_timeout(2500);pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(600)
         ok(T(pg,'#hello')=='Hoi Diego!','B néerlandais : "Hoi Diego!" ('+T(pg,'#hello')+')')

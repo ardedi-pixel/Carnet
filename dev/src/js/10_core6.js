@@ -1,5 +1,5 @@
 /* ===================== v6 : base (état, thèmes, typo, ambiance) ===================== */
-const APP6='6.2.0';
+const APP6='6.2.1';
 ['th','accX','todBg','seas','font','fsz','fdyn','dens','masc','splash','cards','tabs','tone','emo','pops','vol','voiceN','lang','char','photo','useP','nick','goalT','meas','chal','chalH','rw','lvSeen','recapW','popLast','musSeen','bdSeen'].forEach(k=>{if(!EXTRA.includes(k))EXTRA.push(k)});
 /* ---- icônes maison (même trait partout) ---- */
 const ICO={

@@ -95,3 +95,10 @@ Z2 mensurations (bras, taille, poids) + courbe
 - Correctif : en thème clair, le minuteur (fond sombre) gardait un texte sombre illisible → couleurs sombres forcées pendant les phases.
 - Traductions : 35 textes ajoutés (i18n/extra.json, ajoutés en fin de 94_dict.js).
 - Tests : t16.py 96/96 (17 tests v6.2 en B12b). Les tests posent `musSeen=2` pour que l'écran « perso musclé » n'interrompe pas les autres tests.
+
+## v6.2.1 (26/11/2026) : correctif du démarrage animé
+- Symptôme (vidéo de Diego, iPhone) : à l'ouverture, seulement « Carnet de séances » puis l'accueil, jamais la traction animée.
+- Cause : l'iPhone a « Réduire les animations » activé (l'ouverture se fait en fondu dans la vidéo) et une ancienne règle v5 de style.css cachait #splash dans `@media(prefers-reduced-motion:reduce)`.
+- Correctif : le démarrage suit le réglage de l'appli (Animé / Logo / Désactivé) même avec « Réduire les animations ». Test de non-régression : section E de t16.py (97/97).
+- Boucle de diagnostic : contexte Playwright avec `reduced_motion='reduce'`, on vérifie que #splash est affiché avec le SVG animé.
+- Reste coupé avec « Réduire les animations » : confettis, transitions de pages, chiffres qui défilent, particules de saison, respiration D7, pop des pin's.

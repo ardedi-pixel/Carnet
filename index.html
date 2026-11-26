@@ -434,7 +434,8 @@ main>div:not([hidden]){animation:vIn .32s cubic-bezier(.2,.8,.2,1) both}
 .px .ac{fill:none;stroke:var(--lead);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}.px .acf{fill:var(--lead)}
 /* bilan */
 .bil .kp{margin:2px 0}.bl{margin:0;padding-left:20px;display:grid;gap:7px;font-size:calc(15px*var(--fs,1));line-height:1.4}
-@media(prefers-reduced-motion:reduce){main>div,.sheet .box,.grid,.wlist,.flame,.set,.bigchk{animation:none!important}#splash{display:none}}
+/* l'écran de démarrage suit le réglage de l'appli (Animé / Logo / Désactivé), même si l'iPhone réduit les animations */
+@media(prefers-reduced-motion:reduce){main>div,.sheet .box,.grid,.wlist,.flame,.set,.bigchk{animation:none!important}}
 
 #toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 12px);transform:translate(-50%,-40px);text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.5);opacity:0;background:#e4ff1a;color:#101010;font-weight:800;padding:12px 18px;border-radius:14px;z-index:30;transition:.25s;pointer-events:none;max-width:90vw}
 #toast.on{opacity:1;transform:translate(-50%,0)}
@@ -1678,7 +1679,7 @@ function showOnb(n){onbStep=n;let o=$('onb');if(!o){o=document.createElement('di
   o.querySelector('input')?.focus()}
 function onbGo(a){if(onbStep===0){const v=($('onbName')||{}).value;S.name=(v||'').trim()}if(a==='done'){S.onb=true;S.lastSeen=Date.now();$('onb')?.remove();save();route();return}save();showOnb(Number(a))}
 /* ===================== v4 ===================== */
-const APP_V='6.2.0';
+const APP_V='6.2.1';
 const ACC={jaune:['#e4ff1a','#7d8c00','Jaune fluo','#5c6800'],vert:['#3dff8b','#0c8a45','Vert','#08773a'],orange:['#ff9f1c','#a35a00','Orange','#9a4f00'],bleu:['#38c8ff','#0a6f99','Bleu','#0a6a92'],rose:['#ff5fa8','#a3245f','Rose','#a3245f'],violet:['#b18cff','#5b3fb0','Violet','#5b3fb0']};
 const arr=x=>Array.isArray(x)?x:[],obj=x=>x&&typeof x==='object'&&!Array.isArray(x)?x:{};
 const EXTRA=['name','fav','onb','live','bw','goals','acc','goal','bilanSeen','restAck','calMode','tmc','v','tset','skills','tests','presets','tpls','snd','voice','theme','cnt','deloads','notes','wuNote','wuMode','wuW','fPl','fTy','evo','ptab','icon','links','lastSeen','xtab'];
@@ -2431,7 +2432,7 @@ $('bk').addEventListener('toggle',()=>{if($('bk').open&&!$('bkT').value)$('bkT')
 $('bkC').addEventListener('click',async()=>{const t=$('bkT');t.value=bkData();t.focus();t.select();try{await navigator.clipboard.writeText(t.value);toast('Sauvegarde copiée ✓')}catch(e){try{document.execCommand('copy')?toast('Sauvegarde copiée ✓'):toast('Sélectionne le texte et copie-le')}catch(_){toast('Sélectionne le texte et copie-le')}}});
 $('bkR').addEventListener('click',()=>{try{const v=JSON.parse($('bkT').value.trim());if(!v||!Array.isArray(v.sessions))throw 0;load(v);save();toast('Données restaurées ✓')}catch(e){toast('Code de sauvegarde invalide')}});
 /* ===================== v6 : base (état, thèmes, typo, ambiance) ===================== */
-const APP6='6.2.0';
+const APP6='6.2.1';
 ['th','accX','todBg','seas','font','fsz','fdyn','dens','masc','splash','cards','tabs','tone','emo','pops','vol','voiceN','lang','char','photo','useP','nick','goalT','meas','chal','chalH','rw','lvSeen','recapW','popLast','musSeen','bdSeen'].forEach(k=>{if(!EXTRA.includes(k))EXTRA.push(k)});
 /* ---- icônes maison (même trait partout) ---- */
 const ICO={

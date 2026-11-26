@@ -224,5 +224,11 @@ with sync_playwright() as p:
     D4={'v':4,'sessions':[{'id':'s1','date':'2026-11-02','place':'garage','types':['classique'],'ex':['Tractions'],'perf':{'Tractions':{'s':4,'r':12,'kg':0}},'feel':2}],'rest':[],'comps':[],'recs':[],'name':'Diego','onb':True,'theme':'light','acc':'rose','icon':'loup','live':{'start':1,'ex':[]}}
     pg.evaluate("localStorage.setItem('carnet-seances',%s)"%json.dumps(json.dumps(D4)));pg.reload();pg.wait_for_timeout(2500)
     s=st(pg);ok(s.get('v')==6 and s.get('th')=='minimal' and s.get('accX')=='#ff5fa8' and s.get('icon')=='loup','C migration v4 → v6 (thème clair → Minimal, rose, loup)')
+    ctx.close()
+    # ===== E : démarrage animé avec « Réduire les animations » activé sur l'iPhone =====
+    ctx=b.new_context(viewport={'width':390,'height':844},reduced_motion='reduce');d=dict(SEED)
+    ctx.add_init_script('localStorage.setItem("carnet-seances",'+json.dumps(json.dumps(d))+');localStorage.setItem("carnet-info","x")')
+    pg=ctx.new_page();pg.goto(U,wait_until='domcontentloaded');pg.wait_for_timeout(700)
+    ok(pg.evaluate("(()=>{const s=document.getElementById('splash');return !!s&&getComputedStyle(s).display!=='none'&&!!s.querySelector('.lg svg animate')})()"),'E démarrage animé visible avec « Réduire les animations »')
     ctx.close();b.close()
 print('\n'.join(log));print('TOTAL',sum(1 for l in log if l.startswith('OK')),'/',len(log));print('ERRORS',errs[:12])

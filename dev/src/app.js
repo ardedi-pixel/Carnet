@@ -296,7 +296,7 @@ function showOnb(n){onbStep=n;let o=$('onb');if(!o){o=document.createElement('di
   o.querySelector('input')?.focus()}
 function onbGo(a){if(onbStep===0){const v=($('onbName')||{}).value;S.name=(v||'').trim()}if(a==='done'){S.onb=true;S.lastSeen=Date.now();$('onb')?.remove();save();route();return}save();showOnb(Number(a))}
 /* ===================== v4 ===================== */
-const APP_V='6.2.0';
+const APP_V='6.2.1';
 const ACC={jaune:['#e4ff1a','#7d8c00','Jaune fluo','#5c6800'],vert:['#3dff8b','#0c8a45','Vert','#08773a'],orange:['#ff9f1c','#a35a00','Orange','#9a4f00'],bleu:['#38c8ff','#0a6f99','Bleu','#0a6a92'],rose:['#ff5fa8','#a3245f','Rose','#a3245f'],violet:['#b18cff','#5b3fb0','Violet','#5b3fb0']};
 const arr=x=>Array.isArray(x)?x:[],obj=x=>x&&typeof x==='object'&&!Array.isArray(x)?x:{};
 const EXTRA=['name','fav','onb','live','bw','goals','acc','goal','bilanSeen','restAck','calMode','tmc','v','tset','skills','tests','presets','tpls','snd','voice','theme','cnt','deloads','notes','wuNote','wuMode','wuW','fPl','fTy','evo','ptab','icon','links','lastSeen','xtab'];

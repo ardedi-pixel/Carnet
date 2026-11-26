@@ -102,3 +102,18 @@ Z2 mensurations (bras, taille, poids) + courbe
 - Correctif : le démarrage suit le réglage de l'appli (Animé / Logo / Désactivé) même avec « Réduire les animations ». Test de non-régression : section E de t16.py (97/97).
 - Boucle de diagnostic : contexte Playwright avec `reduced_motion='reduce'`, on vérifie que #splash est affiché avec le SVG animé.
 - Reste coupé avec « Réduire les animations » : confettis, transitions de pages, chiffres qui défilent, particules de saison, respiration D7, pop des pin's.
+
+## v6.3.0 (26/11/2026) : persos « Athlète » et look moins enfantin
+Demande de Diego : appli et persos moins puérils. Choix : style **A « Athlète »**, robot et ninja **retirés**, icône refaite, animations **forcées**.
+- Persos (`20_chars.js` réécrit, même interface : charSvg, charAnim, charAt, CH_*) : proportions adultes (tête ~1/5), visages sobres (sans joues roses ni goutte), contour plus fin (2,8), débardeur + short (femme : brassière + legging), baskets. Animaux : têtes d'origine réduites (x 0,6), sans joues ni goutte. Ancien moteur : `art/20_chars.v62.js`.
+  - Muscles (D10), tenue de saison (D1), accessoires et poses d'exercice (D14) refaits dans le nouveau style.
+  - Robot et ninja : retirés de CH_SP, des récompenses surprises (REWARDS = Or, Aurore) et du script de head.html. Un ancien choix robot/ninja repasse sur Homme (fallback existant).
+- Icône : buste à la barre (pose `icon` = haut de traction, cadrage `vb:[30,8,140,140]`, constante `CH_VBI`). PNG régénérés (`node art/gen_icons.js` + rsvg-convert, voir plus haut). Le démarrage animé = l'icône animée (même cadrage, carré).
+  - iPhone : l'icône de l'écran d'accueil ne change qu'en retirant puis rajoutant l'appli (iOS garde l'ancienne).
+- Animations « Toujours » (nouveau réglage Apparence > Animations : Toujours / Selon l'iPhone, clé `anim`). `rmOn()` remplace tous les tests JS de prefers-reduced-motion ; en CSS les blocs `@media (prefers-reduced-motion)` deviennent `html.rm …` (classe posée par `rmSync()` et dès le head si `carnet-anim`=os).
+- Look plus adulte (65_v63.css) : boutons à plat (fini contour noir + ombre dure), message de l'accueil en ligne d'info (le perso y affiche son message, plus de bulle), outils et icônes de cartes d'une seule couleur, médailles/carte des skills sans contour noir, fin de séance avec coche au lieu du smiley et sans pouces volants, confettis aux couleurs de l'appli, pin's en émail sourd avec anneau métal, veste en jean plus sombre.
+- Ton « Sobre » (nouveau, par défaut) : phrases courtes, sans émoji. Migration (S.v 7) : ton Motivant d'origine → Sobre, émojis coupés (réactivables dans Réglages > Messages). « Trop bien ! » → « Continuer ».
+- Fin de séance : cadrage serré par exercice (`EXVB` dans 85_share6.js).
+- Correctifs thème clair / Minimal (accent sombre) : texte et coche de la fin de séance lisibles (`--on-lead`), écran record lisible (`--lead-dk`), plus de bande blanche sous les boutons des écrans plein écran (`.rec6 .acts`). Les pop-ups de récompense attendent la fin du « Bon retour ».
+- Traductions : 59 textes ajoutés (EN/NL).
+- Tests : t16.py 107/107 (section E : animations forcées + réglage ; section F : ton sobre, 7 persos dans toutes les poses, ligne d'info, coche).

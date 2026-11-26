@@ -13,7 +13,7 @@ function route(){const h=location.hash.slice(1);if(h==='noter'){history.replaceS
   if(curV==='set'){if(typeof renderSet6==='function')renderSet6()}
   if(typeof hdr6==='function')hdr6();helpify();
   const k=viewKey(),i=viewIdx();
-  if(prevKey&&k!==prevKey&&!matchMedia('(prefers-reduced-motion: reduce)').matches){const dir=i>=prevIdx?'r':'l';
+  if(prevKey&&k!==prevKey&&!rmOn()){const dir=i>=prevIdx?'r':'l';
     document.querySelectorAll('main>div:not([hidden])').forEach(el=>{if(el.classList.contains('pbar'))return;el.classList.remove('vin-r','vin-l');void el.offsetWidth;el.classList.add('vin-'+dir)})}
   prevKey=k;prevIdx=i;seasonSync();miniSync();plxTick()}
 /* ---- N3 : grand titre qui se réduit en défilant ---- */
@@ -54,7 +54,7 @@ function ctxMenu(id,x,y){const s=S.sessions.find(q=>q.id===id);if(!s)return;clos
   requestAnimationFrame(()=>o.classList.add('on'))}
 function closeCtx(){const o=$('ctx');if(o)o.remove()}
 /* ---- A8 : chiffres qui défilent façon compteur ---- */
-function rollNum(el,to,txt){const t=String(txt!==undefined?txt:to);if(matchMedia('(prefers-reduced-motion: reduce)').matches){el.textContent=t;return}
+function rollNum(el,to,txt){const t=String(txt!==undefined?txt:to);if(rmOn()){el.textContent=t;return}
   el.classList.add('roll');el.setAttribute('aria-label',t);el.innerHTML=[...t].map((ch,i)=>/\d/.test(ch)?'<r-d><r-s style="--d:'+ch+';transition-delay:'+(i*45)+'ms">'+'0123456789'.split('').map(x=>'<r-n>'+x+'</r-n>').join('')+'</r-s></r-d>':'<r-c>'+esc(ch)+'</r-c>').join('');
   requestAnimationFrame(()=>requestAnimationFrame(()=>el.querySelectorAll('r-s').forEach(s=>s.classList.add('go'))))}
 function countUp(root){if(!root)return;root.querySelectorAll('[data-n]').forEach(el=>{const to=parseFloat(el.dataset.n);if(!(to>=0))return;const f=el.dataset.f||'',suf=el.dataset.suf||'',dec=el.dataset.d?+el.dataset.d:0;

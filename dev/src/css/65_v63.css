@@ -1,0 +1,66 @@
+/* ===================== v6.3 (26/11/2026) : look plus adulte ===================== */
+/* Boutons à plat : fini l'effet autocollant (contour noir épais + ombre dure décalée) */
+.btn{box-shadow:none}
+.btn:active{transform:scale(.97);box-shadow:none}
+html.glow .btn:not(.ghost){box-shadow:0 0 18px color-mix(in srgb,var(--lead) 40%,transparent)}
+#hStart .btn.big{border:0;box-shadow:none;height:56px;font-weight:800}
+#hStart .btn.big.ghost{border:1px solid color-mix(in srgb,var(--ink) 18%,transparent);box-shadow:none}
+#hStart .btn.big:active{transform:scale(.97)!important;box-shadow:none}
+.pm.plus,.pyplay{box-shadow:none}
+/* Accueil : le message devient une simple ligne d'info (plus de bulle de BD) */
+#hStart .hmsg{background:none;color:var(--mute);border:0;box-shadow:none;border-radius:0;padding:0;margin:8px 0 0;font:600 calc(14.5px*var(--fs,1))/1.35 var(--ft)}
+#hStart .hmsg::before{display:none}
+#hStart .hmsg.say{color:var(--ink);animation:say6 .3s ease both}
+@keyframes say6{from{opacity:0;transform:translateY(3px)}}
+html.rm #hStart .hmsg.say{animation:none}
+#hStart .masc::before{border:2px solid color-mix(in srgb,var(--lead) 30%,transparent);background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--lead) 30%,transparent),color-mix(in srgb,var(--lead) 9%,transparent) 70%)}
+#hStart .masc .msc{border:2px solid color-mix(in srgb,var(--lead) 30%,transparent)}
+#hStart .wdot i{border:2px solid color-mix(in srgb,var(--ink) 14%,transparent);box-shadow:none}
+#hStart .wdot.on i{border-color:transparent;box-shadow:none}
+#hStart .wdot.td:not(.on) i{border-width:2px}
+/* Outils et icônes des cartes : une seule couleur, celle de l'appli */
+.qt .qtb>span{background:color-mix(in srgb,var(--lead) 13%,var(--card2));border:0;box-shadow:none}
+.qt .qtb>span .ico{color:var(--acct);stroke-width:2}
+#hCards .hcic{background:color-mix(in srgb,var(--lead) 13%,var(--card2));color:var(--acct);border:0;box-shadow:none}
+#hCards .hcic .ico{color:var(--acct)}
+#hCards .hc.chal.won .hcic{background:color-mix(in srgb,#d9b04a 20%,var(--card2));color:#d9b04a}
+/* Médailles, carte des skills, pastilles du mois : sans contour noir */
+.bd6 .bd.on .bdm{border:0;box-shadow:none}
+.mcount6 span::before{border:0}
+.mnode{border:2px solid color-mix(in srgb,var(--ink) 16%,transparent);box-shadow:0 3px 10px rgba(0,0,0,.22)}
+.mnode:active{transform:scale(.95);box-shadow:none}
+.mpn.lock .mnode{box-shadow:none}
+.mpn.done .mnode,.mpn.next .mnode{border-color:transparent}
+.mgc.on{border:0;box-shadow:none}
+.tyc i{border:0}
+.mchar svg{filter:drop-shadow(0 4px 6px rgba(0,0,0,.18))}
+/* Fin de séance, objectif, récompenses : carte nette, coche au lieu du smiley */
+.boom .bx{border:0;border-radius:24px;box-shadow:0 24px 60px rgba(0,0,0,.45);animation:pop6 .32s cubic-bezier(.2,.9,.3,1) both}
+@keyframes pop6{from{transform:scale(.92);opacity:0}}
+.boom .bt{font-weight:800;font-size:calc(28px*var(--fs,1))}
+.boom .bs{font-weight:700;font-size:calc(16px*var(--fs,1))}
+.bxok{display:grid;place-items:center;width:64px;height:64px;margin:0 auto 4px;border-radius:50%;background:#111114;color:var(--lead)}
+.bxok .ico{width:32px;height:32px;stroke-width:2.6}
+.rwe .bxok{width:72px;height:72px}.rwe .bxok .ico{width:36px;height:36px}
+.bx.rw .rwe:has(.bxok){animation:bounce 1s .15s cubic-bezier(.33,.9,.45,1) both}
+/* « Bon retour » : le perso qui salue */
+.hey .rcpop .hem{animation:none}
+.hey .rcpop .hem svg{transform-origin:50% 96%;animation:bounce 1.2s .25s cubic-bezier(.33,.9,.45,1) both}
+html.rm .hey .rcpop .hem svg{animation:none}
+/* Pin's : émail sourd, anneau métal */
+.pin.on{border:1.5px solid rgba(0,0,0,.55);background:radial-gradient(circle at 35% 30%,#f4f5f7,#b7bcc6 45%,#6c727d 100%);box-shadow:0 2px 5px rgba(0,0,0,.35)}
+.pin.on b{border:1px solid rgba(0,0,0,.3);box-shadow:inset 0 1px 0 rgba(255,255,255,.22)}
+.pin.on.lt b{color:#1b1b1f}
+@keyframes pinIn{0%{transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(0)}70%{transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(1.1)}100%{transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(1)}}
+.fmtp.f-album{border-color:transparent}
+/* Écran de démarrage : l'icône animée (carré) */
+#splash .lg.anim{border-radius:28%}
+.boom .bxch.wd{width:200px}
+/* Texte et coche lisibles quelle que soit la couleur de l'appli (thème Minimal : accent sombre) */
+.boom .bt,.boom .bs{color:var(--on-lead,#101010)}
+.bxok{background:var(--on-lead,#111114);color:var(--lead)}
+/* Écrans sur fond sombre (record, récompenses) : accent lisible même si la couleur de l'appli est sombre (thème Minimal) */
+.rec6 .kick,.rba .rarr .ico,.rba .ra{color:var(--lead-dk,var(--lead))}
+.rba .ra{text-shadow:0 0 30px color-mix(in srgb,var(--lead-dk,var(--lead)) 45%,transparent)}
+html .rec6 .btn.ghost,html .rec6 .btn.ghost:hover{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.2)}
+.rec6 .acts{background:none;position:static;padding:0}

@@ -216,8 +216,8 @@ const isLoad=n=>S.exg.some(g=>/halt|charge/i.test(g[0])&&g[1].includes(n));
 const recMax=r=>Math.max(...r.hist.map(h=>h.v));
 function celebrate5(name,v,unit){boomMsg(CHEERS[Math.floor(Math.random()*CHEERS.length)],name+' : '+fmtN(v)+' '+unitL(unit))}
 function boomMsg(msg,sub,art){const o=$('boom');
-  let parts='';for(let i=0;i<18;i++){const a=i/18*Math.PI*2+Math.random()*.3,d=120+Math.random()*120;parts+='<span class="pt" style="--x:'+Math.round(Math.cos(a)*d)+'px;--y:'+Math.round(Math.sin(a)*d)+'px;--r:'+Math.round(Math.random()*90-45)+'deg;animation-delay:'+(Math.random()*.15).toFixed(2)+'s">'+THUMB+'</span>'}
-  o.innerHTML='<div class="bx">'+parts+(art||'<svg class="smile" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#ffd23f" stroke="#fff" stroke-width="5"/><circle cx="35" cy="40" r="6" fill="#1a1010"/><circle cx="65" cy="40" r="6" fill="#1a1010"/><path d="M28 58q22 24 44 0" stroke="#1a1010" stroke-width="6" fill="#fff" stroke-linecap="round"/></svg>')+'<p class="bt">'+esc(msg)+'</p><p class="bs">'+esc(sub)+'</p></div>';
+  /* v6.3 : plus de pouces qui volent ni de smiley ; le perso (ou une coche) suffit */
+  o.innerHTML='<div class="bx">'+(art||'<span class="bxok" aria-hidden="true">'+ico('check')+'</span>')+'<p class="bt">'+esc(msg)+'</p>'+(sub?'<p class="bs">'+esc(sub)+'</p>':'')+'</div>';
   o.classList.remove('on');void o.offsetWidth;o.classList.add('on');clearTimeout(o._t);o._t=setTimeout(()=>o.classList.remove('on'),art?3000:2600)}
 function setRec(r,v){v=Math.max(0,Math.round(v*10)/10);const prev=recMax(r),last=r.hist[r.hist.length-1];if(last.d===TK)last.v=v;else r.hist.push({d:TK,v});if(v>prev&&v-prev>=1-1e-9||v>prev&&r.unit==='kg')celebrate(r.name,v,r.unit,prev);if(v>prev)r.beat=(r.beat||0)+1;const gh=checkGoals();save();renderRecs();if(gh.length)setTimeout(()=>boomMsg('Objectif atteint !',goalTxt(gh[0])),v>prev?2800:0)}
 function spark(r){const h=r.hist.length>1?r.hist:[r.hist[0],r.hist[0]],W=200,H=56,mn=Math.min(...h.map(x=>x.v)),mx=Math.max(...h.map(x=>x.v)),rg=Math.max(1,mx-mn),X=i=>h.length<2?W/2:6+i*(W-12)/(h.length-1),Y=v=>H-6-(v-mn)/rg*(H-14);
@@ -296,7 +296,7 @@ function showOnb(n){onbStep=n;let o=$('onb');if(!o){o=document.createElement('di
   o.querySelector('input')?.focus()}
 function onbGo(a){if(onbStep===0){const v=($('onbName')||{}).value;S.name=(v||'').trim()}if(a==='done'){S.onb=true;S.lastSeen=Date.now();$('onb')?.remove();save();route();return}save();showOnb(Number(a))}
 /* ===================== v4 ===================== */
-const APP_V='6.2.1';
+const APP_V='6.3.0';
 const ACC={jaune:['#e4ff1a','#7d8c00','Jaune fluo','#5c6800'],vert:['#3dff8b','#0c8a45','Vert','#08773a'],orange:['#ff9f1c','#a35a00','Orange','#9a4f00'],bleu:['#38c8ff','#0a6f99','Bleu','#0a6a92'],rose:['#ff5fa8','#a3245f','Rose','#a3245f'],violet:['#b18cff','#5b3fb0','Violet','#5b3fb0']};
 const arr=x=>Array.isArray(x)?x:[],obj=x=>x&&typeof x==='object'&&!Array.isArray(x)?x:{};
 const EXTRA=['name','fav','onb','live','bw','goals','acc','goal','bilanSeen','restAck','calMode','tmc','v','tset','skills','tests','presets','tpls','snd','voice','theme','cnt','deloads','notes','wuNote','wuMode','wuW','fPl','fTy','evo','ptab','icon','links','lastSeen','xtab'];
@@ -805,10 +805,10 @@ function skTap(v){const [k,ii]=v.split(':'),i=+ii,sk=SKILLS.find(x=>x.k===k);if(
   else reward('🎉',add>1?add+' étapes validées !':'Étape débloquée !',sk.st[i]+' · +'+xp+' XP')}
 
 /* ---------- récompenses : confettis ---------- */
-function confetti(){const c=document.createElement('div');c.className='cfw';c.setAttribute('aria-hidden','true');const cols=['#e4ff1a','#ff5fa8','#38c8ff','#ff9f1c','#3dff8b','#b18cff','#ffffff'];let h='';
-  for(let i=0;i<48;i++){const x=(Math.random()*2-1)*200,y=-(140+Math.random()*260),r=Math.random()*720-360;h+='<i style="--x:'+x.toFixed(0)+'px;--y:'+y.toFixed(0)+'px;--r:'+r.toFixed(0)+'deg;background:'+cols[i%cols.length]+';animation-delay:'+(Math.random()*.2).toFixed(2)+'s;left:'+(44+Math.random()*12).toFixed(1)+'%"></i>'}
+function confetti(){const c=document.createElement('div');c.className='cfw';c.setAttribute('aria-hidden','true');const a=typeof curAcc==='function'?curAcc():'#e4ff1a',cols=[a,'#ffffff',a,'#a9aeb8'];let h='';
+  for(let i=0;i<36;i++){const x=(Math.random()*2-1)*200,y=-(140+Math.random()*260),r=Math.random()*720-360;h+='<i style="--x:'+x.toFixed(0)+'px;--y:'+y.toFixed(0)+'px;--r:'+r.toFixed(0)+'deg;background:'+cols[i%cols.length]+';animation-delay:'+(Math.random()*.2).toFixed(2)+'s;left:'+(44+Math.random()*12).toFixed(1)+'%"></i>'}
   c.innerHTML=h;document.body.appendChild(c);setTimeout(()=>c.remove(),2400)}
-function reward5(em,title,sub){const o=$('boom');o.innerHTML='<div class="bx rw"><div class="rwe">'+em+'</div><p class="bt">'+esc(title)+'</p><p class="bs">'+esc(sub)+'</p></div>';o.classList.remove('on');void o.offsetWidth;o.classList.add('on');clearTimeout(o._t);o._t=setTimeout(()=>o.classList.remove('on'),2800);if(!matchMedia('(prefers-reduced-motion: reduce)').matches)confetti();sWin();buzz([40,60,40])}
+function reward5(em,title,sub){const o=$('boom');if(!S.emo){em='<span class="bxok" aria-hidden="true">'+ico(em==='⭐'?'star':em==='🎉'?'check':em==='🏅'||em==='🥈'||em==='🥉'?'medal':'trophy')+'</span>';title=noEmo(title)}o.innerHTML='<div class="bx rw"><div class="rwe">'+em+'</div><p class="bt">'+esc(title)+'</p><p class="bs">'+esc(sub)+'</p></div>';o.classList.remove('on');void o.offsetWidth;o.classList.add('on');clearTimeout(o._t);o._t=setTimeout(()=>o.classList.remove('on'),2800);if(!rmOn())confetti();sWin();buzz([40,60,40])}
 
 /* ---------- test max mensuel ---------- */
 const TESTS=['Tractions','Pompes','Dips'];
@@ -850,7 +850,7 @@ function goTo(w){if(w==='note'){sel=TK;view=new Date(T.getFullYear(),T.getMonth(
 
 /* ---------- pop-up « bon retour » ---------- */
 function showHello(){if($('hey')||$('onb')||$('bil')||$('gsheet').classList.contains('open')||$('sheet').classList.contains('open')||!$('tmo').hidden)return;const m=helloPick(),o=document.createElement('div');o.id='hey';o.className='hey';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');
-  o.innerHTML='<div class="hbx"><div class="hem">'+m[0]+'</div><h2>'+esc(m[1])+'</h2><p>'+esc(m[2])+'</p><button type="button" class="btn" id="heyOk">'+emo('C\'est parti ! 💪')+'</button></div>';
+  o.innerHTML='<div class="hbx'+(m[0]?'':' rcpop')+'"><div class="hem">'+(m[0]||charSvg(myChar({pose:'wave',ex:'happy'})))+'</div><h2>'+esc(m[1])+'</h2><p>'+esc(m[2])+'</p><button type="button" class="btn" id="heyOk">'+emo(S.tone==='sobre'?'C\'est parti':'C\'est parti ! 💪')+'</button></div>';
   document.body.appendChild(o);const cl=()=>{if(!o.isConnected)return;o.classList.add('out');setTimeout(()=>o.remove(),280)};o.addEventListener('click',e=>{if(e.target===o||e.target.id==='heyOk')cl()});setTimeout(cl,7000)}
 function maybeHello5(){const last=+S.lastSeen||0,now=Date.now();S.lastSeen=now;save();if(!S.onb)return;if(!last||now-last>=6*3600e3)setTimeout(showHello,1100)}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.onb)maybeHello()});

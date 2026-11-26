@@ -16,7 +16,9 @@ function mascState(){const td=sOf(TK).length>0,h=new Date().getHours(),wm=monday
 /* D3 : décor derrière le perso selon l'heure (matin : lever de soleil ; soir et nuit : ciel étoilé ; journée : disque d'origine) */
 function mascScene(){const h=new Date().getHours();return h>=5&&h<10?'morning':h>=17&&h<21?'evening':h>=21||h<5?'night':''}
 function mascHtml(){if(S.masc==='off')return '';const m=mascState(),sc=mascScene();return '<button type="button" class="masc m-'+m[0]+(S.masc==='mini'?' mini':'')+(sc?' scn':'')+'" id="masc" data-say="'+m[2]+'" aria-label="Ton personnage">'+(sc?'<span class="msc sc-'+sc+'" aria-hidden="true"></span>':'')+charSvg(myChar({pose:m[0],ex:m[1]}))+'</button>'}
-function mascSay(){const b=$('masc');if(!b)return;b.classList.remove('jump');void b.offsetWidth;b.classList.add('jump');b.addEventListener('animationend',()=>b.classList.remove('jump'),{once:true});let bub=$('mbub');if(bub)bub.remove();bub=document.createElement('div');bub.id='mbub';bub.className='mbub';bub.textContent=msg(b.dataset.say||'mIdle');b.parentNode.appendChild(bub);clearTimeout(mascSay._t);mascSay._t=setTimeout(()=>{bub.classList.add('out');setTimeout(()=>bub.remove(),300)},3200)}
+function mascSay(){const b=$('masc');if(!b)return;b.classList.remove('jump');void b.offsetWidth;b.classList.add('jump');b.addEventListener('animationend',()=>b.classList.remove('jump'),{once:true});const p=document.querySelector('#hStart .hmsg');if(!p)return;if(p.dataset.base===undefined)p.dataset.base=p.textContent;
+  p.textContent=msg(b.dataset.say||'mIdle');p.classList.remove('say');void p.offsetWidth;p.classList.add('say');clearTimeout(mascSay._t);
+  mascSay._t=setTimeout(()=>{if(!p.isConnected)return;p.textContent=p.dataset.base;delete p.dataset.base;p.classList.remove('say')},3600)}
 /* ---- illustration d'écran vide (V5) ---- */
 const emptyArt=(t,sub,pose)=>'<div class="emp6"><span class="empc">'+charSvg(myChar({pose:pose||'idle',ex:pose==='sleep'?'sleep':'neutral'}))+'</span><div><b>'+esc(t)+'</b>'+(sub?'<p>'+esc(sub)+'</p>':'')+'</div></div>';
 /* ---- en-tête ---- */

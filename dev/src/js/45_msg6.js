@@ -1,6 +1,23 @@
 /* ===================== v6 : messages selon le ton choisi (P13) ===================== */
 /* {n} prénom (avec espace devant), {k} nombre, {g} séances restantes, {d} jours, {s} pluriel */
 const MSG={
+ sobre:{
+  first:[['','Bienvenue{n}','Note ta première séance après ton entraînement.']],
+  back:[['','Bon retour{n}','{d} jours depuis ta dernière séance. On reprend ?']],
+  month:[['','Nouveau mois{n}','Bon moment pour faire ton test max du mois.']],
+  streak:[['','Bon retour{n}','{k} semaines d\'affilée. Garde le rythme.']],
+  goalDone:[['','Salut{n}','Objectif de la semaine atteint.']],
+  goalLeft:[['','Bon retour{n}','Encore {g} séance{s} pour ton objectif de la semaine.']],
+  morning:[['','Bonjour{n}','Une séance aujourd\'hui ?']],
+  evening:[['','Bonsoir{n}','Il reste du temps pour une séance ce soir.']],
+  generic:[['','Bon retour{n}','Prêt pour la séance du jour ?'],['','Salut{n}','Chaque séance compte.']],
+  hDone:['Séance notée aujourd\'hui. Bien joué.','C\'est fait pour aujourd\'hui.'],hRest:['Jour de repos. La récupération fait partie de l\'entraînement.'],hNew:['Nouvelle semaine. On repart de zéro.'],
+  hLeft:['Encore {g} séance{s} pour ton objectif.'],hGoal:['Objectif de la semaine atteint.'],hGap:['Dernière séance il y a {d} jours.'],
+  aGoal:['Objectif atteint'],aBadge:['Nouveau badge'],aRun:['{k} jours d\'affilée|Prévois un jour de repos.'],aWeek:['Objectif de la semaine atteint|{k} séance{s} cette semaine.'],
+  aBack:['Bon retour|Première séance depuis {d} jours.'],aFirst:['Première séance de la semaine|Encore {g} pour ton objectif.'],aTop:['Belle séance|Garde cette énergie.'],aBof:['Séance faite|Même un jour sans, ça compte.'],
+  aLong:['Grosse séance|{t} d\'entraînement.'],aMorn:['Séance du matin|La journée commence bien.'],aLeft:['Séance notée|Encore {g} pour ton objectif de la semaine.'],aStreak:['{k} semaines d\'affilée|La régularité paie.'],
+  aGen:['Séance enregistrée|Bien joué.','Séance enregistrée|Chaque séance compte.'],
+  mDone:['Séance faite aujourd\'hui.'],mSleep:['Récupération en cours.'],mWave:['Salut{n}. Prêt pour aujourd\'hui ?'],mIdle:['Prêt quand tu l\'es.','Une séance aujourd\'hui ?'],mCheer:['Objectif de la semaine atteint.'],mFlex:['Nouveau record. Beau travail.']},
  motiv:{
   first:[['👋','Bienvenue{n} !','Note ta première séance après ton entraînement. C\'est parti ! 💪']],
   back:[['👋','Bon retour{n} !','Ça fait {d} jours… On s\'y remet ? 💪']],
@@ -80,7 +97,7 @@ const MSG={
   mDone:['Séance faite ! Je peux reprendre ma sieste ? 😄'],mSleep:['Zzz… je rêve de protéines. 😴'],mWave:['Coucou{n} ! On soulève des trucs ? 👋'],mIdle:['Allez, un petit effort, je t\'encourage ! 📣'],mCheer:['Objectif atteint ! On danse ? 💃'],mFlex:['Record ! Regarde ces biceps ! 💪']}
 };
 function msgFill(t,o){o=o||{};const n=shownName();return emo(String(t).replace(/\{n\}/g,n?' '+n:'').replace(/\{k\}/g,o.k!==undefined?o.k:'').replace(/\{g\}/g,o.g!==undefined?o.g:'').replace(/\{d\}/g,o.d!==undefined?o.d:'').replace(/\{t\}/g,o.t||'').replace(/\{s\}/g,(o.g!==undefined?o.g:o.k)>1?'s':''))}
-const msgBank=k=>(MSG[S.tone]||MSG.motiv)[k]||MSG.motiv[k]||[''];
+const msgBank=k=>(MSG[S.tone]||MSG.sobre)[k]||MSG.sobre[k]||[''];
 const msg=(k,o)=>{const v=pick(msgBank(k));return Array.isArray(v)?v.map(x=>msgFill(x,o)):msgFill(v,o)};
 const msg2=(k,o)=>{const v=pick(msgBank(k));return msgFill(v,o).split('|')};
 /* ---- pop-up « bon retour » ---- */
@@ -94,7 +111,7 @@ function helloPick(){const h=new Date().getHours(),ls=lastSess(),days=ls?Math.ro
 /* ---- message après l'ajout d'une séance ---- */
 function afterAdd(ss,beat,c){const gh=checkGoals();if(gh.length)save();v6Saved();setTimeout(()=>snack('Séance enregistrée','Partager',()=>shareCard(ss.id)),2700);
   const nb=badgeList().filter(b=>b.on),wk=monday(T).getTime(),inWeek=monday(parse(ss.date)).getTime()===wk,wn=S.sessions.filter(s=>monday(parse(s.date)).getTime()===wk).length,goal=S.goal||3,ws=wStreak(),gap=c.last?Math.round((parse(ss.date)-parse(c.last.date))/864e5):0,run=noRestRun();let m;
-  if(beat){celebrate(beat.name,beat.v,beat.unit,beat.prev);if(gh.length)setTimeout(()=>boomMsg(emo('Objectif atteint ! 🎯'),goalTxt(gh[0])),4200);afterRewards();return}
+  if(beat){celebrate(beat.name,beat.v,beat.unit,beat.prev);if(gh.length)setTimeout(()=>boomMsg(msg('aGoal'),goalTxt(gh[0])),4200);afterRewards();return}
   if(gh.length)m=[msg('aGoal'),goalTxt(gh[0])];
   else if(nb.length>c.bad)m=[msg('aBadge'),nb.filter(b=>!c.badk||!c.badk.includes(b.k)).map(b=>b.t).pop()||nb[nb.length-1].t];
   else if(run>=7)m=msg2('aRun',{k:run});

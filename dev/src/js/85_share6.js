@@ -88,8 +88,10 @@ async function albumCard(mk){try{await document.fonts.ready}catch(e){}const W=10
 const EXFAM=[['pull',/tract|pull|chin|muscle|singe|dead hang|rowing|australi|lever|mont[ée]es? de jambes/i],['dip',/dip/i],['push',/pomp|push|pike|hindu|archer|bench|développé/i],['sq',/squat|fente|lunge|pistol|jambe|leg press|saut|jump|mollet|calf|chaise|burpee/i]];
 function exFam(n){const f=EXFAM.find(x=>x[1].test(n||''));return f?f[0]:'cheer'}
 function mainEx(s){const p=s.perf||{};let best=s.ex[0]||'',bv=-1;s.ex.forEach(x=>{const q=p[x]||{},v=(q.s||1)*(q.r||0)+(q.sec||0)/3+(q.kg||0)/5;if(v>bv){bv=v;best=x}});return best}
-function sessAnimSvg(s){const f=exFam(mainEx(s)),A=CH_ANIM[f];return charAnim(myChar({ex:f==='cheer'?'grin':'effort'}),A[2],A[0],A[1])}
-function sessArt(s){return '<span class="bxch'+(exFam(mainEx(s))==='cheer'?' sq2':'')+'">'+sessAnimSvg(s)+'</span>'}
+/* v6.3 : cadrage serré par exercice (le perso remplit la carte au lieu de flotter dans le vide) */
+const EXVB={pull:[0,8,200,224],dip:[0,34,200,226],push:[0,102,200,142],sq:[0,52,200,200]};
+function sessAnimSvg(s){const f=exFam(mainEx(s)),A=CH_ANIM[f];return charAnim(myChar({ex:f==='cheer'?'grin':'effort',vb:EXVB[f]}),A[2],A[0],A[1])}
+function sessArt(s){const f=exFam(mainEx(s)),v=EXVB[f];return '<span class="bxch'+(f==='cheer'?' sq2':v&&v[2]>v[3]?' wd':'')+'"'+(v?' style="aspect-ratio:'+v[2]+'/'+v[3]+'"':'')+'>'+sessAnimSvg(s)+'</span>'}
 async function sessAnim(id){const s=S.sessions.find(x=>x.id===id);if(!s)return;
   if(!(window.MediaRecorder&&HTMLCanvasElement.prototype.captureStream)){toast('Vidéo impossible sur cet appareil : voici l\'image.');return sessCard(id,'story')}
   toast('Création de la vidéo…');try{await document.fonts.ready}catch(e){}

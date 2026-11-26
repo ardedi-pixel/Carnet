@@ -69,7 +69,7 @@
 @keyframes mhop{0%{transform:none}15%{transform:scale(1.1,.88)}40%{transform:translateY(-14px) scale(.92,1.1)}66%{transform:translateY(0) scale(1.12,.88)}84%{transform:scale(.97,1.04)}100%{transform:none}}
 .smapc .sktu{margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .smapc .sktu .h5{width:100%;margin:0 0 2px}
-@media (prefers-reduced-motion:reduce){.mpn.next .mnode::after,.mchar.hop svg,.bd6 .bd{animation:none}}
+html.rm .mpn.next .mnode::after,html.rm .mchar.hop svg,html.rm .bd6 .bd{animation:none}
 .lvs .lvt1.z{opacity:0}
 /* ---- stats : mois en pastilles, types en anneau ---- */
 #mGlance{margin:4px 0 14px}

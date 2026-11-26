@@ -1,6 +1,11 @@
 /* ===================== v6 : base (état, thèmes, typo, ambiance) ===================== */
-const APP6='6.2.1';
-['th','accX','todBg','seas','font','fsz','fdyn','dens','masc','splash','cards','tabs','tone','emo','pops','vol','voiceN','lang','char','photo','useP','nick','goalT','meas','chal','chalH','rw','lvSeen','recapW','popLast','musSeen','bdSeen'].forEach(k=>{if(!EXTRA.includes(k))EXTRA.push(k)});
+const APP6='6.3.0';
+['th','accX','todBg','seas','font','fsz','fdyn','dens','masc','splash','cards','tabs','tone','emo','pops','vol','voiceN','lang','char','photo','useP','nick','goalT','meas','chal','chalH','rw','lvSeen','recapW','popLast','musSeen','bdSeen','anim'].forEach(k=>{if(!EXTRA.includes(k))EXTRA.push(k)});
+/* v6.3 : animations « Toujours » (par défaut, même si l'iPhone réduit les animations) ou « Selon l'iPhone » */
+const RM_Q='(prefers-reduced-motion: reduce)';
+function rmOn(){try{return S.anim==='os'&&matchMedia(RM_Q).matches}catch(e){return false}}
+function rmSync(){document.documentElement.classList.toggle('rm',rmOn());try{localStorage.setItem('carnet-anim',S.anim==='os'?'os':'always')}catch(e){}}
+try{matchMedia(RM_Q).addEventListener('change',()=>{try{rmSync()}catch(e){}})}catch(e){}
 /* ---- icônes maison (même trait partout) ---- */
 const ICO={
  home:'<path d="M3.5 11L12 4l8.5 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/>',
@@ -91,13 +96,13 @@ const curTh=()=>THEMES[thKey()];
 function curAcc(){return /^#[0-9a-f]{6}$/i.test(S.accX||'')?S.accX:curTh().acc}
 function v6Load(){S.th=THEMES[S.th]?S.th:(S.theme==='light'?'minimal':'nuit');if(S.accX===undefined){S.accX=S.acc&&S.acc!=='jaune'&&ACC[S.acc]?ACC[S.acc][0]:''}
   S.todBg=S.todBg!==false;S.seas=S.seas!==false;S.font=FONTS[S.font]||S.font==='auto'?S.font:'auto';if(S.font==='craie')S.font='auto';S.fsz=[.9,1,1.12,1.25].includes(+S.fsz)?+S.fsz:1;S.fdyn=S.fdyn!==false;S.dens=S.dens==='comp'?'comp':'conf';
-  S.masc=['on','mini','off'].includes(S.masc)?S.masc:'on';S.splash=['anim','logo','off'].includes(S.splash)?S.splash:'anim';S.tone=['motiv','cool','coach','fun'].includes(S.tone)?S.tone:'motiv';S.emo=S.emo!==false;S.pops=['often','some','never'].includes(S.pops)?S.pops:'often';
+  S.masc=['on','mini','off'].includes(S.masc)?S.masc:'on';S.splash=['anim','logo','off'].includes(S.splash)?S.splash:'anim';S.anim=S.anim==='os'?'os':'always';S.tone=['sobre','motiv','cool','coach','fun'].includes(S.tone)?S.tone:'sobre';S.emo=S.emo===true;if((+S.v||0)<7){if(S.tone==='motiv')S.tone='sobre';S.emo=false}S.pops=['often','some','never'].includes(S.pops)?S.pops:'often';
   S.vol=typeof S.vol==='number'?Math.max(0,Math.min(1,S.vol)):1;S.voiceN=typeof S.voiceN==='string'?S.voiceN:'';if(!['fr','en','nl'].includes(S.lang)){const n=String(navigator.language||'fr').slice(0,2).toLowerCase();S.lang=['en','nl'].includes(n)&&!S.sessions.length?n:'fr'}
   if(!CH_SP[S.icon])S.icon='homme';S.char=obj(S.char);S.photo=typeof S.photo==='string'&&S.photo.startsWith('data:image')?S.photo:'';S.useP=!!(S.useP&&S.photo);S.nick=typeof S.nick==='string'?S.nick:'';S.goalT=typeof S.goalT==='string'?S.goalT:'';
   S.meas=obj(S.meas);['bras','taille'].forEach(k=>{S.meas[k]=arr(S.meas[k])});S.chal=S.chal&&typeof S.chal==='object'?S.chal:null;S.chalH=arr(S.chalH);S.rw=+S.rw||0;S.lvSeen=S.lvSeen===undefined?-1:+S.lvSeen;S.recapW=S.recapW||'';S.popLast=+S.popLast||0;
   S.cards=Array.isArray(S.cards)?S.cards.filter(c=>c&&HCARDS[c.k]):[];Object.keys(HCARDS).forEach(k=>{if(!S.cards.some(c=>c.k===k))S.cards.push({k,on:HCARDS[k][2]!==0})});
   S.tabs=obj(S.tabs);S.tabs.order=arr(S.tabs.order).filter(k=>TABS6[k]);Object.keys(TABS6).forEach(k=>{if(!S.tabs.order.includes(k))S.tabs.order.push(k)});S.tabs.off=arr(S.tabs.off).filter(k=>TABS6[k]&&k!=='home'&&k!=='plus');
-  if((+S.v||0)<6)S.v=6}
+  if((+S.v||0)<7)S.v=7}
 const shownName=()=>S.nick||S.name||'';
 /* ---- appliquer le thème, l'accent, la typo, la taille, la densité ---- */
 let dynF=1;
@@ -105,7 +110,7 @@ function measureDyn(){try{if(!(window.CSS&&CSS.supports&&CSS.supports('font','-a
 function fontsLink(q){let l=document.getElementById('f6');if(!q){if(l)l.remove();return}const href='https://fonts.googleapis.com/css2?'+q+'&display=swap';if(!l){l=document.createElement('link');l.id='f6';l.rel='stylesheet';document.head.appendChild(l)}if(l.href!==href)l.href=href}
 function applyAcc(){const th=curTh(),a=curAcc(),d=document.documentElement,r=d.style,L=!!th.light,dk=chDk(a,.45),lum=chLum(a);
   d.dataset.theme=L?'light':'dark';d.dataset.th=thKey();d.dataset.season=th.season||'';d.classList.toggle('glow',!!th.glow);d.classList.toggle('chalk',!!th.chalk);d.classList.toggle('compact',S.dens==='comp');
-  const vars={'--bg':th.v.bg,'--card':th.v.card,'--card2':th.v.card2,'--ink':th.v.ink,'--mute':th.v.mute,'--line':th.v.line,'--lead':a,'--hi':L?(lum>.55?chDk(a,.5):a):a,'--deep':dk,'--acct':L?(lum>.55?chDk(a,.55):a):(lum<.3?chLt(a,.45):a),'--on-lead':lum>.55?'#111114':'#ffffff','--top-bg':th.top,'--top-ink':th.ti==='auto'?(lum>.55?'#101010':'#ffffff'):th.ti,'--bgi':th.bgi||'none','--glass':'color-mix(in srgb,'+th.v.card+' '+(L?'86%':'74%')+',transparent)'};
+  const vars={'--bg':th.v.bg,'--card':th.v.card,'--card2':th.v.card2,'--ink':th.v.ink,'--mute':th.v.mute,'--line':th.v.line,'--lead':a,'--hi':L?(lum>.55?chDk(a,.5):a):a,'--deep':dk,'--acct':L?(lum>.55?chDk(a,.55):a):(lum<.3?chLt(a,.45):a),'--on-lead':lum>.55?'#111114':'#ffffff','--lead-dk':lum<.3?chLt(a,.6):a,'--top-bg':th.top,'--top-ink':th.ti==='auto'?(lum>.55?'#101010':'#ffffff'):th.ti,'--bgi':th.bgi||'none','--glass':'color-mix(in srgb,'+th.v.card+' '+(L?'86%':'74%')+',transparent)'};
   const fk=S.font==='auto'?th.f:S.font,F=FONTS[fk]||FONTS.classique;vars['--fd']=F[1];vars['--ft']=F[2];vars['--fs']=String(Math.round(S.fsz*(S.fdyn?dynF:1)*100)/100);
   Object.entries(vars).forEach(([k,v])=>r.setProperty(k,v));fontsLink(F[3]);
   const top=th.ti==='auto'?a:(th.light?'#ffffff':th.v.bg),m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',L?'#ffffff':th.v.bg);
@@ -120,7 +125,7 @@ setInterval(todTick,10*60*1000);
 let seasonRaf=0,seasonParts=[];
 const SEA_PART={spring:'petal',summer:'sun',autumn:'leaf',winter:'snow'};
 function seasonKind(){const th=curTh();if(th.season)return SEA_PART[th.season];const m=new Date().getMonth()+1;return m>=3&&m<=5?'petal':m>=6&&m<=8?'sun':m>=9&&m<=11?'leaf':'snow'}
-function seasonSync(){const on=S.seas&&seasonKind()&&curV==='home'&&!document.hidden&&!matchMedia('(prefers-reduced-motion: reduce)').matches;let c=$('season');
+function seasonSync(){const on=S.seas&&seasonKind()&&curV==='home'&&!document.hidden&&!rmOn();let c=$('season');
   if(!on){if(c)c.remove();cancelAnimationFrame(seasonRaf);seasonRaf=0;return}
   if(!c){c=document.createElement('canvas');c.id='season';c.setAttribute('aria-hidden','true');document.querySelector('.top').appendChild(c);seasonParts=[]}
   if(!seasonRaf)seasonRaf=requestAnimationFrame(seasonStep)}

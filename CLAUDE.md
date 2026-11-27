@@ -14,7 +14,8 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 - **Clarifier avant de coder** quand une demande est vague ou que plusieurs directions sont possibles : 2 à 4 questions avec des propositions concrètes et une option recommandée. Ne pas poser de question inutile quand c'est clair.
 - Pour un travail visuel, montrer un brouillon tôt (planche d'images) **et continuer le travail pendant qu'il regarde** ; corriger en route selon ses retours. Ne jamais s'arrêter en attendant sa réponse.
 - Design : minimaliste, moderne, cohérent, pensé mobile d'abord. Pas de doublons, pas d'éléments décoratifs gratuits, pas d'émojis ni de look enfantin.
-- **Ne jamais commit ni push sans son accord explicite.** Quand il l'a donné, finir par le lien et la version entre guillemets : `https://ardedi-pixel.github.io/Carnet/ « 7.3.0 »`.
+- Comportement d'appli (v7.3.1) : pas de sélection de texte ni de menu au long appui (`body{user-select:none;-webkit-touch-callout:none}`), sauf champs de saisie et code de transfert.
+- **Ne jamais commit ni push sans son accord explicite.** Quand il l'a donné, finir par le lien et la version entre guillemets : `https://ardedi-pixel.github.io/Carnet/ « 7.4.0 »`.
 - Ne jamais dire « testé » sans l'avoir réellement testé (tests automatiques + captures).
 - Tenir `dev/PLAN.md` à jour à chaque version (section « vX.Y.Z »).
 
@@ -23,15 +24,16 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 - `dev/build.py` assemble : `src/head.html` + `src/style.css` + `src/css/*.css` (ordre alphabétique) + `src/body.html` + `src/app.js`, où les modules `src/js/*.js` (ordre alphabétique) sont insérés au marqueur `/*@@MODS@@*/`.
 - Tout le JavaScript est dans **un seul bloc `{ … }`** : les `const`/`let` d'un module sont visibles des autres modules, mais pas depuis la console ou `page.evaluate` ; les déclarations `function` deviennent globales (testables depuis Playwright). Les `const` d'un module ne sont prêts qu'une fois ce module exécuté : à l'appel au chargement, attention à l'ordre des fichiers.
 - État : objet `S` dans `localStorage` (clé `carnet-seances`). Toute nouvelle clé doit être ajoutée à `EXTRA` (`src/js/10_core6.js`). Version des données `S.v` = 10 (migrations dans `v6Load`, `10_core6.js`).
-- Service worker `sw.js` : cache `carnet-v7-3-0`, à changer à chaque version.
+- Service worker `sw.js` : cache `carnet-v7-4-0`, à changer à chaque version.
 - Onglets : Accueil · Calendrier · Nutrition · Outils (Minuteurs, Échauffement, Conseils, Tutos) · Progrès (Mesures, Stats, Records, Skills) + Carnet (`notes`, masqué par défaut, donc lien en haut d'Outils) (`TABS6`, `src/js/30_ui6.js`).
-- **v7.3.0 publiée** (répétition au toucher, hip thrust, coupe, veste de saison, badges ; détails dans `dev/PLAN.md`). Accueil choisi par Diego : piste C « Immersif » + widgets de la piste B (`43_home72.js`) ; la scène suit le lieu le plus fréquent (`homePlace()`, réglage `S.hscn`).
+- **v7.4.0 publiée** (plus de sélection de texte, iPhone et Android, tutoriel d'installation, partage par lien, traductions complètes, nouvelles mensurations, minuteur indépendant avec mini-lecteur) ; détails dans `dev/PLAN.md`. Accueil choisi par Diego : piste C « Immersif » + widgets de la piste B (`43_home72.js`) ; la scène suit le lieu le plus fréquent (`homePlace()`, réglage `S.hscn`).
 
 ### Modules importants
 | Fichier | Rôle |
 |---|---|
 | `src/app.js` | routeur, calendrier (vues mois et semaine, détail du jour), formulaire de séance ; `scene()` délègue à `illScene()` |
 | `src/js/10_core6.js` | thèmes (`THEMES`, dont les 4 saisons), `applyAcc()`, migrations, `EXTRA` |
+| `src/js/12_plat.js` | **iPhone / Android** : `PLAT` (ios, and, br, inapp), `isStandalone()`, classes `html.ios`/`html.android`, long appui bloqué hors champs, bouton Retour d'Android qui ferme les feuilles |
 | `src/js/20_chars.js` | moteur des persos (style « Athlète ») : `charSvg()`, poses `CH_POSE`, primitives `chLimb`, `chP`… ; `charAnim(o,dur,p1,p2,once)` (once = une répétition lancée par `beginElement()`) ; jambes libres `P.lp` + chaussure tournée `chShoeR` (hip thrust) |
 | `src/js/25_icon6.js` | `charOf()` / `myChar()` (perso de l'utilisateur), `seaOf()` (tenue de saison) ; coupe par perso `S.char.hsp[homme|femme]` |
 | `src/js/40_home6.js`, `41_home7.js` | accueil : cartes `HCARDS`, carte « Mesures » (`poidsCard`, `bwSheet` = feuille « Nouvelle mesure »), poids (`bwTrend`, `bwStatus`), icônes `note`, `pin` |
@@ -41,12 +43,14 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 | `src/js/58_foods.js` | base d'aliments (100 aliments, valeurs pour 100 g CIQUAL/USDA, portions) : aide à la saisie et lecture des anciennes entrées |
 | `src/js/62_nutri.js` | nutrition « carnet » (v7.2) |
 | `src/js/64_notes.js` | Carnet de notes (`#carnet`) |
-| `src/js/66_mesures.js` | page Mesures (`#mesures`, 1er sous-onglet de Progrès) |
+| `src/js/66_mesures.js` | page Mesures (`#mesures`, 1er sous-onglet de Progrès) : poids, tour de taille, **bras G/D, distance claviculaire, taille (m)** ; champs partagés `mzFields`/`mzRead`/`mzWrite` |
 | `src/js/70_stats6.js` | Progrès, « Poids et mensurations » (`renderBW`, consigne `#mzTip`) ; badges en pin's sur la veste (`renderJacket`, `PIN_C`) ; liste des badges : `badgeList()` dans `app.js` (32, étiquette `l`) |
 | `src/js/71_jacket7.js` | veste des badges, **une par saison** (`jacketSvg(saison)` : doudoune, bomber, coupe-vent, velours ; emplacements `JK_XY`) |
+| `src/js/74_install.js` | **tutoriel d'installation** (`instShow()`, `instKind()`, illustrations `i8svg()`, `beforeinstallprompt`), partage de l'appli (`appShare()`, `APP_URL`) |
+| `src/js/80_timers6.js` | minuteurs v6 + **minuteur indépendant (v7.4)** : `tmShow(full)`, mini-lecteur `tmMiniSync()`, `tmSave()`/`tmRestore()` (`localStorage carnet-tm`), `tmResync()`, arrêt annulable `tmStopU()`, notification au choix |
 | `src/js/85_share6.js` | cartes de partage, `exFam()` / `mainEx()` (famille d'exercice) |
 | `src/js/94_dict.js`, `95_i18n.js` | traductions EN/NL |
-| `src/css/66_v7.css`, `67_nutri.css`, `68_v71.css`, `70_v72.css`, `71_v73.css` | styles v7 (saisons, nutrition, scènes, mesures, carnet, réglages compacts, été v7.2, veste et pin's v7.3) |
+| `src/css/66_v7.css`, `67_nutri.css`, `68_v71.css`, `70_v72.css`, `71_v73.css`, `72_v74.css` | styles v7 (saisons, nutrition, scènes, mesures, carnet, réglages compacts, été v7.2, veste et pin's v7.3, tutoriel d'installation v7.4) |
 
 ### Système d'illustrations de saison (v7.1, `src/js/56_ill7.js`)
 - `seaNow()` = saison active : celle du thème de saison (`printemps`, `ete`, `automne`, `hiver`, ou « Selon la saison ») ; avec un autre thème (Nuit, Minimal…), la **saison réelle** (déc.-fév. hiver, mars-mai printemps, juin-août été, sept.-nov. automne). Choix de Diego.
@@ -69,7 +73,19 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 - `S.carnet = [{id, c, t, b, pin, d, u}]`, catégories `nut`, `train`, `ex`, `prog`, `misc`. Aussi simple qu'un bloc-notes : créer, modifier, supprimer (annulation), épingler, filtrer, rechercher. Enregistrement pendant la frappe et à la fermeture de la feuille. Les notes du guide des exercices (`S.notes[exercice]`) s'affichent dans « Exercices » sans être copiées. Ne pas en faire un système complexe.
 
 ### Mesures (v7.2, `src/js/66_mesures.js`)
-- Poids dans `S.bw`, tour de taille dans `S.meas.taille` (`[{d, v}]`). Page Mesures (1er sous-onglet de Progrès, `#mesures`) : derniers chiffres, « Nouvelle mesure », consigne exacte « Pèse-toi le matin à jeun, après être allé aux toilettes et avant de manger ou de boire. », courbe à l'échelle du temps, historique modifiable. Carte « Mesures » de l'accueil → `#mesures`. Aucun conseil automatique.
+- Poids dans `S.bw`, tour de taille dans `S.meas.taille`, bras `S.meas.brasG` / `brasD`, distance claviculaire `S.meas.clav` (cm), taille `S.meas.haut` (m) (`[{d, v}]`). « Taille (hauteur) » ≠ « Tour de taille » (clés de traduction distinctes). Page Mesures (1er sous-onglet de Progrès, `#mesures`) : derniers chiffres, « Nouvelle mesure », consigne exacte « Pèse-toi le matin à jeun, après être allé aux toilettes et avant de manger ou de boire. », courbe à l'échelle du temps, historique modifiable. Carte « Mesures » de l'accueil → `#mesures`. Aucun conseil automatique.
+
+### iPhone et Android, installation, partage (v7.4)
+- L'appli vise **iPhone et Android à égalité** (PWA, pas de store). Ne jamais écrire « iPhone » dans un texte vu sur Android : utiliser `PLAT` (`12_plat.js`) ou un texte neutre (« le téléphone »).
+- Première ouverture d'un **nouvel utilisateur sur téléphone, pas encore installée** : `instShow()` avant l'accueil des nouveaux (`instFirst()`, clé `localStorage carnet-inst`). Variantes par appareil dans `instKind()` / `instSteps()`. Réglages : « Installer l'appli » (masqué une fois installée) et « Partager l'appli ».
+- Sur iPhone, l'appli installée et Safari n'ont pas les mêmes données : installer d'abord, puis faire l'accueil dans l'appli installée.
+- Aperçu du lien : balises `og:` dans `src/head.html` + `og-image.png` ; captures des manifestes `screen-1..3.jpg`. Refaire avec `python3 dev/tools/pwa_assets.py` (serveur local lancé) si l'apparence change.
+- Feuilles (`#gsheet`, `#sheet`) : le bouton Retour d'Android les ferme (historique géré dans `12_plat.js`) ; ne pas appeler `history.back()` ailleurs pour les fermer.
+
+### Minuteur (v7.4)
+- Le minuteur (`TM`, `app.js` + `80_timers6.js`) ne dépend d'aucun écran : temps calculé sur l'heure réelle, état gardé dans `localStorage carnet-tm`, repris au démarrage (`tmRestore()` dans `v6Init`). Ne jamais l'arrêter en changeant de page.
+- Écran plein (`#tmo`, la barre d'onglets reste au-dessus) ou mini-lecteur (`#tpill`) sur toutes les pages ; bouton Retour d'Android = réduire.
+- Notifications : seulement ce que le téléphone permet (Android ; iPhone si l'appli est installée) ; elles ne se mettent pas à jour en direct, et les bips ne sonnent pas appli fermée. Ne pas prétendre le contraire.
 
 ### Voix (v7.2)
 - Ne jamais retrouver une voix par son nom : sur iPhone, les mêmes noms existent dans plusieurs langues (cause des voix allemandes). Toujours `pickVoice()` (`app.js`) : voix de la langue de l'appli seulement, identifiant `S.voiceU` (voiceURI), sinon meilleure voix ; texte dit passé par `trS()`.
@@ -78,6 +94,8 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 - Le français est la source. Un `MutationObserver` traduit les nœuds de texte et les attributs (`placeholder`, `aria-label`, `title`) avec `trS()`.
 - `shape()` remplace dans la clé : le prénom par `{N0}`, les noms de mois et de jours par `{M0}`/`{D0}`, les nombres par `{0}`, `{1}`… Exemple de clé : `"Reste {0} g"`.
 - Une phrase construite par morceaux ne se traduit pas : mettre chaque morceau dans son propre élément, ou ajouter la phrase complète avec toutes ses variantes de signe (`+`, `−`, `±`).
+- Vérifier tout : `python3 dev/tools/i18n_full.py en` (parcourt chaque écran, chaque guide d'exercice, le tutoriel sur iPhone/Android) ; pour tout attraper, `ALL=1` en `fr` puis `en` et comparer : un texte identique dans les deux langues n'est pas traduit (sauf noms anglais, unités, dates).
+- Les zones de texte (`textarea`) : seul leur texte d'aide (`placeholder`) est traduit, jamais leur contenu.
 - Ajouter : un fichier JSON `{"texte FR": ["EN", "NL"]}` puis `python3 dev/tools/i18n_set.py fichier.json` (ajoute ou corrige dans `src/js/94_dict.js` et `dev/i18n/extra.json`). Vérifier : `python3 dev/tools/i18n_collect.py dev/tools/out/manque.json` (parcourt l'appli en anglais et liste les textes restés en français ; « Comté » est normal).
 - Anglais américain (fiber, color, favorite). Guillemets “ ” dans les traductions.
 
@@ -102,6 +120,7 @@ cd dev && python3 t16.py                                # tests Playwright (~6 m
 - Sur iPhone, l'appli se met à jour en la fermant puis en la rouvrant.
 
 ## Décisions de Diego (à respecter)
+- v7.4 : nouvelles mensurations (bras gauche et droit, distance claviculaire, taille) ; minuteur EMOM utilisable en naviguant partout, avec un mini-lecteur permanent et une reprise exacte ; pas de sélection de texte (aspect appli) ; iPhone et Android à égalité ; partage par simple lien ; tutoriel d'installation à la première ouverture, adapté à l'appareil, passable, une seule fois (à retrouver dans Réglages) ; tout traduit en FR et EN (NL gardé).
 - v7.3 : toucher le perso = une répétition (développé couché, traction…) ; perso « Femme » = hip thrust à la place du développé couché ; plus d'accessoires à débloquer ; plus de badges ; veste des badges différente par saison (suit le thème, saison réelle avec un thème sans saison).
 - v7.2 : accueil = piste C « Immersif » (scène de saison avec le perso, au lieu où la personne s'entraîne le plus : street, garage ou salle, réglable) + widgets de la piste B (Mesures, Nutrition, puis Carnet, Progrès) ; printemps personnalisé (arbres en fleurs, verts, pommiers, buissons) ; appli personnelle, pas de coach : objectifs nutrition saisis par l'utilisateur (Kcal et Prot seulement) ; carnet de notes ; Mesures en 1er sous-onglet de Progrès avec la consigne de pesée ; Outils et Réglages gardés tels quels ; été plus « mer et soleil », hiver inchangé ; nouvel accueil seulement après validation d'une des maquettes.
 - v7.1 : système central saison × activité ; thème sans saison = saison réelle ; salle = développé couché ; repos du printemps = pique-nique ; printemps varié ; nutrition en carnet simple ; mesures (poids + tour de taille) mises en avant.

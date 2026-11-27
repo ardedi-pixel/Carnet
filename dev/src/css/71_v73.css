@@ -7,3 +7,9 @@
 .pin.sea4:not(.on) b{width:44%;aspect-ratio:1;border-radius:50%;background:conic-gradient(rgba(0,0,0,.22) 0 25%,rgba(0,0,0,.1) 0 50%,rgba(0,0,0,.22) 0 75%,rgba(0,0,0,.1) 0)}
 .jkt[data-jk="autumn"] .pin.sea4:not(.on) b{background:conic-gradient(rgba(255,236,214,.5) 0 25%,rgba(255,236,214,.25) 0 50%,rgba(255,236,214,.5) 0 75%,rgba(255,236,214,.25) 0)}
 .jkt>svg{filter:drop-shadow(0 6px 10px rgba(0,0,0,.18))}
+/* v7.3.1 : comme une vraie appli : pas de sélection de texte ni de menu « Copier, Chercher, Traduire » au long appui (images comprises).
+   Les champs de saisie restent sélectionnables (sinon impossible d'écrire sur iPhone), le code de transfert aussi. */
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+img,svg{-webkit-user-drag:none}
+input,textarea,select,[contenteditable="true"]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+.code{-webkit-user-select:all;user-select:all;-webkit-touch-callout:default}

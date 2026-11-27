@@ -19,7 +19,7 @@ function trS(t){if(S.lang==='fr'||!t)return t;const D=DICT[S.lang];if(!D)return 
   let v=D[core];if(v===undefined&&!S.emo)v=dictNE()[core];if(v!==undefined)return m[1]+v+m[3];if(!/\d|\p{L}{3}/u.test(core))return t;const sh=shape(core);if(sh[0]===core)return t;v=D[sh[0]];if(v===undefined&&!S.emo)v=dictNE()[sh[0]];if(v===undefined)return t;return m[1]+fillT(v,sh[1],sh[2])+m[3]}
 const NOTR='SCRIPT,STYLE,TEXTAREA,CODE,R-N,R-C';
 function trNode(n){if(n.nodeType===3){const p=n.parentNode;if(!p||p.closest&&p.closest('textarea,script,style,.notr,.snote,code'))return;const o=n.data,v=trS(o);if(v!==o)n.data=v;return}
-  if(n.nodeType!==1)return;if(n.matches&&n.matches('textarea,script,style,.notr,.snote,code'))return;
+  if(n.nodeType!==1)return;if(n.matches&&n.matches('textarea,script,style,.notr,.snote,code')){if(n.tagName==='TEXTAREA')['placeholder','aria-label','title'].forEach(a=>{if(n.hasAttribute(a)){const o=n.getAttribute(a),v=trS(o);if(v!==o)n.setAttribute(a,v)}});return} /* v7.4 : le texte d'aide des zones de texte se traduit aussi (jamais leur contenu) */
   ['placeholder','aria-label','title','alt'].forEach(a=>{if(n.hasAttribute&&n.hasAttribute(a)){const o=n.getAttribute(a),v=trS(o);if(v!==o)n.setAttribute(a,v)}});
   if(n.tagName==='INPUT'&&(n.type==='button'||n.type==='submit')&&n.value){const v=trS(n.value);if(v!==n.value)n.value=v}
   const w=document.createTreeWalker(n,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT);let x;while((x=w.nextNode())){if(x.nodeType===1){['placeholder','aria-label','title','alt'].forEach(a=>{if(x.hasAttribute(a)){const o=x.getAttribute(a),v=trS(o);if(v!==o)x.setAttribute(a,v)}})}else trNode(x)}}

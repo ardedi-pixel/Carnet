@@ -1,0 +1,79 @@
+/* ===================== v7.4 : comportement d'appli (iPhone et Android), tutoriel d'installation ===================== */
+html,body{overscroll-behavior-y:contain} /* Android : plus de « tirer pour actualiser » ; le rebond et l'effet de bord restent */
+.srow7{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);display:grid}
+.srow7 .srow{width:100%;border:0;background:none;font:inherit;text-align:left;cursor:pointer}
+.inst8{z-index:60;display:flex;flex-direction:column} /* centré, mais on peut toujours remonter quand l'écran est court */
+.inst8 .in{gap:12px;max-width:440px;margin:auto}
+@media (max-height:720px){.inst8 .i8s{display:none}.inst8 h2{font-size:calc(24px*var(--fs,1))}.i8ap{width:44px;height:44px;border-radius:12px}.inst8 .in{gap:10px}.i8n>span{font-size:calc(13px*var(--fs,1))}}
+.i8hd{display:flex;align-items:center;justify-content:space-between}
+.i8ap{width:54px;height:54px;border-radius:15px;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,.28);flex:none}
+.i8ap>svg,.i8ap>img{width:100%;height:100%;display:block;object-fit:cover}
+.i8x{width:40px;height:40px}
+.inst8 h2{font-size:calc(29px*var(--fs,1))}
+.i8s{font-size:calc(15px*var(--fs,1))!important}
+.i8c{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:10px;display:grid;gap:12px}
+.i8ill{width:100%;height:auto;display:block;border-radius:15px;background:#f4f5f7;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.i8ill text{font:600 11px/1 var(--ft);fill:#1c1c1e}
+.i8ill text.sm{font-size:9.5px;font-weight:500;fill:#5f6368}
+.i8ill text.b{font-weight:800}.i8ill text.mu{fill:#80868b}.i8ill text.w{fill:#fff}
+.i8ill text.ac{fill:#0a84ff}
+.android .i8ill text.ac{fill:#1a73e8}
+.i8ill .hl,.i8ill .hlp{fill:none;stroke:color-mix(in srgb,var(--lead) 78%,#000);stroke-width:3}
+.i8ill .hlp{transform-box:fill-box;transform-origin:center;animation:i8p 1.7s ease-out infinite}
+@keyframes i8p{0%{opacity:.75;transform:scale(1)}100%{opacity:0;transform:scale(1.32)}}
+.i8ill .okic{transform-box:fill-box;transform-origin:center bottom;animation:i8drop .7s cubic-bezier(.3,1.5,.5,1) .2s both}
+@keyframes i8drop{0%{transform:translateY(-26px) scale(.6);opacity:0}100%{transform:none;opacity:1}}
+html.rm .i8ill .hlp,html.rm .i8ill .okic{animation:none}
+.i8n{display:grid;gap:5px;margin:0 4px 2px}
+.i8n b{display:flex;gap:10px;align-items:flex-start;font:800 calc(17px*var(--fs,1))/1.25 var(--fd);color:var(--ink)}
+.i8n b i{font-style:normal;flex:none;width:26px;height:26px;margin-top:-2px;border-radius:50%;background:var(--lead);color:var(--on-lead,#111);display:grid;place-items:center;font-size:14px}
+.i8n>span{color:var(--mute);font-size:calc(14px*var(--fs,1));line-height:1.42}
+.i8d{justify-content:center}
+.i8b{display:flex;gap:10px}.i8b .btn{flex:1}
+.inst8 .btn .ico{width:20px;height:20px}
+.i8l{justify-self:center;margin-top:2px}
+/* ---- v7.4 : nouvelles mensurations (tour de bras G/D, distance claviculaire, taille) ---- */
+.mz8g3{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}.mz8w{grid-column:1/-1}
+.mz8t{display:flex;flex-direction:column;gap:2px;padding:10px 11px;border-radius:15px;background:var(--card2);min-width:0}.mz8t .mz8tv{margin-top:auto} /* libellé sur 2 lignes : les chiffres restent alignés */
+.mz8t .mz8l{font-size:calc(11px*var(--fs,1));line-height:1.2}
+.mz8tv{font:900 calc(19px*var(--fs,1))/1.15 var(--fd);font-variant-numeric:tabular-nums}
+.mz8tv small{font:700 calc(11px*var(--fs,1)) var(--ft);color:var(--mute)}
+.mz8t .mz8d{font-size:calc(10.5px*var(--fs,1))}
+html[data-season=summer] .mz8t{background:linear-gradient(160deg,#e9f8fa,#d9f1f5)}
+.mz8m{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px;margin:-2px}
+.mz8m::-webkit-scrollbar{display:none}
+.mz8m button{flex:none;border:1px solid var(--line);background:var(--card2);color:var(--ink);border-radius:99px;padding:8px 14px;font:700 calc(13.5px*var(--fs,1)) var(--ft);cursor:pointer;min-height:38px}
+.mz8m button[aria-pressed=true]{background:var(--lead);border-color:var(--lead);color:var(--on-lead,#111)}
+.mz8lg{display:flex;gap:14px;margin:10px 2px -4px;font:700 calc(12px*var(--fs,1)) var(--ft);color:var(--mute)}
+.mz8lg span{display:inline-flex;align-items:center;gap:6px}.mz8lg i{width:18px;height:0;border-top:3px solid var(--acct);border-radius:2px}
+.mz8lg .s1 i{border-top:2.5px dashed var(--ink)}.mz8lg .s2 i{border-top-color:var(--mute)}
+.mz8rx{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:-4px;font:600 calc(12px*var(--fs,1)) var(--ft);color:var(--mute);text-align:left!important}
+.mz8sub{margin:12px 0 -4px;font:700 calc(13px*var(--fs,1)) var(--ft);color:var(--mute)}
+.mz7how details{margin:0}.mz7how summary{cursor:pointer;font:700 calc(13px*var(--fs,1)) var(--ft);color:var(--acct);list-style:none;padding:2px 0}
+.mz7how summary::-webkit-details-marker{display:none}.mz7how summary::after{content:" +"}.mz7how details[open] summary::after{content:" −"}
+.mz7how details p{margin-top:8px}
+.mz8hh,.mz8r{grid-template-columns:minmax(0,1fr) 92px 78px}
+.mz8hh span:last-child{line-height:1.15}
+/* ---- v7.4 : minuteur indépendant ---- */
+/* écran du minuteur : la barre d'onglets reste visible et utilisable (toucher un onglet réduit le minuteur) */
+body.tm-full .tabs{z-index:46}
+body.tm-full .tmo{bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+.tmin7{display:inline-flex;align-items:center;gap:4px}.tmin7 svg{width:20px;height:20px}
+.tkeep{margin:14px 0 0;text-align:center;font:600 calc(12.5px*var(--fs,1)) var(--ft);color:var(--mute)}
+#tNotif:empty{display:none}#tNotif{width:100%;max-width:420px;margin:10px auto 0}#tNotif .tglrow{width:100%}
+/* mini-lecteur au-dessus des onglets, sur toutes les pages */
+#tpill{left:10px;right:10px;transform:none;bottom:calc(70px + env(safe-area-inset-bottom,0px));border-radius:20px;padding:6px;gap:6px;box-shadow:0 12px 28px rgba(0,0,0,.34)}
+#tpill #tpOpen{flex:1;min-width:0;gap:10px;padding:4px 6px 4px 8px}
+#tpill .tpr{width:32px;height:32px;flex:none}
+.tpt{display:grid;flex:1;min-width:0;text-align:left;line-height:1.18;gap:1px}
+.tpt #tpL{font:800 calc(14px*var(--fs,1)) var(--ft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tpt small{font:600 calc(12px*var(--fs,1)) var(--ft);opacity:.78;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tpt small:empty{display:none}
+#tpill #tpB{flex:none;font:900 calc(23px*var(--fs,1)) var(--fd);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+#tpill .tpa{display:grid;place-items:center;flex:none}#tpill .tpa svg{width:20px;height:20px}#tpill .tpa b{font:900 calc(13px*var(--fs,1)) var(--ft)}
+#tpill .tpa[hidden]{display:none}
+body.tm-mini main::after{content:"";display:block;height:72px}
+body.tm-mini .fab{bottom:calc(76px + 68px + env(safe-area-inset-bottom,0px))}
+@media(min-width:900px){#tpill{left:50%;right:auto;width:520px;transform:translateX(-50%);bottom:86px}body.tm-mini .fab{bottom:96px}}
+/* formulaires à 2 colonnes : un libellé sur 2 lignes (petit écran) ne décale pas son champ */
+.nrow2{align-items:end}

@@ -1,5 +1,5 @@
 /* ===================== v6 : base (état, thèmes, typo, ambiance) ===================== */
-const APP6='7.3.0';
+const APP6='7.4.0';
 ['th','accX','todBg','seas','font','fsz','fdyn','dens','masc','splash','cards','tabs','tone','emo','pops','vol','voiceN','lang','char','photo','useP','nick','goalT','meas','chal','chalH','rw','lvSeen','recapW','popLast','musSeen','bdSeen','anim','nut','carnet','voiceU','hscn'].forEach(k=>{if(!EXTRA.includes(k))EXTRA.push(k)});
 /* v6.3 : animations « Toujours » (par défaut, même si l'iPhone réduit les animations) ou « Selon l'iPhone » */
 const RM_Q='(prefers-reduced-motion: reduce)';
@@ -99,7 +99,7 @@ function v6Load(){S.th=THEMES[S.th]?S.th:(S.theme==='light'?'minimal':'nuit');if
   S.masc=['on','mini','off'].includes(S.masc)?S.masc:'on';S.splash=['anim','logo','off'].includes(S.splash)?S.splash:'anim';S.anim=S.anim==='os'?'os':'always';S.tone=['sobre','motiv','cool','coach','fun'].includes(S.tone)?S.tone:'sobre';S.emo=S.emo===true;if((+S.v||0)<7){if(S.tone==='motiv')S.tone='sobre';S.emo=false}S.pops=['often','some','never'].includes(S.pops)?S.pops:'often';
   S.vol=typeof S.vol==='number'?Math.max(0,Math.min(1,S.vol)):1;S.voiceN=typeof S.voiceN==='string'?S.voiceN:'';S.voiceU=typeof S.voiceU==='string'?S.voiceU:'';S.hscn=['auto','street','garage','salle'].includes(S.hscn)?S.hscn:'auto';if(!['fr','en','nl'].includes(S.lang)){const n=String(navigator.language||'fr').slice(0,2).toLowerCase();S.lang=['en','nl'].includes(n)&&!S.sessions.length?n:'fr'}
   if(!CH_SP[S.icon])S.icon='homme';S.char=obj(S.char);S.photo=typeof S.photo==='string'&&S.photo.startsWith('data:image')?S.photo:'';S.useP=!!(S.useP&&S.photo);S.nick=typeof S.nick==='string'?S.nick:'';S.goalT=typeof S.goalT==='string'?S.goalT:'';
-  S.meas=obj(S.meas);['bras','taille'].forEach(k=>{S.meas[k]=arr(S.meas[k])});S.chal=S.chal&&typeof S.chal==='object'?S.chal:null;S.chalH=arr(S.chalH);S.rw=+S.rw||0;S.lvSeen=S.lvSeen===undefined?-1:+S.lvSeen;S.recapW=S.recapW||'';S.popLast=+S.popLast||0;
+  S.meas=obj(S.meas);['bras','taille','brasG','brasD','clav','haut'].forEach(k=>{S.meas[k]=arr(S.meas[k])}); /* v7.4 : bras gauche et droit, clavicule, taille (m) */S.chal=S.chal&&typeof S.chal==='object'?S.chal:null;S.chalH=arr(S.chalH);S.rw=+S.rw||0;S.lvSeen=S.lvSeen===undefined?-1:+S.lvSeen;S.recapW=S.recapW||'';S.popLast=+S.popLast||0;
   if((+S.v||0)<8){ /* v7 : onglet Nutrition à la place de Plus ; accueil épuré (poids, nutrition, une carte « À la une ») */
     const o=arr(S.tabs&&S.tabs.order);if(o.length){if(o.join()==='home,cal,tools,pr,plus')S.tabs.order=['home','cal','nut','tools','pr'];else{const i=o.indexOf('plus');if(i>=0)o[i]='nut'}}
     if(Array.isArray(S.cards)&&S.cards.length){const keep=S.cards.filter(c=>c&&c.k==='perso');S.cards=keep.concat([{k:'poids',on:true},{k:'nutri',on:true},{k:'une',on:true}],S.cards.filter(c=>c&&HCARDS[c.k]&&!['perso','poids','nutri','une'].includes(c.k)).map(c=>({k:c.k,on:false})))}}

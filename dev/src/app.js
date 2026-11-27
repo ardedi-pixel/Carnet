@@ -106,7 +106,7 @@ function renderDetail(){
   $('detail').innerHTML='<div class="dh"><h3>'+esc(fmtDay(parse(sel)))+'</h3><div class="row">'+(ss.length||sel>TK?'':'<button type="button" class="btn ghost" id="rest">'+(rest?'Retirer le repos':'Jour de repos')+'</button>')+(sel<=TK?'<button type="button" class="btn" id="add">+ Séance</button>':'')+'</div></div>'
   +(ss.length?ss.map(s=>{const f=feelOf(s),meta=[s.tod?todN[s.tod]:'',s.dur?fmtDur(s.dur):'',f?f[1]+' '+f[2]:'',sVol(s)?'Volume '+fmtKg(sVol(s)):''].filter(Boolean);
     return '<div class="sess"><div class="pic">'+scene(s.place,s.date,{who:1,fam:i7fam([s],s.place)})+'<b class="tagp">'+esc(plN[s.place]||s.place)+'</b></div><div><div class="stickers">'+s.types.filter(okT).map(t=>'<span class="stkr" style="background:'+tyC[t]+';transform:rotate('+(rot(s.id+t)/3)+'deg)"><span class="ic">'+ic(t)+'</span>'+esc(tyN[t])+'</span>').join('')+'</div>'+(meta.length?'<div class="smeta">'+meta.map(x=>'<span>'+esc(x)+'</span>').join('')+'</div>':'')+(s.ex.length?'<div class="exl">'+s.ex.map(x=>'<span>'+esc(x)+perfTxt(s,x)+'</span>').join('')+'</div>':'')+(s.note?'<p class="snote">'+esc(s.note)+'</p>':'')+'</div><div class="sbtn"><button type="button" class="ib" data-edit="'+esc(s.id)+'" aria-label="Modifier la séance">'+PEN+'</button><button type="button" class="ib" data-more="'+esc(s.id)+'" aria-label="Partager, dupliquer, déplacer ou supprimer">'+DOTS+'</button></div></div>'}).join('')
-  :rest?'<div class="empty"><span class="bedbig r7">'+illTile('rest')+'</span><span><b>Repos</b>Récupération, ça fait partie de l\'entraînement. 😴</span></div>'
+  :rest?'<div class="empty"><span class="bedbig r7">'+illTile('rest')+'</span><span><b>Repos</b>'+emo('Récupération, ça fait partie de l\'entraînement. 😴')+'</span></div>'
   :(sel>TK?emptyArt('Pas encore passé','Ce jour n\'est pas encore arrivé.','sleep'):emptyArt('Rien de noté','Ajoute une séance ou marque ce jour comme repos.','idle')));
 }
 function stats(list){const t={},p={};list.forEach(s=>{s.types.filter(okT).forEach(x=>t[x]=(t[x]||0)+1);p[s.place]=(p[s.place]||0)+1});return{n:list.length,days:new Set(list.map(s=>s.date)).size,t,p}}
@@ -288,11 +288,11 @@ function showOnb(n){onbStep=n;let o=$('onb');if(!o){o=document.createElement('di
   const dots='<div class="dots">'+[0,1,2].map(i=>'<i class="'+(i<=n?'on':'')+'"></i>').join('')+'</div>',inst=window.navigator.standalone||matchMedia('(display-mode: standalone)').matches;
   if(n===0)o.innerHTML='<div class="in">'+dots+'<p class="kick">Bienvenue</p><h2>Ton carnet d\'entraînement</h2><p>Note tes séances en quelques secondes, suis tes stats et bats tes records. Comment tu t\'appelles ?</p><input id="onbName" placeholder="Ton prénom" maxlength="24" autocomplete="given-name" value="'+esc(S.name||'')+'"><button type="button" class="btn" data-onb="1">Suivant</button><button type="button" class="btn ghost sm onbc" data-onbcode="1">'+ico('copy')+' J\'ai un code de transfert</button><div class="lgs">'+LANGS.map(l=>'<button type="button" class="chip" data-c6="lang:'+l[0]+'" aria-pressed="'+(S.lang===l[0])+'">'+l[1]+'</button>').join('')+'</div></div>';
   else if(n===1)o.innerHTML='<div class="in">'+dots+'<h2>Choisis ton personnage</h2><p>Il devient ton icône et ta mascotte. Tu pourras le personnaliser dans les réglages.</p><div class="icg">'+iconTiles()+'</div><button type="button" class="btn" data-onb="2">Suivant</button></div>';
-  else o.innerHTML='<div class="in">'+dots+'<h2>'+(inst?'C\'est parti !':'Installe l\'appli')+'</h2>'+(inst?'<p>Touche « + Noter une séance » sur l\'accueil après chaque entraînement. Tes séances sont gardées sur ce téléphone. 💪</p>':'<ol class="steps"><li>Touche le bouton de partage de Safari (le carré avec une flèche).</li><li>Choisis « Sur l\'écran d\'accueil », puis « Ajouter ».</li><li>Ouvre ensuite toujours l\'appli depuis son icône sur l\'écran d\'accueil : tes séances y sont gardées.</li></ol>')+'<button type="button" class="btn" data-onb="done">'+(inst?'Commencer':'C\'est compris')+'</button></div>';
+  else o.innerHTML='<div class="in">'+dots+'<h2>C\'est parti !</h2><p>Touche « Noter une séance » sur l\'accueil après chaque entraînement. Tes séances restent sur ce téléphone.</p><button type="button" class="btn" data-onb="done">Commencer</button>'+(inst?'':'<button type="button" class="btn ghost sm onbc" data-inst="open">'+ico('phone')+' Installer l\'appli sur l\'écran d\'accueil</button>')+'</div>';
   o.querySelector('input')?.focus()}
 function onbGo(a){if(onbStep===0){const v=($('onbName')||{}).value;S.name=(v||'').trim()}if(a==='done'){S.onb=true;S.lastSeen=Date.now();$('onb')?.remove();save();route();return}save();showOnb(Number(a))}
 /* ===================== v4 ===================== */
-const APP_V='7.3.0';
+const APP_V='7.4.0';
 const ACC={jaune:['#e4ff1a','#7d8c00','Jaune fluo','#5c6800'],vert:['#3dff8b','#0c8a45','Vert','#08773a'],orange:['#ff9f1c','#a35a00','Orange','#9a4f00'],bleu:['#38c8ff','#0a6f99','Bleu','#0a6a92'],rose:['#ff5fa8','#a3245f','Rose','#a3245f'],violet:['#b18cff','#5b3fb0','Violet','#5b3fb0']};
 const arr=x=>Array.isArray(x)?x:[],obj=x=>x&&typeof x==='object'&&!Array.isArray(x)?x:{};
 const EXTRA=['name','fav','onb','live','bw','goals','acc','goal','bilanSeen','restAck','calMode','tmc','v','tset','skills','tests','presets','tpls','snd','voice','theme','cnt','deloads','notes','wuNote','wuMode','wuW','fPl','fTy','evo','ptab','icon','links','lastSeen','xtab'];
@@ -682,9 +682,9 @@ function tmStart(c){audioOn();wakeOn();const now=Date.now();tmRun={k:c.k,start:n
   if(c.k==='rest')TM={k:'rest',total:c.sec,end:now+c.sec*1000,next:c.next||'',lab:c.lab||'Repos',ls:-1};
   else if(c.k==='emom')TM={k:'emom',n:c.n,iv:c.iv,target:c.target,start:now+10000,ls:-1,lr:-1};
   else TM={k:'pyr',steps:c.steps,name:c.name||'',i:0,phase:'work',end:0,rt:1,reps:0,ls:-1};
-  tmCk='';$('tmo').hidden=false;$('tpill').hidden=true;clearInterval(tmIv);tmIv=setInterval(tmLoop,200);tmLoop()}
-function tmStop(){TM=null;clearInterval(tmIv);tmIv=null;$('tmo').hidden=true;$('tpill').hidden=true;wakeOff()}
-function tmFin(title,sub,word){sGo(word||'Terminé');buzz([300,150,300]);TM={k:'fin',title,sub}}
+  tmCk='';clearInterval(tmIv);tmIv=setInterval(tmLoop,200);tmShow(true);tmLoop();tmSave()}
+function tmStop(){TM=null;clearInterval(tmIv);tmIv=null;tmShow(null);wakeOff();tmSave();tmNotifClose()} /* v7.4 : tmShow, tmSave… dans 80_timers6.js */
+function tmFin(title,sub,word){sGo(word||'Terminé');buzz([300,150,300]);TM={k:'fin',title:emo(title),sub}}
 function tmLoop5(){if(!TM)return;const now=Date.now();let lab='',big='',sub='',prog=0,ck='',ctl='';
   if(TM.k==='rest'){const rem=Math.max(0,TM.end-now),s=Math.ceil(rem/1000);if(rem<=0){sGo('Go');buzz([250,120,250]);TM={k:'go',until:now+1600,msg:TM.next||''};return tmLoop()}
     if(s!==TM.ls){TM.ls=s;if(s<=3)sTick(s)}lab=TM.lab;big=mmss(s);sub=TM.next||'Récupère bien';prog=1-rem/(TM.total*1000);ck='rest';
@@ -695,21 +695,21 @@ function tmLoop5(){if(!TM)return;const now=Date.now();let lab='',big='',sub='',p
     else{const r=Math.floor(el/(TM.iv*1000));if(r>=TM.n){S.cnt.emom=(S.cnt.emom||0)+1;save();tmFin('EMOM terminé ! 🎉',TM.n+' intervalle'+(TM.n>1?'s':'')+(TM.target?' · '+(TM.target*TM.n)+' rép. au total':''));return tmLoop()}
       const inI=el-r*TM.iv*1000,rem=TM.iv*1000-inI,s=Math.ceil(rem/1000);if(r!==TM.lr){TM.lr=r;TM.ls=s;sGo('Go');buzz(200)}else if(s!==TM.ls){TM.ls=s;if(s<=3&&!TM.pausedAt)sTick(s)}
       lab='EMOM · Intervalle '+(r+1)+'/'+TM.n;big=mmss(s);sub=TM.target?TM.target+' rép. à faire, puis récupère':'Fais tes répétitions, puis récupère';prog=inI/(TM.iv*1000)}
-    if(TM.pausedAt)sub='En pause';ck='emom'+(TM.pausedAt?'p':'');ctl=(TM.pausedAt?'<button type="button" class="tbtn main" data-tm="resume">Reprendre</button>':'<button type="button" class="tbtn" data-tm="pause">Pause</button>')+'<button type="button" class="tbtn" data-tm="stop">Arrêter</button>'}
+    if(TM.pausedAt)sub='En pause';ck='emom'+(TM.pausedAt?'p':'');ctl=TM.pausedAt?'<button type="button" class="tbtn main" data-tm="resume">Reprendre</button>':'<button type="button" class="tbtn" data-tm="pause">Pause</button>'} /* v7.4 : « Arrêter » seulement en haut (pas de doublon) */
   else if(TM.k==='pyr'){const st=TM.steps,i=TM.i,nm=TM.name?TM.name+' · ':'Pyramide · ';
     if(TM.phase==='work'){lab=nm+'Marche '+(i+1)+'/'+st.length;big=String(st[i]);sub='répétition'+(st[i]>1?'s':'')+' · touche « Fait » quand c\'est bon';prog=i/st.length;ck='pw'+i;ctl='<button type="button" class="tbtn main" data-tm="pdone">Fait ✓</button>'}
     else{const rem=Math.max(0,TM.end-now),s=Math.ceil(rem/1000);if(rem<=0){sGo('Go');buzz(200);TM.i++;TM.phase='work';return tmLoop()}if(s!==TM.ls){TM.ls=s;if(s<=3)sTick(s)}
       lab='Repos · prochaine marche : '+st[i+1]+' rép.';big=mmss(s);sub=TM.reps+' rép. faites';prog=1-rem/TM.rt;ck='pr'+i;ctl='<button type="button" class="tbtn" data-tm="pskip">Passer le repos</button>'}}
   else if(TM.k==='fin'){lab=TM.title;big=CHK;sub=TM.sub;prog=1;ck='fin';ctl='<button type="button" class="tbtn main" data-tm="stop">Terminer</button>'}
-  $('tLab').textContent=lab;const bg=$('tBig');if(big.charAt(0)==='<'){if(bg.dataset.k!==ck){bg.innerHTML=big;bg.dataset.k=ck}}else{bg.textContent=big;bg.dataset.k=''}
+  const tl=$('tLab');if(tl.dataset.v!==lab){tl.dataset.v=lab;tl.innerHTML=lab.split(' · ').map(x=>'<span>'+esc(x)+'</span>').join(' · ')} /* v7.4 : chaque morceau se traduit (nom de l'exercice, « Marche 1/3 ») */
+  const bg=$('tBig');if(big.charAt(0)==='<'){if(bg.dataset.k!==ck){bg.innerHTML=big;bg.dataset.k=ck}}else{bg.textContent=big;bg.dataset.k=''}
   $('tSub').textContent=sub;$('tArc').style.strokeDasharray=(TC*Math.max(0,Math.min(1,prog))).toFixed(1)+' '+TC.toFixed(1);
-  if(ck!==tmCk){tmCk=ck;$('tCtl').innerHTML=ctl;$('tDots').innerHTML=TM.k==='pyr'?TM.steps.map((v,j)=>'<i class="'+(j<TM.i||(j===TM.i&&TM.phase==='rest')?'d':j===TM.i?'c':'')+'">'+v+'</i>').join(''):''}
-  $('tpL').textContent=lab||'Minuteur';$('tpB').textContent=big.charAt(0)==='<'?'✓':big}
-function tmAct(a){if(a==='min'){$('tmo').hidden=true;$('tpill').hidden=false;return}if(a==='stop'){tmStop();return}if(!TM)return;const now=Date.now();
+  if(ck!==tmCk){tmCk=ck;$('tCtl').innerHTML=ctl;$('tDots').innerHTML=TM.k==='pyr'?TM.steps.map((v,j)=>'<i class="'+(j<TM.i||(j===TM.i&&TM.phase==='rest')?'d':j===TM.i?'c':'')+'">'+v+'</i>').join(''):''}} /* v7.4 : le mini-lecteur est rempli par tmMiniSync (80_timers6.js) */
+function tmAct(a){if(a==='min'){tmShow(false);return}if(a==='stop'){tmStopU();return}if(!TM)return;const now=Date.now();
   if(TM.k==='rest'){if(a==='p15'){TM.end+=15000;TM.total+=15}else if(a==='m15')TM.end=Math.max(now+1000,TM.end-15000);else if(a==='skip'){tmStop();return}}
   else if(TM.k==='emom'){if(a==='pause'&&!TM.pausedAt)TM.pausedAt=now;else if(a==='resume'&&TM.pausedAt){TM.start+=now-TM.pausedAt;delete TM.pausedAt}}
   else if(TM.k==='pyr'){if(a==='pdone'&&TM.phase==='work'){audioOn();TM.reps+=TM.steps[TM.i];if(TM.i>=TM.steps.length-1){S.cnt.pyr=(S.cnt.pyr||0)+1;if(Math.max(...TM.steps)>=10)S.cnt.pyr10=(S.cnt.pyr10||0)+1;save();tmFin('Pyramide terminée ! 🎉',TM.reps+' répétitions au total')}else{const sec=pyRest(TM.steps[TM.i]);TM.phase='rest';TM.rt=sec*1000;TM.end=now+TM.rt;TM.ls=-1}}else if(a==='pskip'&&TM.phase==='rest')TM.end=now}
-  tmLoop()}
+  tmLoop();tmSave()}
 
 /* ---------- pyramide : marches, tranches de repos, pyramides enregistrées ---------- */
 function pySteps(c){c=c||S.tmc;const a=Math.max(1,+c.pyStart||1),b=Math.max(a+1,+c.pyTop||10),st=Math.max(1,+c.pyStep||1),up=[];for(let r=a;r<=b;r+=st)up.push(r);if(up[up.length-1]!==b)up.push(b);return c.pyShape==='u'?up:c.pyShape==='d'?up.slice().reverse():up.concat(up.slice(0,-1).reverse())}
@@ -895,7 +895,7 @@ async function shareCard5(id){const s=S.sessions.find(x=>x.id===id);if(!s)return
 
 /* ---------- nouvelle version disponible ---------- */
 let updShown=false;
-async function checkUpd(){if(updShown||!/^https?:/.test(location.protocol))return;try{const r=await fetch('version.json',{cache:'no-store'});if(!r.ok)return;const j=await r.json();if(j&&j.v&&j.v!==APP_V){updShown=true;const b=document.createElement('div');b.id='upd';b.className='upd';b.setAttribute('role','status');b.innerHTML='<span><b>Nouvelle version disponible ! 🎉</b>Touche « Mettre à jour » pour en profiter.</span><button type="button" id="updGo">Mettre à jour</button>';document.body.appendChild(b)}}catch(e){}}
+async function checkUpd(){if(updShown||!/^https?:/.test(location.protocol))return;try{const r=await fetch('version.json',{cache:'no-store'});if(!r.ok)return;const j=await r.json();if(j&&j.v&&j.v!==APP_V){updShown=true;const b=document.createElement('div');b.id='upd';b.className='upd';b.setAttribute('role','status');b.innerHTML='<span><b>'+emo('Nouvelle version disponible ! 🎉')+'</b>Touche « Mettre à jour » pour en profiter.</span><button type="button" id="updGo">Mettre à jour</button>';document.body.appendChild(b)}}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpd()});
 setInterval(checkUpd,30*60*1000);
 
@@ -955,7 +955,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)r
     if(k==='goal'){S.goal=Math.min(7,Math.max(1,S.goal+d));save();renderSet2();renderStats()}
     else{if(k==='emN')c.emN=Math.min(60,Math.max(1,c.emN+d));else if(k==='pyStart')c.pyStart=Math.min(c.pyTop-1,Math.max(1,c.pyStart+d));else if(k==='pyTop')c.pyTop=Math.min(40,Math.max(c.pyStart+1,c.pyTop+d));else if(k==='pyFix')c.pyFix=Math.min(600,Math.max(5,c.pyFix+d*5));normR();save();renderTm()}return}
   if(ds.tm){tmAct(ds.tm);return}
-  if(t.id==='tpOpen'){$('tmo').hidden=false;$('tpill').hidden=true;tmLoop();return}
+  if(t.id==='tpOpen'){tmShow(true);tmLoop();return}
   if(ds.wum){S.wuMode=ds.wum;save();renderWU();return}
   if(ds.wut){const sec=+ds.wut;tmStart({k:'rest',sec,lab:sec>=120?'Échauffement':'Repos',next:sec>=120?(S.wuMode==='street'?'Ensuite : l\'élastique':'Ensuite : l\'échauffement articulaire'):'Ensuite : tes séries de travail'});return}
   if(ds.tmtab){tmTab=ds.tmtab;renderTm();return}
@@ -1058,7 +1058,7 @@ $('bk').addEventListener('toggle',()=>{if($('bk').open&&!$('bkT').value)$('bkT')
 $('bkC').addEventListener('click',async()=>{const t=$('bkT');t.value=bkData();t.focus();t.select();try{await navigator.clipboard.writeText(t.value);toast('Sauvegarde copiée ✓')}catch(e){try{document.execCommand('copy')?toast('Sauvegarde copiée ✓'):toast('Sélectionne le texte et copie-le')}catch(_){toast('Sélectionne le texte et copie-le')}}});
 $('bkR').addEventListener('click',()=>{try{const v=JSON.parse($('bkT').value.trim());if(!v||!Array.isArray(v.sessions))throw 0;load(v);save();toast('Données restaurées ✓')}catch(e){toast('Code de sauvegarde invalide')}});
 /*@@MODS@@*/
-load(local);route();if(!S.onb&&!S.sessions.length)showOnb(0);else if(!S.onb){S.onb=true}
-v6Init();setTimeout(checkUpd,3000);if(S.onb&&!$('onb')){if(!maybeBilan())maybeHello()}else S.lastSeen=Date.now();if(!canStore)setTimeout(()=>{const b=document.createElement('div');b.id='warn';b.setAttribute('role','alert');b.innerHTML='<span>Ce navigateur bloque l\'enregistrement : tes séances seront perdues à la fermeture. Ouvre le lien dans Safari (pas en navigation privée).</span>';document.body.prepend(b)},0);$('save').textContent='Enregistré sur ce téléphone.';
+load(local);route();if(!S.onb&&!S.sessions.length){if(instFirst())instShow(()=>{if(!S.onb&&!$('onb'))showOnb(0)});else showOnb(0)}else if(!S.onb){S.onb=true} /* v7.4 : nouvel utilisateur sur téléphone, pas encore installée : le tutoriel d'installation d'abord */
+v6Init();setTimeout(checkUpd,3000);if(S.onb&&!$('onb')){if(!maybeBilan())maybeHello()}else S.lastSeen=Date.now();if(!canStore)setTimeout(()=>{const b=document.createElement('div');b.id='warn';b.setAttribute('role','alert');b.innerHTML='<span>Ce navigateur bloque l\'enregistrement : tes séances seront perdues à la fermeture. Ouvre le lien dans '+(PLAT.ios?'Safari':PLAT.and?'Chrome':'ton navigateur habituel')+' (pas en navigation privée).</span>';document.body.prepend(b)},0);$('save').textContent='Enregistré sur ce téléphone.';
 warnLocal("Tes séances sont enregistrées sur ce téléphone. Pour plus de sécurité, copie ta sauvegarde de temps en temps (Réglages ⚙️).");
 }

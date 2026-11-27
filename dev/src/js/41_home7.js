@@ -9,7 +9,8 @@ Object.assign(ICO,{
  left:'<path d="M15 5l-7 7 7 7"/>',
  right:'<path d="M9 5l7 7-7 7"/>',
  note:'<path d="M6.5 3.5h8l4 4v13h-12z"/><path d="M14.5 3.5v4h4M9.5 12h6M9.5 15.5h6"/>',
- pin:'<path d="M9 3.5h6l-1 6 3.5 3.5h-11L10 9.5z"/><path d="M12 13v7.5"/>'
+ pin:'<path d="M9 3.5h6l-1 6 3.5 3.5h-11L10 9.5z"/><path d="M12 13v7.5"/>',
+ phone:'<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M12 7v7M9.2 11.4 12 14.2l2.8-2.8M10.5 18.5h3"/>'
 });
 function bwSorted(){return S.bw.slice().sort((a,b)=>a.d<b.d?-1:1)}
 /* tendance en kg par semaine sur les N derniers jours (régression linéaire) ; null s'il y a moins de 3 pesées sur au moins 7 jours */
@@ -38,24 +39,17 @@ function poidsCard(){const L=bwSorted(),last=L[L.length-1],Wt=waistSorted(),lw=W
   return '<div class="h7c pw7 mz7'+(ck?' st-'+ck.st:'')+'"><button type="button" class="pw7m" data-bw7="open" aria-label="Voir l\'évolution de tes mesures"><p class="kick">Mesures'+(g?'<span> · </span><span>'+esc(g)+'</span>':'')+'</p>'
    +'<div class="mz7g">'+col('Poids',last,'kg',dl,'à noter')+col('Tour de taille',lw,'cm',dw,'à noter')+'</div>'+spark7(P.length>=2?P:[])+(last&&bwStatus()?'<p class="pw7s">'+esc(bwStatus())+'</p>':'')+'</button><button type="button" class="ib pw7a" data-bw7="add" aria-label="Ajouter une mesure">'+ico('add')+'</button></div>'}
 /* feuille « Nouvelle mesure » : poids et tour de taille en une fois, avec la bonne façon de mesurer */
-function bwSheet(){const L=bwSorted(),last=L[L.length-1],Wt=waistSorted(),lw=Wt[Wt.length-1];
-  openSheet('<div class="nsh"><h2 class="t">Nouvelle mesure</h2><div class="nrow2"><label class="nfl">Poids (kg)<input id="bw7v" type="number" inputmode="decimal" step="0.1" min="20" max="400" placeholder="'+(last?fmtN(last.v):'75')+'"></label><label class="nfl">Tour de taille (cm)<input id="bw7t" type="number" inputmode="decimal" step="0.5" min="40" max="200" placeholder="'+(lw?fmtN(lw.v):'Facultatif')+'"></label></div>'
-   +'<label class="nfl">Date<input id="bw7d" type="date" value="'+TK+'" max="'+TK+'"></label>'
-   +'<div class="mz7how"><p><b>Pesée</b><span>Le matin, à jeun, après être allé aux toilettes, avant de manger ou de boire. Garde les mêmes conditions à chaque fois pour bien comparer.</span></p><p><b>Tour de taille</b><span>Au niveau du nombril, debout, ventre relâché, en fin d\'expiration.</span></p></div>'
+function bwSheet(){const L=bwSorted(),last=L[L.length-1],Wt=waistSorted(),lw=Wt[Wt.length-1],lh=mzSorted('h').pop(),ph={w:last?fmtN(last.v):'75',t:lw?fmtN(lw.v):'Facultatif',bg:'Facultatif',bd:'Facultatif',c:'Facultatif',h:lh?mzFmt('h',lh.v):'1,75'};
+  openSheet('<div class="nsh"><h2 class="t">Nouvelle mesure</h2>'+mzFields({},ph)+'<label class="nfl">Date<input id="bw7d" type="date" value="'+TK+'" max="'+TK+'"></label>'
+   +'<div class="mz7how"><p><b>Pesée</b><span>Le matin, à jeun, après être allé aux toilettes, avant de manger ou de boire. Garde les mêmes conditions à chaque fois pour bien comparer.</span></p><details><summary>Comment mesurer le reste</summary><p><b>Tour de taille</b><span>Au niveau du nombril, debout, ventre relâché, en fin d\'expiration.</span></p><p><b>Tour de bras</b><span>Au plus large du bras, toujours de la même façon (contracté ou relâché), à gauche et à droite.</span></p><p><b>Distance claviculaire</b><span>Toujours avec les mêmes repères pour pouvoir comparer.</span></p><p><b>Taille</b><span>Debout, pieds nus, en mètres (par exemple 1,75).</span></p></details></div>'
    +'<button type="button" class="btn nbig" data-bw7="save">Enregistrer</button></div>');
-  setTimeout(()=>{const i=$('bw7v');if(i)i.focus()},250)}
+  setTimeout(()=>{const i=$('mz_w');if(i)i.focus()},250)}
 function bwRefresh(){if(typeof mzRefresh==='function')mzRefresh();if(curV==='home')renderHome();if(curV==='nut'&&typeof renderNut==='function')renderNut();if(curV==='pr'&&!$('vGr').hidden)renderBW()}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-bw7]');if(!b)return;const a=b.dataset.bw7;
   if(a==='add'){bwSheet();return}
   if(a==='open'){S.ptab='mz';if(location.hash==='#mesures')route();else location.hash='#mesures';return}
-  if(a==='save'){const num=id=>{const t=String(($(id)||{}).value||'').trim().replace(',','.');return t===''?null:parseFloat(t)},v=num('bw7v'),w=num('bw7t'),d=$('bw7d').value||TK;
-    if(v===null&&w===null){toast('Note ton poids ou ton tour de taille');return}
-    if(v!==null&&!(v>=20&&v<=400)){toast('Entre un poids entre 20 et 400 kg');return}
-    if(w!==null&&!(w>=40&&w<=200)){toast('Entre un tour de taille entre 40 et 200 cm');return}
-    if(d>TK){toast('Choisis une date passée');return}
-    if(v!==null){S.bw=S.bw.filter(x=>x.d!==d);S.bw.push({d,v:Math.round(v*10)/10})}
-    if(w!==null){S.meas.taille=arr(S.meas.taille).filter(x=>x.d!==d);S.meas.taille.push({d,v:Math.round(w*10)/10})}
-    save();closeSheet();toast('Mesure notée');bwRefresh()}});
+  if(a==='save'){const r=mzRead(),d=$('bw7d').value||TK;if(r.err){toast(r.err);return}if(d>TK){toast('Choisis une date passée');return}
+    mzWrite(r.v,d,undefined,1);save();closeSheet();toast('Mesure notée');bwRefresh()}});
 /* ---- Progrès : le poids en tête de page, les statistiques secondaires repliées ---- */
 function pr7Layout(){const v=$('vGr');if(!v||v.dataset.l7)return;v.dataset.l7='1';
   const bw=$('bwIn')&&$('bwIn').closest('section');if(bw){bw.classList.add('bw7p');bw.hidden=true} /* v7.2 : le poids a sa page « Mesures » */

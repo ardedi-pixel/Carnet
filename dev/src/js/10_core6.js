@@ -1,6 +1,6 @@
 /* ===================== v6 : base (état, thèmes, typo, ambiance) ===================== */
-const APP6='7.1.0';
-['th','accX','todBg','seas','font','fsz','fdyn','dens','masc','splash','cards','tabs','tone','emo','pops','vol','voiceN','lang','char','photo','useP','nick','goalT','meas','chal','chalH','rw','lvSeen','recapW','popLast','musSeen','bdSeen','anim','nut','carnet','voiceU'].forEach(k=>{if(!EXTRA.includes(k))EXTRA.push(k)});
+const APP6='7.2.0';
+['th','accX','todBg','seas','font','fsz','fdyn','dens','masc','splash','cards','tabs','tone','emo','pops','vol','voiceN','lang','char','photo','useP','nick','goalT','meas','chal','chalH','rw','lvSeen','recapW','popLast','musSeen','bdSeen','anim','nut','carnet','voiceU','hscn'].forEach(k=>{if(!EXTRA.includes(k))EXTRA.push(k)});
 /* v6.3 : animations « Toujours » (par défaut, même si l'iPhone réduit les animations) ou « Selon l'iPhone » */
 const RM_Q='(prefers-reduced-motion: reduce)';
 function rmOn(){try{return S.anim==='os'&&matchMedia(RM_Q).matches}catch(e){return false}}
@@ -97,7 +97,7 @@ function curAcc(){return /^#[0-9a-f]{6}$/i.test(S.accX||'')?S.accX:curTh().acc}
 function v6Load(){S.th=THEMES[S.th]?S.th:(S.theme==='light'?'minimal':'nuit');if(S.accX===undefined){S.accX=S.acc&&S.acc!=='jaune'&&ACC[S.acc]?ACC[S.acc][0]:''}
   S.todBg=S.todBg!==false;S.seas=S.seas!==false;S.font=FONTS[S.font]||S.font==='auto'?S.font:'auto';if(S.font==='craie')S.font='auto';S.fsz=[.9,1,1.12,1.25].includes(+S.fsz)?+S.fsz:1;S.fdyn=S.fdyn!==false;S.dens=S.dens==='comp'?'comp':'conf';
   S.masc=['on','mini','off'].includes(S.masc)?S.masc:'on';S.splash=['anim','logo','off'].includes(S.splash)?S.splash:'anim';S.anim=S.anim==='os'?'os':'always';S.tone=['sobre','motiv','cool','coach','fun'].includes(S.tone)?S.tone:'sobre';S.emo=S.emo===true;if((+S.v||0)<7){if(S.tone==='motiv')S.tone='sobre';S.emo=false}S.pops=['often','some','never'].includes(S.pops)?S.pops:'often';
-  S.vol=typeof S.vol==='number'?Math.max(0,Math.min(1,S.vol)):1;S.voiceN=typeof S.voiceN==='string'?S.voiceN:'';S.voiceU=typeof S.voiceU==='string'?S.voiceU:'';if(!['fr','en','nl'].includes(S.lang)){const n=String(navigator.language||'fr').slice(0,2).toLowerCase();S.lang=['en','nl'].includes(n)&&!S.sessions.length?n:'fr'}
+  S.vol=typeof S.vol==='number'?Math.max(0,Math.min(1,S.vol)):1;S.voiceN=typeof S.voiceN==='string'?S.voiceN:'';S.voiceU=typeof S.voiceU==='string'?S.voiceU:'';S.hscn=['auto','street','garage','salle'].includes(S.hscn)?S.hscn:'auto';if(!['fr','en','nl'].includes(S.lang)){const n=String(navigator.language||'fr').slice(0,2).toLowerCase();S.lang=['en','nl'].includes(n)&&!S.sessions.length?n:'fr'}
   if(!CH_SP[S.icon])S.icon='homme';S.char=obj(S.char);S.photo=typeof S.photo==='string'&&S.photo.startsWith('data:image')?S.photo:'';S.useP=!!(S.useP&&S.photo);S.nick=typeof S.nick==='string'?S.nick:'';S.goalT=typeof S.goalT==='string'?S.goalT:'';
   S.meas=obj(S.meas);['bras','taille'].forEach(k=>{S.meas[k]=arr(S.meas[k])});S.chal=S.chal&&typeof S.chal==='object'?S.chal:null;S.chalH=arr(S.chalH);S.rw=+S.rw||0;S.lvSeen=S.lvSeen===undefined?-1:+S.lvSeen;S.recapW=S.recapW||'';S.popLast=+S.popLast||0;
   if((+S.v||0)<8){ /* v7 : onglet Nutrition à la place de Plus ; accueil épuré (poids, nutrition, une carte « À la une ») */
@@ -133,7 +133,7 @@ setInterval(todTick,10*60*1000);
 let seasonRaf=0,seasonParts=[];
 const SEA_PART={spring:'petal',summer:'sun',autumn:'leaf',winter:'snow'};
 function seasonKind(){return SEA_PART[seaNow()]} /* même saison que tous les dessins (56_ill7.js) */
-function seasonSync(){const on=S.seas&&seasonKind()&&curV==='home'&&!document.hidden&&!rmOn();let c=$('season');
+function seasonSync(){const on=S.seas&&seasonKind()&&curV==='home'&&!document.hidden&&!rmOn()&&!document.querySelector('#hStart .h72h.indoor'); /* pas de neige ni de pétales dans la salle ou le garage */let c=$('season');
   if(!on){if(c)c.remove();cancelAnimationFrame(seasonRaf);seasonRaf=0;return}
   const host=document.querySelector('#hStart .h72h')||document.querySelector('.top'); /* v7.2 : les particules passent devant la scène de l'accueil */
   if(!c){c=document.createElement('canvas');c.id='season';c.setAttribute('aria-hidden','true');seasonParts=[]}if(c.parentNode!==host)host.appendChild(c);

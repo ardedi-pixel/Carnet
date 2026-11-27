@@ -14,7 +14,7 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 - **Clarifier avant de coder** quand une demande est vague ou que plusieurs directions sont possibles : 2 à 4 questions avec des propositions concrètes et une option recommandée. Ne pas poser de question inutile quand c'est clair.
 - Pour un travail visuel, montrer un brouillon tôt (planche d'images) **et continuer le travail pendant qu'il regarde** ; corriger en route selon ses retours. Ne jamais s'arrêter en attendant sa réponse.
 - Design : minimaliste, moderne, cohérent, pensé mobile d'abord. Pas de doublons, pas d'éléments décoratifs gratuits, pas d'émojis ni de look enfantin.
-- **Ne jamais commit ni push sans son accord explicite.** Quand il l'a donné, finir par le lien et la version entre guillemets : `https://ardedi-pixel.github.io/Carnet/ « 7.1.0 »`.
+- **Ne jamais commit ni push sans son accord explicite.** Quand il l'a donné, finir par le lien et la version entre guillemets : `https://ardedi-pixel.github.io/Carnet/ « 7.2.0 »`.
 - Ne jamais dire « testé » sans l'avoir réellement testé (tests automatiques + captures).
 - Tenir `dev/PLAN.md` à jour à chaque version (section « vX.Y.Z »).
 
@@ -23,9 +23,9 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 - `dev/build.py` assemble : `src/head.html` + `src/style.css` + `src/css/*.css` (ordre alphabétique) + `src/body.html` + `src/app.js`, où les modules `src/js/*.js` (ordre alphabétique) sont insérés au marqueur `/*@@MODS@@*/`.
 - Tout le JavaScript est dans **un seul bloc `{ … }`** : les `const`/`let` d'un module sont visibles des autres modules, mais pas depuis la console ou `page.evaluate` ; les déclarations `function` deviennent globales (testables depuis Playwright). Les `const` d'un module ne sont prêts qu'une fois ce module exécuté : à l'appel au chargement, attention à l'ordre des fichiers.
 - État : objet `S` dans `localStorage` (clé `carnet-seances`). Toute nouvelle clé doit être ajoutée à `EXTRA` (`src/js/10_core6.js`). Version des données `S.v` = 10 (migrations dans `v6Load`, `10_core6.js`).
-- Service worker `sw.js` : cache `carnet-v7-1-0`, à changer à chaque version.
+- Service worker `sw.js` : cache `carnet-v7-2-0`, à changer à chaque version.
 - Onglets : Accueil · Calendrier · Nutrition · Outils (Minuteurs, Échauffement, Conseils, Tutos) · Progrès (Mesures, Stats, Records, Skills) + Carnet (`notes`, masqué par défaut, donc lien en haut d'Outils) (`TABS6`, `src/js/30_ui6.js`).
-- **v7.2 prête, non publiée** (détails dans `dev/PLAN.md`). Accueil choisi par Diego : piste C « Immersif » + widgets de la piste B (`43_home72.js`).
+- **v7.2.0 publiée** (détails dans `dev/PLAN.md`). Accueil choisi par Diego : piste C « Immersif » + widgets de la piste B (`43_home72.js`) ; la scène suit le lieu le plus fréquent (`homePlace()`, réglage `S.hscn`).
 
 ### Modules importants
 | Fichier | Rôle |
@@ -100,7 +100,7 @@ cd dev && python3 t16.py                                # tests Playwright (~6 m
 - Sur iPhone, l'appli se met à jour en la fermant puis en la rouvrant.
 
 ## Décisions de Diego (à respecter)
-- v7.2 : accueil = piste C « Immersif » (scène de saison avec le perso) + widgets de la piste B (Mesures, Nutrition, puis Carnet, Progrès) ; printemps personnalisé (arbres en fleurs, verts, pommiers, buissons) ; appli personnelle, pas de coach : objectifs nutrition saisis par l'utilisateur (Kcal et Prot seulement) ; carnet de notes ; Mesures en 1er sous-onglet de Progrès avec la consigne de pesée ; Outils et Réglages gardés tels quels ; été plus « mer et soleil », hiver inchangé ; nouvel accueil seulement après validation d'une des maquettes.
+- v7.2 : accueil = piste C « Immersif » (scène de saison avec le perso, au lieu où la personne s'entraîne le plus : street, garage ou salle, réglable) + widgets de la piste B (Mesures, Nutrition, puis Carnet, Progrès) ; printemps personnalisé (arbres en fleurs, verts, pommiers, buissons) ; appli personnelle, pas de coach : objectifs nutrition saisis par l'utilisateur (Kcal et Prot seulement) ; carnet de notes ; Mesures en 1er sous-onglet de Progrès avec la consigne de pesée ; Outils et Réglages gardés tels quels ; été plus « mer et soleil », hiver inchangé ; nouvel accueil seulement après validation d'une des maquettes.
 - v7.1 : système central saison × activité ; thème sans saison = saison réelle ; salle = développé couché ; repos du printemps = pique-nique ; printemps varié ; nutrition en carnet simple ; mesures (poids + tour de taille) mises en avant.
 - v7.0 : accueil minimaliste sans répétitions (perso, Mesures, Nutrition du jour, une seule carte « À la une » ; les autres cartes restent activables dans Réglages) ; onglet Nutrition à la place de « Plus » ; décor de saison « Mix ».
 - v6.3 : persos en style « Athlète » (adultes, sobres, contour fin) ; robot et ninja retirés ; animaux gardés en version adulte ; animations toujours actives par défaut ; ton « Sobre » sans émojis ; pas de vibrations.

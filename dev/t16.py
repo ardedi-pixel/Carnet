@@ -183,12 +183,14 @@ with sync_playwright() as p:
         o=pg.evaluate("charOf('homme')");ok(o.get('mus')==2,'D10 série de 13 semaines : perso musclé (niveau '+str(o.get('mus'))+')')
         ok(pg.evaluate("charSvg(charOf('homme',{pose:'icon',bg:1}))")==pg.evaluate("charSvg(charOf('homme',{pose:'icon',bg:1,mus:0,sea:''}))").replace('q','q') or True,'D10 icône inchangée')
         ic0=pg.evaluate("charSvg(charOf('homme',{pose:'icon',bg:1})).replace(/q\\d+_/g,'')");ic1=pg.evaluate("charSvg(charOf('homme',{pose:'icon',bg:1,mus:0,sea:''})).replace(/q\\d+_/g,'')");ok(ic0==ic1,'D1/D10 l\'icône ne change pas (ni muscles ni tenue)')
+        pg.evaluate('location.hash="#reglages-accueil"');pg.wait_for_timeout(300);pg.click('[data-c6="hscn:street"]');pg.wait_for_timeout(200)
         pg.evaluate('location.hash="#reglages-apparence"');pg.wait_for_timeout(300);pg.click('[data-th6="hiver"]');pg.wait_for_timeout(300);pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(600)
         ok('#e2483d' in (pg.inner_html('#masc .who7') or '') and '#e2483d' not in (pg.inner_html('#hLogo') or ''),'D1 thème hiver : bonnet et écharpe (pas sur l\'icône)')
         pg.evaluate('location.hash="#reglages-apparence"');pg.wait_for_timeout(300);pg.click('[data-th6="ete"]');pg.wait_for_timeout(300);pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(600)
         ok('#2a2d38' in (pg.inner_html('#masc .who7') or ''),'D1 thème été : lunettes de soleil')
         pg.evaluate('location.hash="#reglages-apparence"');pg.wait_for_timeout(300);pg.click('[data-th6="nuit"]');pg.wait_for_timeout(300);pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(600)
         ok('#e2483d' not in (pg.inner_html('#masc .who7') or ''),'D1 thème Nuit : pas de tenue de saison')
+        pg.evaluate('location.hash="#reglages-accueil"');pg.wait_for_timeout(300);pg.click('[data-c6="hscn:auto"]');pg.wait_for_timeout(200);pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(500)
         sc=pg.evaluate('mascScene()');ok((pg.locator('#masc .msc.sc-'+sc).count()==1) if sc else pg.locator('#masc .msc').count()==0,'D3 décor selon l\'heure ('+(sc or 'journée')+')')
         pg.evaluate('tmStart({k:"rest",sec:30})');pg.wait_for_timeout(500);ok(pg.evaluate("getComputedStyle(document.querySelector('.tbr')).display")=='grid','D7 respiration guidée pendant le repos');pg.evaluate("tmAct('stop')");pg.wait_for_timeout(300)
         pg.evaluate('monthCard("2026-11")');pg.wait_for_timeout(300);ok(pg.locator('#gsheet [data-shf="album"]').count()==1,'D13 format pochette d\'album pour le mois')
@@ -409,9 +411,22 @@ with sync_playwright() as p:
         pg.evaluate('location.hash="#reglages-apparence"');pg.wait_for_timeout(400);pg.click('[data-c6="masc:mini"]');pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(500);hm=pg.evaluate("document.querySelector('.h72h').getBoundingClientRect().height")
         pg.evaluate('location.hash="#reglages-apparence"');pg.wait_for_timeout(400);pg.click('[data-c6="masc:on"]');pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(500);hb=pg.evaluate("document.querySelector('.h72h').getBoundingClientRect().height")
         ok(hm<hb-40,'J mascotte « Discrète » : scène plus basse ('+str(int(hm))+' / '+str(int(hb))+' px)')
+        s=st(pg);d90=time.strftime('%Y-%m-%d',time.localtime(time.time()-86400*90));cnt={}
+        for x in s['sessions']:
+            if x['date']>=d90:cnt[x['place']]=cnt.get(x['place'],0)+1
+        top=max(cnt,key=cnt.get) if cnt else 'street'
+        ok(pg.locator('#hStart .h72h[data-place="'+top+'"]').count()==1,'J décor de l\'accueil = lieu le plus fréquent des 3 derniers mois ('+top+' '+str(cnt)+')')
+        s=st(pg);base=[x for x in s['sessions'] if x['place']!='salle'];D=[time.strftime('%Y-%m-%d',time.localtime(time.time()-86400*i)) for i in range(1,30,2)]
+        s['sessions']=[{'id':'sl'+str(i),'date':d,'place':'salle','types':['force'],'ex':['Développé couché'],'dur':45} for i,d in enumerate(D)]+[x for x in base if x['date']<D[-1]]
+        pg.evaluate("s=>localStorage.setItem('carnet-seances',JSON.stringify(s))",s);pg.reload();pg.wait_for_timeout(2300);pg.mouse.click(5,5);pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(600)
+        ok(pg.locator('#hStart .h72h.indoor[data-place="salle"]').count()==1 and pg.locator('#masc svg[data-sea] .who7').count()==1,'J surtout à la salle : l\'accueil montre la salle avec le perso (développé couché)')
+        ok(pg.locator('#season').count()==0,'J salle : pas de particules de saison à l\'intérieur')
+        pg.evaluate('location.hash="#reglages-accueil"');pg.wait_for_timeout(400);ok(pg.locator('[data-c6="hscn:auto"][aria-pressed="true"]').count()==1 and 'Salle' in T(pg,'#hoEd .h72note'),'J réglage « Décor de l\'accueil » (automatique : Salle)')
+        pg.click('[data-c6="hscn:garage"]');pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(500);ok(pg.locator('#hStart .h72h[data-place="garage"]').count()==1,'J décor choisi à la main : Garage')
+        pg.evaluate('location.hash="#reglages-accueil"');pg.wait_for_timeout(400);pg.click('[data-c6="hscn:auto"]');pg.wait_for_timeout(200)
         pg.evaluate('location.hash="#reglages-apparence"');pg.wait_for_timeout(400);pg.click('[data-th6="printemps"]');pg.evaluate('location.hash="#calendrier"');pg.wait_for_timeout(600)
         ok(pg.evaluate("[...document.querySelectorAll('#grid img.dco8')].some(i=>decodeURIComponent(i.src).includes('#f48fb6')||decodeURIComponent(i.src).includes('#5dbb57'))"),'J printemps : arbres et buissons dans les cases du calendrier')
-        pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(600);ok(pg.evaluate("(document.querySelector('#masc svg[data-sea=spring]')||{}).innerHTML.split('#b3e09a').length>4"),'J printemps : rangée d\'arbres au loin dans la scène de l\'accueil')
+        ok(pg.evaluate("illScene('street',{who:1,fam:'pull'}).split('#b3e09a').length>4"),'J printemps : rangée d\'arbres au loin dans la scène Street')
         ok(pg.evaluate("document.documentElement.scrollWidth<=innerWidth+1"),'J pas de débordement horizontal')
     step('J5',J5)
     ctx.close();b.close()

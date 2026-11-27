@@ -1,6 +1,6 @@
 /* ===================== v6 : base (état, thèmes, typo, ambiance) ===================== */
 const APP6='7.1.0';
-['th','accX','todBg','seas','font','fsz','fdyn','dens','masc','splash','cards','tabs','tone','emo','pops','vol','voiceN','lang','char','photo','useP','nick','goalT','meas','chal','chalH','rw','lvSeen','recapW','popLast','musSeen','bdSeen','anim','nut'].forEach(k=>{if(!EXTRA.includes(k))EXTRA.push(k)});
+['th','accX','todBg','seas','font','fsz','fdyn','dens','masc','splash','cards','tabs','tone','emo','pops','vol','voiceN','lang','char','photo','useP','nick','goalT','meas','chal','chalH','rw','lvSeen','recapW','popLast','musSeen','bdSeen','anim','nut','carnet','voiceU'].forEach(k=>{if(!EXTRA.includes(k))EXTRA.push(k)});
 /* v6.3 : animations « Toujours » (par défaut, même si l'iPhone réduit les animations) ou « Selon l'iPhone » */
 const RM_Q='(prefers-reduced-motion: reduce)';
 function rmOn(){try{return S.anim==='os'&&matchMedia(RM_Q).matches}catch(e){return false}}
@@ -80,7 +80,7 @@ const seaTop=(k,g)=>svgUrl(SEAS_SVG[k])+' center bottom/cover no-repeat,'+g;
 Object.assign(THEMES,{
  saison:{n:'Selon la saison',auto:1,acc:'#ff8a2b',v:{bg:'#1b120c',card:'#271a12',card2:'#332217',ink:'#fbefe3',mute:'#c3a58d',line:'#45301f'},top:'',ti:'#ffffff',bgi:'',f:'classique'},
  printemps:{n:'Printemps',season:'spring',acc:'#2f8a48',light:1,v:{bg:'#ecf6e6',card:'#ffffff',card2:'#e3f1d9',ink:'#1b2a1e',mute:'#5b6f60',line:'#d0e5c4'},top:seaTop('spring','#cfeeff'),ti:'#1f2a22',bgi:'radial-gradient(760px 480px at 105% -5%,rgba(255,163,203,.34),transparent 60%),radial-gradient(700px 520px at -15% 40%,rgba(140,205,110,.24),transparent 62%),linear-gradient(180deg,#eef8e8,#e2f1d6)',f:'rond'},
- ete:{n:'Été',season:'summer',acc:'#ff8f1f',light:1,v:{bg:'#e8f6ff',card:'#ffffff',card2:'#fff2d9',ink:'#13283a',mute:'#57708a',line:'#d3e7f3'},top:seaTop('summer','#9fdcff'),ti:'#1d2b3a',bgi:'radial-gradient(520px 360px at 100% -4%,rgba(255,214,90,.45),transparent 62%),linear-gradient(180deg,#c9ecff 0%,#e9f8ff 36%,#fffaf0 68%,#ffe9c2 100%)',f:'sport'},
+ ete:{n:'Été',season:'summer',acc:'#ffa21f',light:1,v:{bg:'#ddf3fb',card:'#ffffff',card2:'#e4f6f8',ink:'#0c2b40',mute:'#4a6d83',line:'#c9e7ee'},top:seaTop('summer','#8fd8f8'),ti:'#0c2b40',bgi:'radial-gradient(520px 360px at 100% -4%,rgba(255,190,60,.42),transparent 62%),linear-gradient(180deg,#a6e1fa 0%,#d2f0fb 26%,#e9f8fb 50%,#fff4e2 78%,#ffe2b4 100%)',f:'sport'}, /* v7.2 : ciel, mer et turquoise pour les surfaces ; soleil ambré et orange sable pour les actions */
  automne:{n:'Automne',season:'autumn',acc:'#ff8a2b',v:{bg:'#1b120c',card:'#271a12',card2:'#332217',ink:'#fbefe3',mute:'#c3a58d',line:'#45301f'},top:seaTop('autumn','#e2683a'),ti:'#ffffff',bgi:'radial-gradient(800px 500px at 100% 0%,rgba(255,138,43,.18),transparent 60%),radial-gradient(600px 500px at 0% 90%,rgba(217,72,43,.14),transparent 60%)',f:'classique'},
  hiver:{n:'Hiver',season:'winter',acc:'#7fd3ff',v:{bg:'#0a1220',card:'#121e33',card2:'#192841',ink:'#eef5ff',mute:'#93a8c6',line:'#22344f'},top:seaTop('winter','#1a3157'),ti:'#ffffff',bgi:'radial-gradient(800px 500px at 100% 0%,rgba(127,211,255,.16),transparent 60%),radial-gradient(700px 500px at 0% 100%,rgba(140,160,255,.1),transparent 60%)',f:'classique'}
 });
@@ -97,7 +97,7 @@ function curAcc(){return /^#[0-9a-f]{6}$/i.test(S.accX||'')?S.accX:curTh().acc}
 function v6Load(){S.th=THEMES[S.th]?S.th:(S.theme==='light'?'minimal':'nuit');if(S.accX===undefined){S.accX=S.acc&&S.acc!=='jaune'&&ACC[S.acc]?ACC[S.acc][0]:''}
   S.todBg=S.todBg!==false;S.seas=S.seas!==false;S.font=FONTS[S.font]||S.font==='auto'?S.font:'auto';if(S.font==='craie')S.font='auto';S.fsz=[.9,1,1.12,1.25].includes(+S.fsz)?+S.fsz:1;S.fdyn=S.fdyn!==false;S.dens=S.dens==='comp'?'comp':'conf';
   S.masc=['on','mini','off'].includes(S.masc)?S.masc:'on';S.splash=['anim','logo','off'].includes(S.splash)?S.splash:'anim';S.anim=S.anim==='os'?'os':'always';S.tone=['sobre','motiv','cool','coach','fun'].includes(S.tone)?S.tone:'sobre';S.emo=S.emo===true;if((+S.v||0)<7){if(S.tone==='motiv')S.tone='sobre';S.emo=false}S.pops=['often','some','never'].includes(S.pops)?S.pops:'often';
-  S.vol=typeof S.vol==='number'?Math.max(0,Math.min(1,S.vol)):1;S.voiceN=typeof S.voiceN==='string'?S.voiceN:'';if(!['fr','en','nl'].includes(S.lang)){const n=String(navigator.language||'fr').slice(0,2).toLowerCase();S.lang=['en','nl'].includes(n)&&!S.sessions.length?n:'fr'}
+  S.vol=typeof S.vol==='number'?Math.max(0,Math.min(1,S.vol)):1;S.voiceN=typeof S.voiceN==='string'?S.voiceN:'';S.voiceU=typeof S.voiceU==='string'?S.voiceU:'';if(!['fr','en','nl'].includes(S.lang)){const n=String(navigator.language||'fr').slice(0,2).toLowerCase();S.lang=['en','nl'].includes(n)&&!S.sessions.length?n:'fr'}
   if(!CH_SP[S.icon])S.icon='homme';S.char=obj(S.char);S.photo=typeof S.photo==='string'&&S.photo.startsWith('data:image')?S.photo:'';S.useP=!!(S.useP&&S.photo);S.nick=typeof S.nick==='string'?S.nick:'';S.goalT=typeof S.goalT==='string'?S.goalT:'';
   S.meas=obj(S.meas);['bras','taille'].forEach(k=>{S.meas[k]=arr(S.meas[k])});S.chal=S.chal&&typeof S.chal==='object'?S.chal:null;S.chalH=arr(S.chalH);S.rw=+S.rw||0;S.lvSeen=S.lvSeen===undefined?-1:+S.lvSeen;S.recapW=S.recapW||'';S.popLast=+S.popLast||0;
   if((+S.v||0)<8){ /* v7 : onglet Nutrition à la place de Plus ; accueil épuré (poids, nutrition, une carte « À la une ») */
@@ -105,8 +105,10 @@ function v6Load(){S.th=THEMES[S.th]?S.th:(S.theme==='light'?'minimal':'nuit');if
     if(Array.isArray(S.cards)&&S.cards.length){const keep=S.cards.filter(c=>c&&c.k==='perso');S.cards=keep.concat([{k:'poids',on:true},{k:'nutri',on:true},{k:'une',on:true}],S.cards.filter(c=>c&&HCARDS[c.k]&&!['perso','poids','nutri','une'].includes(c.k)).map(c=>({k:c.k,on:false})))}}
   S.cards=Array.isArray(S.cards)?S.cards.filter(c=>c&&HCARDS[c.k]):[];Object.keys(HCARDS).forEach(k=>{if(!S.cards.some(c=>c.k===k))S.cards.push({k,on:HCARDS[k][2]!==0})});
   S.tabs=obj(S.tabs);S.tabs.order=arr(S.tabs.order).filter(k=>TABS6[k]);Object.keys(TABS6).forEach(k=>{if(!S.tabs.order.includes(k))S.tabs.order.push(k)});S.tabs.off=arr(S.tabs.off).filter(k=>TABS6[k]&&k!=='home'&&k!=='tools');
-  if(typeof nutLoad==='function')nutLoad();
-  if((+S.v||0)<8)S.v=8}
+  if(typeof nutLoad==='function')nutLoad();if(typeof notesLoad==='function')notesLoad();
+  if((+S.v||0)<8)S.v=8;
+  if(S.v<9){ /* v7.2 : Carnet de notes (onglet masqué par défaut, carte sur l'accueil après Nutrition) */
+    if(!S.tabs.off.includes('notes'))S.tabs.off.push('notes');S.ptab='mz';const i=S.cards.findIndex(c=>c.k==='notes'),c=i>=0?S.cards.splice(i,1)[0]:{k:'notes',on:true};c.on=true;const j=S.cards.findIndex(x=>x.k==='nutri');S.cards.splice(j>=0?j+1:S.cards.length,0,c);S.v=9}}
 const shownName=()=>S.nick||S.name||'';
 /* ---- appliquer le thème, l'accent, la typo, la taille, la densité ---- */
 let dynF=1;

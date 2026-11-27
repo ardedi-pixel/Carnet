@@ -2,7 +2,6 @@
    Valeurs moyennes pour 100 g de partie comestible, arrondies, d'après les tables USDA FoodData Central (SR Legacy)
    et CIQUAL (ANSES). Elles sont indicatives : elles varient selon la variété, la marque, la saison et la cuisson.
    Format : [id, nom, catégorie, kcal, protéines, glucides, lipides, fibres, portions [[libellé, g]], micronutriments, clé qualité, priorité (2 = à privilégier, 1 = correct)] */
-const NCAT={pro:'Viandes, poissons, œufs',lai:'Produits laitiers',glu:'Féculents',fru:'Fruits',leg:'Légumes',lip:'Bonnes graisses et oléagineux',aut:'Compléments'};
 const FOODS=[
  ['oeuf','Œuf entier','pro',143,12.6,0.7,9.5,0,[['1 œuf moyen',50],['1 gros œuf',60]],'Choline, vitamine B12, sélénium, vitamine D (jaune)','oeuf',2],
  ['blanc_oeuf','Blanc d\'œuf','pro',52,10.9,0.7,0.2,0,[['1 blanc',33]],'Protéines','oeuf',1],
@@ -104,57 +103,4 @@ const FOODS=[
  ['beurre_cacahuete','Beurre de cacahuète 100 %','lip',588,25.1,20,50.4,6,[['1 c. à soupe',16]],'Magnésium, vitamine E','cacahuete',1],
  ['chocolat','Chocolat noir 70 à 85 %','lip',598,7.8,45.9,42.6,10.9,[['2 carrés',20]],'Magnésium, fer, polyphénols','chocolat',1],
  ['whey','Whey (moyenne)','aut',400,78,8,6,0,[['1 dose',30]],'Protéines (complément)','whey',1]
-];
-/* critères de qualité et étiquette à vérifier */
-const NQ={
- oeuf:{c:['Œufs entiers : le jaune apporte choline et vitamines A, D et B12.','Élevage plein air ou bio (code 0 ou 1 imprimé sur la coquille).'],l:'Code sur la coquille : 0 = bio, 1 = plein air.'},
- sardine:{c:['Sardines entières, précuites et conservées dans l\'huile d\'olive uniquement.','Évite l\'huile de tournesol, les sauces industrielles et les ingrédients superflus.'],l:'Ingrédients idéaux : sardines, huile d\'olive, éventuellement sel.'},
- poisson:{c:['Poissons gras (saumon, maquereau, hareng, sardine) : riches en oméga-3, à varier.','Sauvage ou élevage labellisé (ASC, Label Rouge, bio), espèces et provenances variées.','Les petits poissons accumulent moins de contaminants que les grands prédateurs.'],l:''},
- thon:{c:['Au naturel ou à l\'huile d\'olive, sans additifs.','Grand prédateur, plus chargé en mercure : à limiter, pas tous les jours.'],l:'Ingrédients idéaux : thon, eau ou huile d\'olive, sel.'},
- mer:{c:['Riches en iode, zinc et sélénium.','Frais ou surgelés nature, sans sauce.'],l:''},
- boeuf:{c:['Viande non transformée : pièce entière ou haché « pur bœuf ».','Origine claire (Belgique, Europe), idéalement nourri à l\'herbe.'],l:'Haché : un seul ingrédient, bœuf (sans eau, sel ni additifs).'},
- viande:{c:['Morceaux maigres non transformés.','Évite les charcuteries industrielles (nitrites, sel, additifs).'],l:''},
- volaille:{c:['Poulet ou dinde plein air (Label Rouge, bio).','Filets nature plutôt que produits panés ou marinés industriels.'],l:''},
- abats:{c:['Très riches en vitamines et minéraux.','Foie très riche en vitamine A : une portion d\'environ 100 g par semaine suffit ; à éviter pendant la grossesse.'],l:''},
- grec:{c:['Nature, sans sucres ajoutés : ajoute toi-même fruits ou miel.','Un vrai yaourt grec égoutté apporte environ 9 à 10 g de protéines pour 100 g ; un « yaourt à la grecque » en a souvent moins.'],l:'Ingrédients idéaux : lait, ferments lactiques.'},
- kefir:{c:['Kéfir de lait nature, sans sucre ajouté.','Ferments vivants : au rayon frais.'],l:'Ingrédients idéaux : lait, grains ou ferments de kéfir.'},
- fromage:{c:['Fromages affinés de qualité (AOP).','Très énergétiques : en quantités adaptées.'],l:'Ingrédients idéaux : lait, sel, présure, ferments.'},
- lait:{c:['Lait nature, idéalement bio.'],l:''},
- beurre:{c:['Beurre de baratte ou bio, en petites quantités.'],l:''},
- pdt:{c:['Féculent naturel et rassasiant, riche en potassium.','À l\'eau, à la vapeur ou au four plutôt qu\'en frites industrielles.'],l:''},
- riz:{c:['Basmati ou thaï : glucides faciles à digérer autour de l\'entraînement.','Rince-le et cuis-le dans beaucoup d\'eau : ça réduit l\'arsenic qu\'il peut contenir.'],l:''},
- avoine:{c:['Flocons 100 % avoine, sans sucre ajouté.'],l:'Ingrédient idéal : flocons d\'avoine.'},
- cereale:{c:['Version nature, peu transformée.'],l:''},
- pain:{c:['Pain au levain, farine complète.'],l:'Liste courte : farine, eau, sel, levain.'},
- legumineuse:{c:['Riches en fibres et en protéines végétales.','En bocal ou en conserve : rince-les pour enlever l\'excès de sel.'],l:''},
- fruit:{c:['Fruits entiers plutôt qu\'en jus : les fibres restent.','De saison et locaux quand c\'est possible.'],l:''},
- rouge:{c:['Frais ou surgelés nature, sans sucre ajouté.'],l:''},
- miel:{c:['Miel pur, idéalement local, en quantité raisonnable.'],l:'Un seul ingrédient : miel.'},
- legume:{c:['Varie les couleurs.','Frais ou surgelés nature, de saison.'],l:''},
- huile:{c:['Huile d\'olive vierge extra, première pression à froid.','Évite les huiles raffinées comme huile principale.'],l:'« Vierge extra » sur l\'étiquette ; bouteille en verre foncé.'},
- avocat:{c:['Riche en graisses mono-insaturées et en fibres.'],l:''},
- olive:{c:['Au naturel ou à l\'huile d\'olive.','Assez salées : rince-les si besoin.'],l:''},
- noix:{c:['Nature, non salées, non grillées à l\'huile.'],l:'Un seul ingrédient.'},
- bresil:{c:['Très riches en sélénium : 1 à 2 noix par jour suffisent, pas plus de 3.'],l:''},
- cacahuete:{c:['100 % cacahuètes : sans sucre ni huile de palme.'],l:'Ingrédients idéaux : cacahuètes, éventuellement sel.'},
- chocolat:{c:['Au moins 70 % de cacao, liste d\'ingrédients courte.'],l:'Ingrédients idéaux : cacao, sucre, beurre de cacao.'},
- whey:{c:['Complément, pas un aliment : pratique pour compléter tes protéines.','Liste courte, sans édulcorants si possible.'],l:'Valeurs très variables selon la marque : ajoute ton produit à la main depuis l\'étiquette.'}
-};
-/* idées de repas : [nom, repas conseillés, [[aliment, min g, max g, pas g (0 = quantité fixe)]]] */
-const NMEALS=[
- ['Omelette, pommes de terre et épinards','bld',[['oeuf',100,300,50],['pdt_cuite',0,450,25],['epinard',120,120,0],['huile_olive',0,15,5]]],
- ['Sardines à l\'huile d\'olive, riz et haricots verts','ld',[['sardine_huile',85,170,85],['riz_cuit',0,400,25],['haricot_vert',150,150,0],['huile_olive',0,10,5]]],
- ['Saumon, patate douce et brocolis','ld',[['saumon_sauvage',100,250,25],['patate_douce',0,450,25],['brocoli',150,150,0],['huile_olive',0,10,5]]],
- ['Steak de bœuf, pommes de terre et salade','ld',[['steak',100,300,25],['pdt_cuite',0,450,25],['salade',60,60,0],['huile_olive',0,15,5]]],
- ['Yaourt grec, banane, framboises et noix','bs',[['grec5',150,400,50],['banane',0,240,60],['framboise',75,75,0],['noix',0,40,10],['miel',0,21,7]]],
- ['Poulet, riz et courgettes','ld',[['poulet_blanc',100,300,25],['riz_cuit',0,400,25],['courgette',200,200,0],['huile_olive',0,15,5]]],
- ['Bœuf haché, riz, poivron et oignon','ld',[['boeuf_hache5',100,300,25],['riz_cuit',0,400,25],['poivron',100,100,0],['oignon',50,50,0],['huile_olive',0,10,5]]],
- ['Maquereau, pommes de terre et salade','ld',[['maquereau',100,200,25],['pdt_cuite',0,450,25],['salade',60,60,0]]],
- ['Skyr, flocons d\'avoine, myrtilles et amandes','bs',[['skyr',150,400,50],['avoine',0,80,10],['myrtille',75,75,0],['amande',0,30,5]]],
- ['Crevettes, riz, brocolis et avocat','ld',[['crevette',100,300,25],['riz_cuit',0,400,25],['brocoli',120,120,0],['avocat',0,140,35]]],
- ['Œufs, avocat et banane','b',[['oeuf',100,250,50],['avocat',0,140,35],['banane',0,240,60]]],
- ['Cottage cheese, pomme et noix','s',[['cottage',100,300,50],['pomme',0,180,90],['noix',0,30,10]]],
- ['Cabillaud, pommes de terre et poireaux','ld',[['cabillaud',125,300,25],['pdt_cuite',0,450,25],['poireau',100,100,0],['huile_olive',0,15,5]]],
- ['Dinde, patate douce et haricots verts','ld',[['dinde',100,300,25],['patate_douce',0,450,25],['haricot_vert',150,150,0],['huile_olive',0,15,5]]],
- ['Foies de volaille, pommes de terre et oignons','ld',[['foie_volaille',100,200,25],['pdt_cuite',0,400,25],['oignon',80,80,0],['huile_olive',0,15,5]]]
 ];

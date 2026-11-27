@@ -1,5 +1,5 @@
 /* ===================== v6 : accueil ===================== */
-const HCARDS={perso:['Ton objectif perso','target'],poids:['Mesures','scale'],nutri:['Nutrition du jour','nut'],une:['À la une','sparkles'],defi:['Défi du mois','trophy',0],recap:['Récap de la semaine','sparkles',0],last:['Dernière séance','cal',0],tip:['Astuce du jour','bulb',0],test:['Test max du mois','bars',0],deload:['Semaine d\'allègement','wave',0],objectif:['Objectif en cours','target',0],skills:['Prochain skill','star',0],compare:['Toi il y a 3 mois','chart',0]}; /* v7 : accueil épuré (poids, nutrition, une seule carte « À la une ») ; « Tes outils » retiré (doublon de l'onglet Outils) */
+const HCARDS={perso:['Ton objectif perso','target'],poids:['Mesures','scale'],nutri:['Nutrition du jour','nut'],notes:['Carnet','note'],une:['À la une','sparkles'],defi:['Défi du mois','trophy',0],recap:['Récap de la semaine','sparkles',0],last:['Dernière séance','cal',0],tip:['Astuce du jour','bulb',0],test:['Test max du mois','bars',0],deload:['Semaine d\'allègement','wave',0],objectif:['Objectif en cours','target',0],skills:['Prochain skill','star',0],compare:['Toi il y a 3 mois','chart',0]}; /* v7 : accueil épuré (poids, nutrition, une seule carte « À la une ») ; « Tes outils » retiré (doublon de l'onglet Outils) */
 /* ---- anneau de la semaine animé (A7) ---- */
 let ringPrev=null;
 function ring(n,goal){const p=Math.min(1,n/goal),C=2*Math.PI*17,p0=ringPrev===null?0:ringPrev;ringPrev=p;
@@ -28,7 +28,7 @@ function hdr6(){const v=curV,hc=v==='home';const h=$('hLogo');if(h&&hc&&!h.first
 function relDay2(k){return relDay(k)}
 function hcard(attrs,ic,kick,title,sub,extra){return '<button type="button" class="hc"'+attrs+'>'+ic+'<div>'+(kick?'<p class="kick">'+kick+'</p>':'')+(title?'<b>'+title+'</b>':'')+(sub?'<p>'+sub+'</p>':'')+(extra||'')+'</div>'+ico('chev','hcv')+'</button>'}
 const icBox=(k,txt)=>'<span class="hcic">'+(txt?esc(txt):ico(k))+'</span>';
-function renderHome(){const wm=monday(T),days=[0,1,2,3,4,5,6].map(i=>key(add(wm,i))),goal=S.goal||3,wn=S.sessions.filter(s=>days.includes(s.date)).length,left=goal-wn,ls=lastSess(),mk=TK.slice(0,7),tdone=Object.keys(obj(S.tests[mk])).length,dl=deloadInfo(),run=noRestRun(),tds=sOf(TK),cards=[];
+function renderHome(){if(hpV()){hpRender(hpV());return}const wm=monday(T),days=[0,1,2,3,4,5,6].map(i=>key(add(wm,i))),goal=S.goal||3,wn=S.sessions.filter(s=>days.includes(s.date)).length,left=goal-wn,ls=lastSess(),mk=TK.slice(0,7),tdone=Object.keys(obj(S.tests[mk])).length,dl=deloadInfo(),run=noRestRun(),tds=sOf(TK),cards=[];
   const gap=ls?Math.round((parse(TK)-parse(ls.date))/864e5):-1;
   let hm;if(!S.sessions.length)hm=msg('first')[2];else if(tds.length)hm=msg('hDone');else if(isRest(TK))hm=msg('hRest');else if(wn>=goal)hm=msg('hGoal');else if(gap>=4)hm=msg('hGap',{d:gap});else if(wn===0)hm=msg('hNew',{k:goal});else hm=msg('hLeft',{g:left});
   const tdTxt=tds.length?'<div class="tdsum">'+tds.map(s=>'<span class="tdp">'+ico(s.place==='salle'?'salle':s.place==='garage'?'garage':'street')+'<span><span>'+esc(plN[s.place]||'')+'</span>'+(s.ex.length?' · '+s.ex.slice(0,3).map(x=>'<span>'+esc(x)+'</span>').join(', ')+(s.ex.length>3?' +'+(s.ex.length-3):''):'')+'</span></span>').join('')+'</div>':'';
@@ -42,6 +42,7 @@ function renderHome(){const wm=monday(T),days=[0,1,2,3,4,5,6].map(i=>key(add(wm,
     else if(k==='recap'&&typeof recapCard==='function')h=recapCard();
     else if(k==='poids')h=poidsCard();
     else if(k==='nutri'&&typeof nutriCard==='function')h=nutriCard();
+    else if(k==='notes'&&typeof notesCard==='function')h=notesCard();
     else if(k==='last'&&ls){const f=feelOf(ls);h='<button type="button" class="hc" data-goday="'+ls.date+'"><span class="hcpic">'+scene(ls.place,ls.date,{who:1,fam:i7fam([ls],ls.place)})+'</span><div><p class="kick">Dernière séance · '+esc(relDay(ls.date))+'</p><b>'+(ls.ex.length?ls.ex.slice(0,3).map(x=>'<span>'+esc(x)+'</span>').join(', ')+(ls.ex.length>3?' +'+(ls.ex.length-3):''):esc(plN[ls.place]||'Séance'))+'</b><p>'+esc([plN[ls.place],ls.tod?todN[ls.tod]:'',ls.dur?fmtDur(ls.dur):''].filter(Boolean).join(' · '))+(f?' · '+f[1]+' '+f[2]:'')+'</p></div>'+ico('chev','hcv')+'</button>'}
     else if(k==='tip'){const tp=TIPS[Math.floor((T-new Date(T.getFullYear(),0,0))/864e5)%TIPS.length];h=hcard(' data-go="'+tp[2]+'"',icBox('bulb'),'Astuce du jour · '+esc(tp[0]),'',esc(tp[1]),'').replace('<p>','<p class="tipt">')}
     else if(k==='test'&&!tdone)h=hcard(' data-go="tests"',icBox('','MAX'),'Test max de '+esc(mName(T.getFullYear(),T.getMonth(),'long')),'Pas encore fait','Tractions, pompes et dips : note ton maximum du mois. 📈');

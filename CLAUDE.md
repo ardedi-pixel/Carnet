@@ -22,9 +22,10 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 - Appli en **un seul fichier** : `index.html` à la racine est **généré**. Ne jamais le modifier à la main : modifier `dev/src/` puis lancer `python3 dev/build.py`.
 - `dev/build.py` assemble : `src/head.html` + `src/style.css` + `src/css/*.css` (ordre alphabétique) + `src/body.html` + `src/app.js`, où les modules `src/js/*.js` (ordre alphabétique) sont insérés au marqueur `/*@@MODS@@*/`.
 - Tout le JavaScript est dans **un seul bloc `{ … }`** : les `const`/`let` d'un module sont visibles des autres modules, mais pas depuis la console ou `page.evaluate` ; les déclarations `function` deviennent globales (testables depuis Playwright). Les `const` d'un module ne sont prêts qu'une fois ce module exécuté : à l'appel au chargement, attention à l'ordre des fichiers.
-- État : objet `S` dans `localStorage` (clé `carnet-seances`). Toute nouvelle clé doit être ajoutée à `EXTRA` (`src/js/10_core6.js`). Version des données `S.v` = 8 (migrations dans `10_core6.js`).
+- État : objet `S` dans `localStorage` (clé `carnet-seances`). Toute nouvelle clé doit être ajoutée à `EXTRA` (`src/js/10_core6.js`). Version des données `S.v` = 9 (migrations dans `v6Load`, `10_core6.js`).
 - Service worker `sw.js` : cache `carnet-v7-1-0`, à changer à chaque version.
-- Onglets : Accueil · Calendrier · Nutrition · Outils (Minuteurs, Échauffement, Conseils, Tutos) · Progrès (`TABS6`, `src/js/30_ui6.js`).
+- Onglets : Accueil · Calendrier · Nutrition · Outils (Minuteurs, Échauffement, Conseils, Tutos) · Progrès (Mesures, Stats, Records, Skills) + Carnet (`notes`, masqué par défaut, donc lien en haut d'Outils) (`TABS6`, `src/js/30_ui6.js`).
+- **v7.2 en cours, non publiée** : l'accueil attend le choix de Diego entre 3 maquettes (voir `dev/PLAN.md`, section v7.2.0). Les maquettes vivent dans `42_hproto.js` / `69_hproto.css` (actives seulement avec `?hp=a|b|c`) : à remplacer par la version choisie.
 
 ### Modules importants
 | Fichier | Rôle |
@@ -33,15 +34,18 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 | `src/js/10_core6.js` | thèmes (`THEMES`, dont les 4 saisons), `applyAcc()`, migrations, `EXTRA` |
 | `src/js/20_chars.js` | moteur des persos (style « Athlète ») : `charSvg()`, poses `CH_POSE`, primitives `chLimb`, `chP`… |
 | `src/js/25_icon6.js` | `charOf()` / `myChar()` (perso de l'utilisateur), `seaOf()` (tenue de saison) |
-| `src/js/40_home6.js`, `41_home7.js` | accueil : cartes `HCARDS`, carte « Mesures » (`poidsCard`, `bwSheet`), poids (`bwTrend`, `bwStatus`) |
+| `src/js/40_home6.js`, `41_home7.js` | accueil : cartes `HCARDS`, carte « Mesures » (`poidsCard`, `bwSheet` = feuille « Nouvelle mesure »), poids (`bwTrend`, `bwStatus`), icônes `note`, `pin` |
+| `src/js/42_hproto.js` | maquettes de l'accueil (temporaire, `?hp=a|b|c`) |
 | `src/js/56_ill7.js` | **système central des illustrations de saison** (voir plus bas) |
 | `src/js/57_season7.js` | décor au trait des thèmes de saison (glyphes, liseré de la barre du bas), particules `#fx7`, `sea7Sync()` |
-| `src/js/58_foods.js` | base d'aliments (100 aliments, valeurs pour 100 g CIQUAL/USDA, portions, critères de qualité `NQ`, modèles de repas `NMEALS`) |
-| `src/js/62_nutri.js` | nutrition « carnet simple » |
+| `src/js/58_foods.js` | base d'aliments (100 aliments, valeurs pour 100 g CIQUAL/USDA, portions) : aide à la saisie et lecture des anciennes entrées |
+| `src/js/62_nutri.js` | nutrition « carnet » (v7.2) |
+| `src/js/64_notes.js` | Carnet de notes (`#carnet`) |
+| `src/js/66_mesures.js` | page Mesures (`#mesures`, 1er sous-onglet de Progrès) |
 | `src/js/70_stats6.js` | Progrès, « Poids et mensurations » (`renderBW`, consigne `#mzTip`) |
 | `src/js/85_share6.js` | cartes de partage, `exFam()` / `mainEx()` (famille d'exercice) |
 | `src/js/94_dict.js`, `95_i18n.js` | traductions EN/NL |
-| `src/css/66_v7.css`, `67_nutri.css`, `68_v71.css` | styles v7 (saisons, nutrition, scènes, mesures) |
+| `src/css/66_v7.css`, `67_nutri.css`, `68_v71.css`, `70_v72.css` | styles v7 (saisons, nutrition, scènes, mesures, carnet, réglages compacts, été v7.2) |
 
 ### Système d'illustrations de saison (v7.1, `src/js/56_ill7.js`)
 - `seaNow()` = saison active : celle du thème de saison (`printemps`, `ete`, `automne`, `hiver`, ou « Selon la saison ») ; avec un autre thème (Nuit, Minimal…), la **saison réelle** (déc.-fév. hiver, mars-mai printemps, juin-août été, sept.-nov. automne). Choix de Diego.
@@ -53,14 +57,20 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 - Printemps varié (demande de Diego) : pommiers en fleurs, arbres verts, tulipes, papillons, pas seulement des cerisiers.
 - L'attribut `html[data-season]` n'existe qu'avec un thème de saison (jamais vide : les règles CSS testent sa présence).
 
-### Nutrition « carnet simple » (v7.1, `src/js/62_nutri.js`)
-- Retour du client : il suit surtout **Kcal et Prot**. Page : compteurs Kcal et Prot (mangé / objectif / reste), liste du jour (aliment, quantité, kcal, prot, total), ajout rapide (suggestions de la base avec calcul selon les grammes, ou saisie libre), détails repliés (glucides, lipides, fibres, eau), boutons Bibliothèque et Idées de repas.
-- Données : `S.nut` (objectif, profil, `days[date] = {b,l,d,s,w}`, favoris, aliments perso `my`, repas `meals`, récents). Les repas restent rangés par créneau horaire dans les données mais ne sont plus affichés. Saisie libre : `{f:'q', n, q, g:100, v:[kcal, prot, 0, 0, 0]}`.
-- Besoins : Mifflin-St Jeor × activité (1,2 / 1,3 / 1,45 / 1,6 + 0,025 par séance hebdo, max 2) × objectif (prise de masse sèche 1,1 / maintien 1 / sèche 0,8). Protéines 1,8 / 1,8 / 2,2 g/kg ; lipides max(0,7 g/kg ; 25 / 30 / 25 % des kcal) ; glucides = reste ; fibres max(25 ; 14 g/1000 kcal) ; eau 35 ml/kg. Présentés comme estimation de départ, modifiables.
-- Pas d'API externe (choix de Diego : base intégrée + ajout manuel, marche hors ligne). Un scan de code-barres demanderait Open Food Facts et internet.
+### Nutrition « carnet » (v7.2, `src/js/62_nutri.js`)
+- Principe de Diego : **l'appli n'est pas un coach**. Elle enregistre et affiche ; elle ne calcule ni ne recommande d'objectif. Ne pas réintroduire de calcul de besoins, d'idées de repas, de conseils automatiques ni de phrases « dans ta cible ».
+- Page : jour (flèches + sélecteur de date), compteurs Kcal et Prot (mangé / objectif / reste, deux barres), journal (toucher = modifier, retirer avec annulation), ajout rapide (nom, quantité, kcal, prot ; la base d'aliments ne sert qu'à préremplir selon les grammes), raccourcis en un geste (favoris, repas enregistrés v7.0, récents), jours précédents (7 ou 30 j + moyenne), boutons « Mes objectifs » et « Carnet nutrition ».
+- Données `S.nut` : `kG`, `pG` (objectifs saisis, 0 = aucun), `days[date] = {b,l,d,s,w}` (rangement par moment, non affiché), `pins` (favoris `{n,q,k,p}`). Entrée : `{f:'q', n, q, g:100, v:[kcal, prot, 0, 0, 0], t}`. Les anciennes clés (goal, sex, age, ht, act, tf, auto, tgt, fav, my, meals, rec) restent dans les données.
+- Pas d'API externe (choix de Diego : marche hors ligne).
 
-### Mesures
-- Poids dans `S.bw`, tour de taille dans `S.meas.taille` (`[{d, v}]`). Carte « Mesures » sur l'accueil, feuille « Nouvelle mesure » (poids et tour de taille en une fois) avec la consigne : le matin, à jeun, après être allé aux toilettes, avant de manger ou de boire, dans les mêmes conditions.
+### Carnet de notes (v7.2, `src/js/64_notes.js`)
+- `S.carnet = [{id, c, t, b, pin, d, u}]`, catégories `nut`, `train`, `ex`, `prog`, `misc`. Aussi simple qu'un bloc-notes : créer, modifier, supprimer (annulation), épingler, filtrer, rechercher. Enregistrement pendant la frappe et à la fermeture de la feuille. Les notes du guide des exercices (`S.notes[exercice]`) s'affichent dans « Exercices » sans être copiées. Ne pas en faire un système complexe.
+
+### Mesures (v7.2, `src/js/66_mesures.js`)
+- Poids dans `S.bw`, tour de taille dans `S.meas.taille` (`[{d, v}]`). Page Mesures (1er sous-onglet de Progrès, `#mesures`) : derniers chiffres, « Nouvelle mesure », consigne exacte « Pèse-toi le matin à jeun, après être allé aux toilettes et avant de manger ou de boire. », courbe à l'échelle du temps, historique modifiable. Carte « Mesures » de l'accueil → `#mesures`. Aucun conseil automatique.
+
+### Voix (v7.2)
+- Ne jamais retrouver une voix par son nom : sur iPhone, les mêmes noms existent dans plusieurs langues (cause des voix allemandes). Toujours `pickVoice()` (`app.js`) : voix de la langue de l'appli seulement, identifiant `S.voiceU` (voiceURI), sinon meilleure voix ; texte dit passé par `trS()`.
 
 ## Traductions (EN / NL)
 - Le français est la source. Un `MutationObserver` traduit les nœuds de texte et les attributs (`placeholder`, `aria-label`, `title`) avec `trS()`.
@@ -73,12 +83,13 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 ```bash
 python3 dev/build.py                                    # génère index.html
 python3 -m http.server 8768 --bind 127.0.0.1            # à la racine du dépôt, dans un autre terminal
-cd dev && python3 t16.py                                # 154 tests Playwright (~5 min), tous OK en v7.1.0
+cd dev && python3 t16.py                                # tests Playwright (~6 min), voir le total dans dev/PLAN.md
 ```
 - Playwright (Python) : `pip install playwright` puis `playwright install chromium` si aucun Chrome n'est installé ; les outils utilisent `/usr/bin/google-chrome` s'il existe.
 - Captures (dans `dev/tools/out/`, ignoré par git) : `python3 dev/tools/shots_seasons.py 390 844 printemps ete automne hiver nuit` (planche par thème : accueil, calendrier, nutrition, outils, progrès, idées) ; `python3 dev/tools/shots_calendar.py 375 667` (calendrier mois, repos, semaine) ; `python3 dev/tools/preview_scenes.py` (planche de toutes les scènes par saison).
 - Toujours vérifier en **390 x 844 et 375 x 667**, dans les 4 saisons et en Nuit / Minimal, puis regarder les images.
-- Connu : la section B de `t16.py` contient deux dates en dur (`2026-11-26`) qui échouent un autre jour ; à rendre dynamiques comme `TK` dans les sections G à I.
+- Les tests utilisent la date du jour (`TK0`, `TK`) : plus de date en dur.
+- Captures : `shots_seasons.py` montre accueil, calendrier, nutrition, mesures, carnet, outils.
 
 ## Publier (seulement avec l'accord de Diego)
 1. Monter la version à 4 endroits : `APP_V` (`dev/src/app.js`), `APP6` (`dev/src/js/10_core6.js`), `version.json`, cache `C` de `sw.js` (`carnet-vX-Y-Z`).
@@ -89,6 +100,7 @@ cd dev && python3 t16.py                                # 154 tests Playwright (
 - Sur iPhone, l'appli se met à jour en la fermant puis en la rouvrant.
 
 ## Décisions de Diego (à respecter)
+- v7.2 : appli personnelle, pas de coach : objectifs nutrition saisis par l'utilisateur (Kcal et Prot seulement) ; carnet de notes ; Mesures en 1er sous-onglet de Progrès avec la consigne de pesée ; Outils et Réglages gardés tels quels ; été plus « mer et soleil », hiver inchangé ; nouvel accueil seulement après validation d'une des maquettes.
 - v7.1 : système central saison × activité ; thème sans saison = saison réelle ; salle = développé couché ; repos du printemps = pique-nique ; printemps varié ; nutrition en carnet simple ; mesures (poids + tour de taille) mises en avant.
 - v7.0 : accueil minimaliste sans répétitions (perso, Mesures, Nutrition du jour, une seule carte « À la une » ; les autres cartes restent activables dans Réglages) ; onglet Nutrition à la place de « Plus » ; décor de saison « Mix ».
 - v6.3 : persos en style « Athlète » (adultes, sobres, contour fin) ; robot et ninja retirés ; animaux gardés en version adulte ; animations toujours actives par défaut ; ton « Sobre » sans émojis ; pas de vibrations.

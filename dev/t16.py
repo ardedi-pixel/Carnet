@@ -1,7 +1,8 @@
-import json,time,re,sys
+import json,time,re,sys,os
 from playwright.sync_api import sync_playwright
 U='http://localhost:8768/'
-SEED=json.load(open('./seed.json'));SEED['musSeen']=2  # écran « perso musclé » déjà vu (testé à part en B12b)
+SEED=json.load(open('./seed.json'));SEED['musSeen']=2
+TK0=time.strftime('%Y-%m-%d')  # aujourd'hui (les tests ne dépendent plus d'une date en dur)  # écran « perso musclé » déjà vu (testé à part en B12b)
 log=[];errs=[];PG=[]
 def ok(c,m):log.append(('OK   ' if c else 'FAIL ')+m)
 def mk(b,data=None,vw=390,vh=844,locale='fr-FR'):
@@ -21,7 +22,7 @@ def step(name,fn):
         fn()
     except Exception as e:ok(False,name+' : exception '+str(e)[:160])
 with sync_playwright() as p:
-    b=p.chromium.launch()
+    b=p.chromium.launch(**({'executable_path':'/usr/bin/google-chrome'} if os.path.exists('/usr/bin/google-chrome') else {}))
     # ===== A : nouvel utilisateur =====
     ctx,pg=mk(b);pg.goto(U);pg.wait_for_timeout(2200)
     def A():
@@ -53,7 +54,7 @@ with sync_playwright() as p:
     for o in ['#bil','#hey','#rw6']:
         if pg.locator(o).count():pg.evaluate("document.querySelector('%s').remove()"%o)
     def B1():
-        s=st(pg);ok(s.get('v')==8 and s.get('th')=='nuit','B migration v6 → v7, thème Nuit')
+        s=st(pg);ok(s.get('v')==9 and s.get('th')=='nuit','B migration v6 → v7.2 (données v9), thème Nuit')
         ok(pg.locator('#figs svg.flame.f2').count()==1,'B flamme bleue (13 semaines)')
         ok(pg.locator('#figs svg.ring').count()==1,'B anneau de la semaine')
         ok(pg.locator('#hCards .pw7').count()==1 and pg.locator('#hCards .nu7').count()==1,'B v7 : cartes Poids et Nutrition sur l\'accueil')
@@ -70,9 +71,9 @@ with sync_playwright() as p:
         pg.evaluate('location.hash="#calendrier"');pg.wait_for_timeout(500);pg.click('[data-k="2026-11-25"]');pg.wait_for_timeout(300)
         pg.locator('#detail .sess').first.scroll_into_view_if_needed();pg.wait_for_timeout(300);box=pg.locator('#detail .sess').first.bounding_box();pg.mouse.move(box['x']+40,box['y']+30);pg.mouse.down();pg.wait_for_timeout(650);pg.mouse.up();pg.wait_for_timeout(300)
         ok(pg.locator('#ctx [data-ctx]').count()==5,'B appui long : menu rapide (5 actions)')
-        n0=len([x for x in st(pg)['sessions'] if x['date']=='2026-11-26'])
+        n0=len([x for x in st(pg)['sessions'] if x['date']==TK0])
         pg.click('#ctx [data-ctx="dup"]');pg.wait_for_timeout(300)
-        n1=len([x for x in st(pg)['sessions'] if x['date']=='2026-11-26']);ok(n1==n0+1,'B dupliquer aujourd\'hui')
+        n1=len([x for x in st(pg)['sessions'] if x['date']==TK0]);ok(n1==n0+1,'B dupliquer aujourd\'hui')
     step('B3',B3)
     def B4():
         pg.evaluate('location.hash="#calendrier"');pg.wait_for_timeout(400)
@@ -81,13 +82,14 @@ with sync_playwright() as p:
         s=st(pg);ok(any(x['date']=='2026-11-21' for x in s['sessions']),'B glisser une séance vers un autre jour')
     step('B4',B4)
     def B5():
-        pg.evaluate('location.hash="#progres"');pg.wait_for_timeout(900)
-        ok(pg.locator('#car6 .slide6').count()==2,'B carrousel de 2 graphiques (le poids est en tête de page)');ok(pg.evaluate("document.querySelector('#vGr > section').classList.contains('bw7p')"),'B v7 : poids en tête de Progrès');ok(pg.locator('#cmp6p').count()==1,'B comparaison 3 mois')
+        pg.evaluate('location.hash="#stats"');pg.wait_for_timeout(900)
+        ok(pg.locator('#car6 .slide6').count()==2,'B carrousel de 2 graphiques');ok(pg.evaluate("document.querySelector('.bw7p').hidden"),'B v7.2 : le poids a quitté Stats (page Mesures)');ok(pg.locator('#cmp6p').count()==1,'B comparaison 3 mois')
         sv=pg.locator('#cEvo svg');sv.scroll_into_view_if_needed();pg.wait_for_timeout(300);bb=sv.bounding_box();pg.mouse.click(bb['x']+bb['width']*.6,bb['y']+bb['height']*.5);pg.wait_for_timeout(200)
         ok(pg.locator('#cEvo .tip6').count()==1,'B graphique touchable (bulle)')
         ok(pg.locator('[data-mz="bras"]').count()==0,'B v6.1 : plus de tour de bras')
-        pg.locator('[data-mz="taille"]').scroll_into_view_if_needed();pg.click('[data-mz="taille"]');pg.fill('#bwIn','82');pg.click('#bwAdd');pg.wait_for_timeout(300)
-        ok(len(st(pg).get('meas',{}).get('taille',[]))==1,'B mensuration tour de taille enregistrée')
+        pg.evaluate('location.hash="#mesures"');pg.wait_for_timeout(600);pg.click('#vMz [data-bw7="add"]');pg.wait_for_timeout(400);pg.fill('#bw7t','82');pg.click('[data-bw7="save"]');pg.wait_for_timeout(400)
+        ok(len(st(pg).get('meas',{}).get('taille',[]))==1,'B mensuration tour de taille enregistrée (page Mesures)')
+        pg.evaluate('location.hash="#stats"');pg.wait_for_timeout(600)
         ok(pg.locator('#mGlance').count()==0 and pg.locator('#vGr details.more7').count()==1,'B v7 : plus de calendrier en double dans Progrès, stats secondaires repliées')
         ok(pg.locator('#gTy .tyd svg').count()==1,'B v6.1 : types de séance en anneau')
     step('B5',B5)
@@ -224,7 +226,7 @@ with sync_playwright() as p:
     ctx,pg=mk(b);pg.goto(U);pg.wait_for_timeout(300)
     D4={'v':4,'sessions':[{'id':'s1','date':'2026-11-02','place':'garage','types':['classique'],'ex':['Tractions'],'perf':{'Tractions':{'s':4,'r':12,'kg':0}},'feel':2}],'rest':[],'comps':[],'recs':[],'name':'Diego','onb':True,'theme':'light','acc':'rose','icon':'loup','live':{'start':1,'ex':[]}}
     pg.evaluate("localStorage.setItem('carnet-seances',%s)"%json.dumps(json.dumps(D4)));pg.reload();pg.wait_for_timeout(2500)
-    s=st(pg);ok(s.get('v')==8 and s.get('th')=='minimal' and s.get('accX')=='#ff5fa8' and s.get('icon')=='loup','C migration v4 → v6 (thème clair → Minimal, rose, loup)')
+    s=st(pg);ok(s.get('v')==9 and s.get('th')=='minimal' and s.get('accX')=='#ff5fa8' and s.get('icon')=='loup','C migration v4 → v7.2 (thème clair → Minimal, rose, loup)')
     ctx.close()
     # ===== E : démarrage animé avec « Réduire les animations » activé sur l'iPhone =====
     ctx=b.new_context(viewport={'width':390,'height':844},reduced_motion='reduce');d=dict(SEED)
@@ -257,7 +259,7 @@ with sync_playwright() as p:
     # ===== G : v7 refonte, poids, saisons, nutrition =====
     d=dict(SEED);d['th']='hiver';d['tabs']={'order':['home','cal','tools','pr','plus'],'off':[]}
     ctx,pg=mk(b,d);pg.goto(U);pg.wait_for_timeout(2900)
-    s=st(pg);ok(s['tabs']['order']==['home','cal','nut','tools','pr'],'G onglets : Nutrition remplace Plus '+str(s['tabs']['order']))
+    s=st(pg);ok(s['tabs']['order']==['home','cal','nut','tools','pr','notes'] and s['tabs']['off']==['notes'],'G onglets : Nutrition remplace Plus, Carnet masqué par défaut '+str(s['tabs']))
     ok([a.get_attribute('href') for a in pg.locator('nav.tabs a:not([hidden])').all()][:5]==['#accueil','#calendrier','#nutrition','#outils','#progres'],'G barre du bas dans le bon ordre')
     ok(pg.evaluate("document.documentElement.dataset.season")=='winter','G thème Hiver : univers de saison actif')
     pg.evaluate('location.hash="#plus"');pg.wait_for_timeout(500)
@@ -269,6 +271,7 @@ with sync_playwright() as p:
     n=pg.locator('#grid .day.has img.ill7[data-sea="winter"]').count();ok(n>=3,'G calendrier d\'hiver : scènes d\'entraînement de la saison ('+str(n)+')')
     ok(pg.locator('#grid .day.rest img.ill7[data-ill="rest"]').count()>=1,'G calendrier : scène de repos les jours de repos')
     ok(pg.locator('#grid .dco').count()==0 and pg.locator('#grid .day:not(.has):not(.rest) img.ill7').count()==0,'G jours vides sans autocollant')
+    n=pg.locator('#grid .day:not(.has):not(.rest) img.dco8[data-sea="winter"]').count();ok(n>=10 and pg.locator('#grid .day.has img.dco8').count()==0,'G v7.2 : petits détails de saison (neige) dans les cases vides ('+str(n)+')')
     ok(pg.evaluate("getComputedStyle(document.querySelector('nav.tabs'),'::before').content!=='none'"),'G barre du bas : liseré de saison')
     TK=pg.evaluate("(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')})()")
     pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(500)
@@ -278,37 +281,33 @@ with sync_playwright() as p:
     pg.click('#hCards [data-bw7="add"]');pg.wait_for_timeout(400);ok('à jeun' in T(pg,'#gbox') and 'toilettes' in T(pg,'#gbox'),'G consigne de pesée affichée');pg.fill('#bw7t','82.5');pg.click('[data-bw7="save"]');pg.wait_for_timeout(400)
     ok(any(x['d']==TK and x['v']==82.5 for x in st(pg)['meas']['taille']),'G tour de taille noté depuis l\'accueil')
     pg.evaluate('location.hash="#nutrition"');pg.wait_for_timeout(600)
-    ok(pg.locator('#vNut [data-nd="goal:bulk"]').count()==1,'G nutrition : configuration au premier passage')
-    ok(pg.evaluate("document.querySelector('[data-ni=\"w\"]').value")=='78.6','G nutrition : poids repris du suivi (pas redemandé)')
-    pg.click('[data-nd="goal:cut"]');pg.click('[data-nd="sex:h"]');pg.fill('[data-ni="age"]','30');pg.fill('[data-ni="ht"]','180');pg.click('[data-nd="act:3"]');pg.fill('[data-ni="tf"]','4');pg.wait_for_timeout(200)
-    pg.click('[data-nu="start"]');pg.wait_for_timeout(500)
-    # Mifflin-St Jeor : 10x78,6 + 6,25x180 - 5x30 + 5 = 1766 ; x (1,45 + 4x0,025) = 2737,3 ; sèche x0,8 = 2190 kcal ; P 2,2 g/kg = 173 g ; L 25 % = 61 g ; G = (2190 - 692 - 549) / 4 = 237 g
-    s=st(pg);ok(s['nut']['goal']=='cut','G objectif enregistré')
-    ok('2190' in T(pg,'.no7').replace(' ','').replace('\u202f','').replace('\xa0',''),'G calcul des besoins vérifié (2 190 kcal) : '+T(pg,'.no7')[:80])
-    t=T(pg,'.no7')+' | '+T(pg,'.nd7x');ok('173 g' in t and '237' in T(pg,'.nd7x') and '61' in T(pg,'.nd7x'),'G macros vérifiées (P 173, G 237, L 61) : '+t[:90])
+    ok(pg.locator('#vNut [data-nd]').count()==0 and pg.locator('#vNut .nc7c.k .nc8no').count()==1,'G v7.2 : nutrition sans formulaire de profil, aucun objectif imposé')
+    ok('Idées' not in T(pg,'#vNut') and 'Bibliothèque' not in T(pg,'#vNut') and 'Glucides' not in T(pg,'#vNut'),'G v7.2 : plus d\'idées de repas, de bibliothèque ni de macros détaillées')
+    pg.click('#vNut [data-nu="goal"]');pg.wait_for_timeout(400);pg.fill('#ngK','2800');pg.fill('#ngP','150');pg.click('[data-nu="gsave"]');pg.wait_for_timeout(400)
+    s=st(pg);ok(s['nut']['kG']==2800 and s['nut']['pG']==150,'G objectifs saisis par l\'utilisateur (2 800 kcal, 150 g)')
     pg.fill('#nqN','sardines');pg.wait_for_timeout(250)
-    ok(pg.locator('#nqS [data-nqf="sardine_huile"]').count()==1,'G recherche d\'aliment (sans accents ni majuscules)')
+    ok(pg.locator('#nqS [data-nqf="sardine_huile"]').count()==1,'G aide à la saisie : recherche d\'aliment (sans accents ni majuscules)')
     pg.click('[data-nqf="sardine_huile"]');pg.wait_for_timeout(150);pg.fill('#nqQ','85');pg.wait_for_timeout(100)
     ok(pg.input_value('#nqK')=='177' and pg.input_value('#nqP')=='20.9','G ajout rapide : kcal et protéines calculées selon la quantité')
     pg.click('[data-nu="qadd"]');pg.wait_for_timeout(300)
     pg.fill('#nqN','Skyr de ma marque');pg.fill('#nqK','90');pg.fill('#nqP','15');pg.press('#nqP','Enter');pg.wait_for_timeout(300)
-    ITS=lambda:[x for k in 'blsd' for x in st(pg)['nut']['days'][TK].get(k,[])]
-    it=ITS();ok(len(it)==2 and it[0]=={'f':'sardine_huile','g':85} and it[1]['f']=='q' and it[1]['v'][:2]==[90,15],'G carnet : aliment de la base + saisie libre (kcal, prot)')
-    # 85 g de sardines (208 kcal et 24,6 g de protéines pour 100 g) = 176,8 kcal et 20,9 g ; skyr 90 kcal et 15 g -> 267 kcal et 35,9 g
+    ITS=lambda:sorted([x for k in 'blsd' for x in st(pg)['nut']['days'][TK].get(k,[])],key=lambda x:x.get('t',0))
+    it=ITS();ok(len(it)==2 and it[0]['f']=='q' and it[0]['n'].startswith('Sardines à l\'huile') and it[0]['v'][:2]==[177,20.9] and it[1]['v'][:2]==[90,15],'G journal : deux saisies (kcal, prot) '+str([x.get('n') for x in it]))
+    # 85 g de sardines (208 kcal et 24,6 g de protéines pour 100 g) = 177 kcal et 20,9 g ; skyr 90 kcal et 15 g -> 267 kcal et 35,9 g
     ok('267' in T(pg,'.nl7 .nl7s') and '35,9' in T(pg,'.nl7 .nl7s'),'G total du jour vérifié (267 kcal, 35,9 g de protéines)')
-    ok('267' in T(pg,'.nc7 .k') and 'Reste' in T(pg,'.nc7 .k') and '36' in T(pg,'.nc7 .p'),'G compteurs Kcal et Prot en tête de page')
-    pg.locator('.nl7 [data-ne]').first.click();pg.wait_for_timeout(300);pg.fill('#edG','170');pg.click('[data-ed="save"]');pg.wait_for_timeout(300)
-    ok(ITS()[0]['g']==170,'G modifier la quantité d\'un aliment')
-    pg.locator('.nl7 [data-ne]').last.click();pg.wait_for_timeout(300);pg.fill('#eqK','95');pg.click('[data-eq="save"]');pg.wait_for_timeout(300)
-    ok(ITS()[1]['v'][0]==95,'G modifier une saisie libre')
-    pg.click('[data-nu="ideas"]');pg.wait_for_timeout(600)
-    r=pg.evaluate("[...document.querySelectorAll('#gbox .nid')].map(n=>n.querySelector('b').textContent)");ok(len(r)>=3,'G idées de repas proposées ('+str(len(r))+')')
-    ok(pg.locator('#gbox .nid li').count()>=6 and 'g' in T(pg,'#gbox .nid li'),'G idées : ingrédients avec grammes')
-    pg.click('#gbox [data-ni2^="add:"]');pg.wait_for_timeout(400)
-    ok(len(ITS())>=4,'G idée de repas ajoutée au journal')
-    pg.click('[data-nu="lib"]');pg.wait_for_timeout(400);pg.fill('#naQ','oeuf');pg.wait_for_timeout(200);pg.click('#naList [data-nf="oeuf"]');pg.wait_for_timeout(400)
-    ok('coquille' in T(pg,'#gbox') and 'Choline' in T(pg,'#gbox'),'G fiche aliment : micronutriments et critères de qualité')
-    pg.click('#gbox [data-nf2="fav:oeuf"]');pg.wait_for_timeout(200);ok('oeuf' in st(pg)['nut']['fav'],'G favori ajouté')
+    tk=T(pg,'.nc7 .k').replace('\u202f',' ').replace('\xa0',' ');ok('267' in tk and '2 800' in tk and 'Reste 2533' in tk and 'Reste 114 g' in T(pg,'.nc7 .p'),'G compteurs : mangé, objectif, reste ('+tk[:60]+')')
+    pg.locator('.nl7 [data-ne]').last.click();pg.wait_for_timeout(300);pg.fill('#eqK','95');pg.click('#gbox [data-eq="pin"]');pg.click('[data-eq="save"]');pg.wait_for_timeout(300)
+    ok(ITS()[1]['v'][0]==95 and any(x['n']=='Skyr de ma marque' and x['k']==95 for x in st(pg)['nut']['pins']),'G modifier une entrée et la garder en favori')
+    ok(pg.locator('.nq8k.fav').count()>=1 and 'Skyr de ma marque' in T(pg,'.nq8c'),'G favori proposé en raccourci')
+    pg.locator('.nq8k.fav').first.click();pg.wait_for_timeout(300);ok(len(ITS())==3,'G ajout en un geste depuis un raccourci')
+    pg.click('#undo');pg.wait_for_timeout(300);ok(len(ITS())==2,'G annuler l\'ajout')
+    pg.locator('.nl7 [data-ne]').first.click();pg.wait_for_timeout(300);pg.click('[data-eq="del"]');pg.wait_for_timeout(300);ok(len(ITS())==1,'G retirer une entrée');pg.click('#undo');pg.wait_for_timeout(300);ok(len(ITS())==2,'G annuler le retrait')
+    pg.click('[data-nu="prev"]');pg.wait_for_timeout(300);ok('Rien de noté ce jour-là' in T(pg,'#vNut') and pg.locator('[data-nu="today"]').count()==1,'G jour précédent consultable')
+    pg.click('[data-nu="today"]');pg.wait_for_timeout(300)
+    yd=pg.evaluate("(()=>{const d=new Date();d.setDate(d.getDate()-2);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')})()")
+    s=st(pg);s['nut']['days'][yd]={'b':[{'f':'q','n':'Repas','q':'','g':100,'v':[2500,140,0,0,0]}],'l':[],'d':[],'s':[],'w':0};pg.evaluate("s=>localStorage.setItem('carnet-seances',JSON.stringify(s))",s);pg.reload();pg.wait_for_timeout(2200);pg.mouse.click(5,5);pg.evaluate('location.hash="#nutrition"');pg.wait_for_timeout(600)
+    ok(pg.locator('.nh8r[data-nu="day:'+yd+'"]').count()==1 and '2 500' in T(pg,'.nh8').replace('\u202f',' ').replace('\xa0',' '),'G jours précédents : liste avec kcal et protéines')
+    pg.click('.nh8r[data-nu="day:'+yd+'"]');pg.wait_for_timeout(400);ok('Repas' in T(pg,'.nl7'),'G ouvrir un jour précédent depuis la liste')
     pg.evaluate("document.getElementById('gsheet').classList.remove('open')")
     pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(500);ok('kcal' in T(pg,'#hCards .nu7'),'G accueil : carte Nutrition du jour')
     ok(pg.evaluate("document.documentElement.scrollWidth<=innerWidth+1"),'G pas de débordement horizontal (390 px)')
@@ -318,9 +317,9 @@ with sync_playwright() as p:
     setS('th','nuit');pg.evaluate('location.hash="#nutrition"');pg.wait_for_timeout(700)
     ok(not pg.evaluate("document.documentElement.hasAttribute('data-season')"),'H thème Nuit : pas d\'attribut de saison')
     c=pg.evaluate("getComputedStyle(document.querySelector('#vNut h2.t'),'::after').content");ok(c in ('none','normal'),'H thème Nuit : pas de glyphe de saison après les titres ('+str(c)+')')
+    pg.evaluate('location.hash="#calendrier"');pg.wait_for_timeout(500);ok(pg.locator('#grid img.dco8').count()==0,'H thème Nuit : cases du calendrier sobres (pas de détails de saison)')
     setS('lang','en');pg.evaluate('location.hash="#nutrition"');pg.wait_for_timeout(800)
-    t=T(pg,'#vNut');ok('Log' in t and 'Meal ideas' in t and 'left' in t and 'Reste' not in t and 'Journal' not in t,'H nutrition traduite en anglais')
-    pg.click('[data-nu="ideas"]');pg.wait_for_timeout(600);t=T(pg,'#gbox');ok(('vs target' in t or 'Close to target' in t) and 'quality' in t,'H idées de repas traduites')
+    t=T(pg,'#vNut');ok('Log' in t and 'Previous days' in t and 'left' in t and 'Reste' not in t and 'Journal' not in t and 'précédents' not in t,'H nutrition traduite en anglais')
     # ===== I : changement de saison depuis les réglages (sans recharger) : aucune illustration d'une autre saison ; persistance =====
     setS('lang','fr')
     for th,sea in [('hiver','winter'),('printemps','spring'),('ete','summer'),('automne','autumn'),('hiver','winter')]:
@@ -335,5 +334,75 @@ with sync_playwright() as p:
     setS('th','nuit');pg.evaluate('location.hash="#calendrier"');pg.wait_for_timeout(600)
     v=pg.evaluate("[...document.querySelectorAll('#vCal [data-sea]')].map(e=>e.dataset.sea)");exp=pg.evaluate("(()=>{const m=new Date().getMonth()+1;return m===12||m<=2?'winter':m<=5?'spring':m<=8?'summer':'autumn'})()")
     ok(len(v)>=3 and all(x==exp for x in v),'I thème sans saison : les dessins suivent la saison réelle ('+exp+')')
+    ctx.close()
+    # ===== J : v7.2 : carnet de notes, mesures, migration des objectifs, voix dans la bonne langue, réglages compacts, maquettes d'accueil =====
+    VOICES="""window.__spoken=[];const V=[{name:'Flo',lang:'de-DE',voiceURI:'com.apple.eloquence.de-DE.Flo',localService:true},{name:'Flo',lang:'fr-FR',voiceURI:'com.apple.eloquence.fr-FR.Flo',localService:true},{name:'Anna',lang:'de-DE',voiceURI:'com.apple.voice.compact.de-DE.Anna',localService:true,default:true},{name:'Thomas',lang:'fr-FR',voiceURI:'com.apple.voice.compact.fr-FR.Thomas',localService:true},{name:'Amélie',lang:'fr-CA',voiceURI:'com.apple.voice.compact.fr-CA.Amelie',localService:true},{name:'Daniel',lang:'en-GB',voiceURI:'com.apple.voice.compact.en-GB.Daniel',localService:true}];
+      Object.defineProperty(window,'speechSynthesis',{value:{getVoices:()=>V,speaking:false,pending:false,cancel(){},speak(u){window.__spoken.push({t:u.text,lang:u.lang,v:u.voice&&u.voice.voiceURI})},addEventListener(){}},configurable:true});
+      window.SpeechSynthesisUtterance=function(t){this.text=t;this.lang='';this.voice=null;this.volume=1;this.rate=1;this.pitch=1};"""
+    d=dict(SEED);d['th']='ete';d['voice']=True;d['voiceN']='Flo';d['notes']={'Tractions':'Prise large, omoplates serrées'};d['v']=8
+    d['cards']=[{'k':'perso','on':True},{'k':'poids','on':True},{'k':'nutri','on':True},{'k':'une','on':True}];d['tabs']={'order':['home','cal','nut','tools','pr'],'off':[]}
+    d['bw']=[{'d':'2026-09-01','v':76.5},{'d':'2026-10-01','v':77.2},{'d':TK0,'v':78.6}];d['nut']={'goal':'cut','sex':'h','age':30,'ht':180,'act':3,'tf':4,'auto':True,'days':{},'fav':['oeuf'],'my':[],'meals':[],'rec':[]}
+    ctx,pg=mk(b,d);ctx.add_init_script(VOICES);pg.goto(U);pg.wait_for_timeout(2900);pg.mouse.click(5,5)
+    def J1():
+        s=st(pg);ok(s['v']==9 and 'notes' in s['tabs']['off'] and [c['k'] for c in s['cards']][:4]==['perso','poids','nutri','notes'],'J migration : Carnet ajouté (onglet masqué, carte après Nutrition), données v9')
+        # objectifs affichés en v7.1 (sèche, 78,6 kg, 30 ans, 180 cm, actif, 4 séances) = 2 190 kcal et 173 g : repris tels quels, puis l'utilisateur décide
+        ok(s['nut']['kG']==2190 and s['nut']['pG']==173 and s['nut']['goal']=='cut','J migration : objectifs déjà affichés repris (2 190 kcal, 173 g), anciennes données gardées')
+        ok(len(s['nut']['pins'])==1 and s['nut']['pins'][0]['n'].startswith('Œuf'),'J migration : ancien favori proposé en raccourci')
+        ok(pg.evaluate("document.documentElement.style.getPropertyValue('--card2')").strip()=='#e4f6f8','J été v7.2 : surfaces turquoise (mer)')
+    step('J1',J1)
+    def J2():
+        pg.evaluate('location.hash="#progres"');pg.wait_for_timeout(700)
+        ok(pg.evaluate("!document.getElementById('vMz').hidden") and pg.locator('#progSeg button').first.inner_text().strip()=='Mesures','J Progrès s\'ouvre sur « Mesures » (1er sous-onglet)')
+        ok('Pèse-toi le matin à jeun, après être allé aux toilettes et avant de manger ou de boire.' in T(pg,'#vMz .mz8tip'),'J consigne de pesée bien visible (texte exact)')
+        ok('78,6' in T(pg,'#vMz .mz8g') and pg.locator('#mzC svg path').count()>=2,'J dernière mesure et courbe dans le temps')
+        pg.click('[data-mzp="0"]');pg.wait_for_timeout(300);ok(pg.locator('#mzC svg circle').count()==3,'J période « Tout » : 3 pesées sur la courbe')
+        ok(pg.locator('#vMz .mz8r').count()==3,'J historique des mesures (3)')
+        pg.locator('#vMz .mz8r').nth(1).click();pg.wait_for_timeout(300);pg.fill('#mzW','77.4');pg.fill('#mzT','84');pg.click('#gbox [data-mzs]');pg.wait_for_timeout(300)
+        s=st(pg);ok(any(x['d']=='2026-10-01' and x['v']==77.4 for x in s['bw']) and any(x['d']=='2026-10-01' and x['v']==84 for x in s['meas']['taille']),'J modifier une ancienne mesure (poids et tour de taille)')
+        pg.locator('#vMz .mz8r').nth(1).click();pg.wait_for_timeout(300);pg.click('#gbox [data-mzx]');pg.wait_for_timeout(300);ok(len(st(pg)['bw'])==2,'J supprimer une mesure')
+        pg.click('#undo');pg.wait_for_timeout(300);ok(len(st(pg)['bw'])==3,'J annuler la suppression')
+        pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(500);pg.click('#hCards [data-bw7="open"]');pg.wait_for_timeout(600);ok(pg.evaluate("location.hash")=='#mesures' and pg.evaluate("!document.getElementById('vMz').hidden"),'J carte Mesures de l\'accueil : ouvre la page Mesures')
+    step('J2',J2)
+    def J3():
+        pg.evaluate('location.hash="#carnet"');pg.wait_for_timeout(600)
+        ok(pg.evaluate("!document.getElementById('vNotes').hidden") and T(pg,'#hello')=='Mes notes','J Carnet : page « Mes notes »')
+        ok(pg.locator('#vNotes .nb8x').count()==1 and 'Prise large' in T(pg,'#vNotes .nb8x'),'J Carnet : la note du guide (Tractions) apparaît dans Exercices, sans doublon')
+        pg.click('#vNotes [data-nb="new"]');pg.wait_for_timeout(400);pg.click('#gbox [data-nbe="c:train"]');pg.fill('#nbT','Repères tractions');pg.fill('#nbB','5 x 5 lesté\n2 min de repos');pg.wait_for_timeout(900)
+        s=st(pg);ok(len(s['carnet'])==1 and s['carnet'][0]['t']=='Repères tractions' and s['carnet'][0]['c']=='train' and '2 min' in s['carnet'][0]['b'],'J créer une note : enregistrée pendant la frappe')
+        pg.click('#gbox [data-nbe="ok"]');pg.wait_for_timeout(400);ok('Repères tractions' in T(pg,'#vNotes .nb8l'),'J la note apparaît dans le carnet')
+        pg.click('#vNotes [data-nbc="nut"]');pg.wait_for_timeout(300);ok(pg.locator('#vNotes .nb8n').count()==0 and pg.locator('#vNotes [data-nbs]').count()>=2,'J filtre Nutrition : vide, avec des débuts de notes proposés')
+        pg.locator('#vNotes [data-nbs]').first.click();pg.wait_for_timeout(400);ok(pg.input_value('#nbT')=='Mes repas types','J début de note proposé : titre prérempli');pg.fill('#nbB','Matin : avoine, oeufs');pg.wait_for_timeout(800);pg.evaluate("document.getElementById('gsheet').click()");pg.wait_for_timeout(500)
+        s=st(pg);ok(len(s['carnet'])==2 and any(n['c']=='nut' and n['t']=='Mes repas types' for n in s['carnet']),'J note Nutrition enregistrée en fermant la feuille')
+        pg.click('#vNotes [data-nbc=""]');pg.wait_for_timeout(300);pg.fill('#nbQ','avoine');pg.wait_for_timeout(300);ok(pg.locator('#vNotes .nb8n').count()==1,'J recherche dans les notes')
+        pg.fill('#nbQ','');pg.wait_for_timeout(300);pg.locator('#vNotes .nb8n',has_text='Repères tractions').click();pg.wait_for_timeout(400);pg.click('#gbox [data-nbe="pin"]');pg.click('#gbox [data-nbe="ok"]');pg.wait_for_timeout(400)
+        ok(pg.locator('#vNotes .nb8n').first.inner_text().startswith('Repères tractions') and pg.locator('#vNotes .nb8pin').count()==1,'J note épinglée en haut')
+        pg.reload();pg.wait_for_timeout(2300);pg.mouse.click(5,5);pg.evaluate('location.hash="#carnet"');pg.wait_for_timeout(600);ok(pg.locator('#vNotes .nb8n:not(.nb8x)').count()==2,'J notes conservées après actualisation')
+        pg.locator('#vNotes .nb8n',has_text='Mes repas types').click();pg.wait_for_timeout(400);pg.click('#gbox [data-nbe="del"]');pg.wait_for_timeout(400);ok(len(st(pg)['carnet'])==1,'J supprimer une note')
+        pg.click('#undo');pg.wait_for_timeout(300);ok(len(st(pg)['carnet'])==2,'J annuler la suppression d\'une note')
+        pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(500);ok(pg.locator('#hCards .nb7').count()==1 and '3 notes' in T(pg,'#hCards .nb7'),'J carte Carnet sur l\'accueil')
+        pg.evaluate('location.hash="#nutrition"');pg.wait_for_timeout(500);pg.click('#vNut [data-ncat="nut"]');pg.wait_for_timeout(600);ok(pg.evaluate("location.hash")=='#carnet' and pg.locator('#vNotes [data-nbc="nut"][aria-pressed="true"]').count()==1,'J « Carnet nutrition » ouvre le carnet filtré sur Nutrition')
+        pg.evaluate('location.hash="#outils"');pg.wait_for_timeout(400);ok(pg.locator('#hidT a[href="#carnet"]').count()==1,'J raccourci Carnet dans Outils (onglet masqué)')
+    step('J3',J3)
+    def J4():
+        pg.evaluate("window.__spoken=[]");pg.evaluate("say('Terminé')");pg.wait_for_timeout(200);sp=pg.evaluate("window.__spoken")
+        ok(len(sp)==1 and sp[0]['lang']=='fr-FR' and sp[0]['v']=='com.apple.voice.compact.fr-FR.Thomas','J voix : ancien choix « Flo » (nom partagé avec une voix allemande) remplacé par une voix française naturelle '+str(sp[-1:]))
+        pg.evaluate("sTick(3);sGo('Go')");pg.wait_for_timeout(200);sp=pg.evaluate("window.__spoken");ok(len(sp)==3 and all(x['lang'].startswith('fr') for x in sp) and not any('de-' in (x['v'] or '') for x in sp),'J voix : jamais de voix allemande en français')
+        s=st(pg);ok(s.get('voiceN','')=='' ,'J voix : ancien réglage par nom effacé')
+        pg.evaluate('location.hash="#reglages-sons"');pg.wait_for_timeout(500);o=pg.evaluate("[...document.querySelectorAll('#voiceN option')].map(o=>o.value)")
+        ok(len(o)==3 and o[0]=='' and all('fr-' in x for x in o[1:]),'J réglages : seulement des voix françaises, pas de voix robotique '+str(o))
+        ok(pg.locator('#sndBox.s8seg button').count()==5 and pg.evaluate("document.querySelector('[data-sub=sons]').getBoundingClientRect().height")<480,'J réglages Sons compacts')
+        pg.select_option('#voiceN','com.apple.voice.compact.fr-CA.Amelie');pg.wait_for_timeout(200);ok(st(pg)['voiceU']=='com.apple.voice.compact.fr-CA.Amelie' and pg.evaluate("window.__spoken.slice(-1)[0].v")=='com.apple.voice.compact.fr-CA.Amelie','J choix d\'une voix par identifiant unique')
+        s=st(pg);s['lang']='en';pg.evaluate("s=>localStorage.setItem('carnet-seances',JSON.stringify(s))",s);pg.reload();pg.wait_for_timeout(2300);pg.mouse.click(5,5)
+        pg.evaluate("window.__spoken=[]");pg.evaluate("say('Terminé')");pg.wait_for_timeout(200);sp=pg.evaluate("window.__spoken");ok(len(sp)==1 and sp[0]['t']=='Done' and sp[0]['v']=='com.apple.voice.compact.en-GB.Daniel','J voix en anglais : texte traduit et voix anglaise '+str(sp))
+        s=st(pg);s['lang']='fr';pg.evaluate("s=>localStorage.setItem('carnet-seances',JSON.stringify(s))",s);pg.reload();pg.wait_for_timeout(2300);pg.mouse.click(5,5)
+    step('J4',J4)
+    def J5():
+        pg.evaluate('location.hash="#reglages-apparence"');pg.wait_for_timeout(500);h=pg.evaluate("document.getElementById('apEd').getBoundingClientRect().height");ok(h<1500,'J Apparence plus compacte ('+str(int(h))+' px)')
+        for v in 'abc':
+            pg.goto(U+'?hp='+v);pg.wait_for_timeout(2300);pg.mouse.click(5,5);pg.wait_for_timeout(300)
+            ok(pg.locator('#hStart.hp-'+v).count()==1 and pg.locator('#hStart [data-go="note"],#hStart .hpBn').count()>=1 and pg.locator('#hStart a[href="#carnet"]').count()==1,'J maquette d\'accueil '+v.upper()+' : rendue (accès Carnet, noter une séance)')
+        pg.goto(U+'?hp=0');pg.wait_for_timeout(2300);ok(pg.locator('#hStart .hero').count()==1,'J accueil actuel inchangé hors maquette')
+        ok(pg.evaluate("document.documentElement.scrollWidth<=innerWidth+1"),'J pas de débordement horizontal')
+    step('J5',J5)
     ctx.close();b.close()
 print('\n'.join(log));print('TOTAL',sum(1 for l in log if l.startswith('OK')),'/',len(log));print('ERRORS',errs[:12])

@@ -7,7 +7,9 @@ Object.assign(ICO,{
  star2:'<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"/>',
  drop:'<path d="M12 3.5c3 3.6 6 6.9 6 10.4a6 6 0 0 1-12 0c0-3.5 3-6.8 6-10.4z"/>',
  left:'<path d="M15 5l-7 7 7 7"/>',
- right:'<path d="M9 5l7 7-7 7"/>'
+ right:'<path d="M9 5l7 7-7 7"/>',
+ note:'<path d="M6.5 3.5h8l4 4v13h-12z"/><path d="M14.5 3.5v4h4M9.5 12h6M9.5 15.5h6"/>',
+ pin:'<path d="M9 3.5h6l-1 6 3.5 3.5h-11L10 9.5z"/><path d="M12 13v7.5"/>'
 });
 function bwSorted(){return S.bw.slice().sort((a,b)=>a.d<b.d?-1:1)}
 /* tendance en kg par semaine sur les N derniers jours (régression linéaire) ; null s'il y a moins de 3 pesées sur au moins 7 jours */
@@ -23,18 +25,18 @@ function spark7(vals,cls){if(vals.length<2)return '';const mn=Math.min(...vals),
 function bwStatus(){const L=bwSorted(),last=L[L.length-1];if(!last)return '';const ago=Math.round((parse(TK)-parse(last.d))/864e5);
   const ck=typeof nutWeightCheck==='function'?nutWeightCheck():null;if(ck)return ck.txt;
   const tr=bwTrend(28);if(tr!==null)return 'Tendance : '+sgn(Math.round(tr*10)/10)+' kg par semaine';
-  return ago>=7?'Dernière pesée il y a '+ago+' jours':'Pèse-toi 2 à 3 fois par semaine pour voir ta tendance'}
+  return ago>=7?'Dernière pesée il y a '+ago+' jours':''} /* v7.2 : une info, pas un conseil */
 /* écart sur environ N jours pour une liste de mesures triée [{d,v}] */
 function mzDelta(L,days){if(L.length<2)return null;const last=L[L.length-1],ref=key(add(parse(last.d),-(days||30)));let b=null;
   for(const x of L){if(x.d<=ref)b=x;else break}if(!b)b=L[0];if(b===last)return null;return{v:Math.round((last.v-b.v)*10)/10,d:Math.round((parse(last.d)-parse(b.d))/864e5)}}
 const waistSorted=()=>arr(S.meas&&S.meas.taille).slice().sort((a,b)=>a.d<b.d?-1:1);
 /* v7.1 : carte « Mesures » de l'accueil (poids + tour de taille), les deux chiffres clés d'une prise de masse ou d'une sèche */
 function poidsCard(){const L=bwSorted(),last=L[L.length-1],Wt=waistSorted(),lw=Wt[Wt.length-1],g=typeof nutGoalLbl==='function'?nutGoalLbl():'';
-  if(!last&&!lw)return '<div class="h7c pw7 empty7"><span class="hcic">'+ico('scale')+'</span><div class="h7b"><p class="kick">Mesures</p><b>Suis ton poids et ton tour de taille</b><p>Indispensable pour une prise de masse ou une sèche. Une mesure par semaine suffit pour commencer.</p></div><button type="button" class="btn sm pw7add" data-bw7="add">Ajouter</button></div>';
+  if(!last&&!lw)return '<div class="h7c pw7 empty7"><span class="hcic">'+ico('scale')+'</span><div class="h7b"><p class="kick">Mesures</p><b>Poids et tour de taille</b><p>Note tes mesures pour suivre leur évolution.</p></div><button type="button" class="btn sm pw7add" data-bw7="add">Ajouter</button></div>';
   const dl=mzDelta(L,30),dw=mzDelta(Wt,30),P=L.filter(x=>x.d>=key(add(T,-90))).map(x=>x.v),ck=typeof nutWeightCheck==='function'?nutWeightCheck():null;
   const col=(lab,x,u,d,emp)=>'<div class="mz7c"><span class="mz7l">'+lab+'</span>'+(x?'<b>'+fmtN(x.v)+'<small> '+u+'</small></b>'+(d?'<span class="pw7d">'+sgn(d.v)+' '+u+' en '+d.d+' j</span>':''):'<b class="mz7n">—</b><span class="pw7d">'+emp+'</span>')+'</div>';
   return '<div class="h7c pw7 mz7'+(ck?' st-'+ck.st:'')+'"><button type="button" class="pw7m" data-bw7="open" aria-label="Voir l\'évolution de tes mesures"><p class="kick">Mesures'+(g?'<span> · </span><span>'+esc(g)+'</span>':'')+'</p>'
-   +'<div class="mz7g">'+col('Poids',last,'kg',dl,'à noter')+col('Tour de taille',lw,'cm',dw,'à noter')+'</div>'+spark7(P.length>=2?P:[])+(last?'<p class="pw7s">'+esc(bwStatus())+'</p>':'')+'</button><button type="button" class="ib pw7a" data-bw7="add" aria-label="Ajouter une mesure">'+ico('add')+'</button></div>'}
+   +'<div class="mz7g">'+col('Poids',last,'kg',dl,'à noter')+col('Tour de taille',lw,'cm',dw,'à noter')+'</div>'+spark7(P.length>=2?P:[])+(last&&bwStatus()?'<p class="pw7s">'+esc(bwStatus())+'</p>':'')+'</button><button type="button" class="ib pw7a" data-bw7="add" aria-label="Ajouter une mesure">'+ico('add')+'</button></div>'}
 /* feuille « Nouvelle mesure » : poids et tour de taille en une fois, avec la bonne façon de mesurer */
 function bwSheet(){const L=bwSorted(),last=L[L.length-1],Wt=waistSorted(),lw=Wt[Wt.length-1];
   openSheet('<div class="nsh"><h2 class="t">Nouvelle mesure</h2><div class="nrow2"><label class="nfl">Poids (kg)<input id="bw7v" type="number" inputmode="decimal" step="0.1" min="20" max="400" placeholder="'+(last?fmtN(last.v):'75')+'"></label><label class="nfl">Tour de taille (cm)<input id="bw7t" type="number" inputmode="decimal" step="0.5" min="40" max="200" placeholder="'+(lw?fmtN(lw.v):'Facultatif')+'"></label></div>'
@@ -42,10 +44,10 @@ function bwSheet(){const L=bwSorted(),last=L[L.length-1],Wt=waistSorted(),lw=Wt[
    +'<div class="mz7how"><p><b>Pesée</b><span>Le matin, à jeun, après être allé aux toilettes, avant de manger ou de boire. Garde les mêmes conditions à chaque fois pour bien comparer.</span></p><p><b>Tour de taille</b><span>Au niveau du nombril, debout, ventre relâché, en fin d\'expiration.</span></p></div>'
    +'<button type="button" class="btn nbig" data-bw7="save">Enregistrer</button></div>');
   setTimeout(()=>{const i=$('bw7v');if(i)i.focus()},250)}
-function bwRefresh(){if(curV==='home')renderHome();if(curV==='nut'&&typeof renderNut==='function')renderNut();if(curV==='pr'&&!$('vGr').hidden)renderBW()}
+function bwRefresh(){if(typeof mzRefresh==='function')mzRefresh();if(curV==='home')renderHome();if(curV==='nut'&&typeof renderNut==='function')renderNut();if(curV==='pr'&&!$('vGr').hidden)renderBW()}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-bw7]');if(!b)return;const a=b.dataset.bw7;
   if(a==='add'){bwSheet();return}
-  if(a==='open'){S.ptab='stats';if(location.hash==='#progres')route();else location.hash='#progres';setTimeout(()=>{const s=$('bwIn')&&$('bwIn').closest('section');if(s)s.scrollIntoView({behavior:'smooth',block:'start'})},380);return}
+  if(a==='open'){S.ptab='mz';if(location.hash==='#mesures')route();else location.hash='#mesures';return}
   if(a==='save'){const num=id=>{const t=String(($(id)||{}).value||'').trim().replace(',','.');return t===''?null:parseFloat(t)},v=num('bw7v'),w=num('bw7t'),d=$('bw7d').value||TK;
     if(v===null&&w===null){toast('Note ton poids ou ton tour de taille');return}
     if(v!==null&&!(v>=20&&v<=400)){toast('Entre un poids entre 20 et 400 kg');return}
@@ -56,6 +58,6 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-bw7]');if(
     save();closeSheet();toast('Mesure notée');bwRefresh()}});
 /* ---- Progrès : le poids en tête de page, les statistiques secondaires repliées ---- */
 function pr7Layout(){const v=$('vGr');if(!v||v.dataset.l7)return;v.dataset.l7='1';
-  const bw=$('bwIn')&&$('bwIn').closest('section');if(bw){bw.classList.add('bw7p');v.prepend(bw)}
+  const bw=$('bwIn')&&$('bwIn').closest('section');if(bw){bw.classList.add('bw7p');bw.hidden=true} /* v7.2 : le poids a sa page « Mesures » */
   const pl=$('gPl')&&$('gPl').closest('section'),ty=$('gTy')&&$('gTy').closest('section');
   if(pl&&ty){const d=document.createElement('details');d.className='wide more7';d.innerHTML='<summary>Lieux et types de séance</summary><div class="more7b"></div>';pl.before(d);d.lastChild.append(pl,ty)}}

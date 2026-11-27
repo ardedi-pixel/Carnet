@@ -166,3 +166,25 @@ function i7groundSvg(sea){const P=ILL7[sea];let d='',s='';
   else s=i7tree(84,77,32,I7FALL)+'<path d="M0 74Q25 68 50 73T100 71V100H0Z" fill="'+P.ground+'"/>'+i7leaves(16,9,4,77,96,96,1.6)+i7leaves(6,3,8,10,92,62,1.6);
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs>'+d+'</defs>'+s+'</svg>'}
 function illGround(){const sea=seaNow(),key='g|'+sea;let u=I7C.get(key);if(!u){u='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(i7groundSvg(sea));I7C.set(key,u)}return '<img src="'+u+'" alt="" draggable="false" data-sea="'+sea+'">'}
+/* ---- v7.2 : petits détails de saison dans les cases vides du calendrier ----
+   Un « sol » discret au bas de la case (neige, herbe, sable, terre et feuilles), parfois un détail
+   (flocons, bonhomme de neige, fleur, papillon, coquillage, étoile de mer, gland, champignon).
+   Variante fixe pour une date donnée (pas de clignotement), seulement avec un thème de saison. */
+function i7decoSvg(sea,v){const P=ILL7[sea];let s='';
+  if(sea==='winter'){s='<path d="M0 78Q7 73.5 15 76.5T31 75.5T48 77V88H0Z" fill="'+P.snow+'"/><path d="M0 82.5Q12 80 24 82.5T48 82" fill="none" stroke="'+P.snow2+'" stroke-width="1.1"/>';
+    if(v===0||v===3)s+=i7flakes(v===3?4:3,11+v,5,26,43,64,1.9);if(v===5)s+=i7flakes(2,5,24,34,42,58,2.1);if(v===2)s=i7snowman(37,80.5,.82)+s;if(v===4)s=i7fir(10,79.5,24,1)+s}
+  else if(sea==='spring'){s='<path d="M0 79Q8 76.5 16 78.5T32 78T48 78.8V88H0Z" fill="'+P.grass+'"/><path d="M3 79.5l1.4-4.5 1.4 4.5M9 79l1.6-5 1.4 5M28 78.6l1.2-4 1.2 4M44 79l1.2-4 1.3 4" fill="'+P.grass2+'"/>';
+    const fl=(x,h,c)=>'<path d="M'+x+' 79V'+(79-h)+'" stroke="#3f9a4b" stroke-width="1"/><path d="M'+x+' '+(79-h*.45)+'q2.2-.6 2.8-2.4q-2 .2-2.8 2.4z" fill="#58b85a"/>'+[0,72,144,216,288].map(a=>'<circle cx="'+i7(x+Math.cos(a*Math.PI/180)*1.9)+'" cy="'+i7(79-h+Math.sin(a*Math.PI/180)*1.9)+'" r="1.45" fill="'+c+'"/>').join('')+'<circle cx="'+x+'" cy="'+(79-h)+'" r="1.1" fill="#ffd23f"/>';
+    if(v===0)s+=fl(35,9,'#ff8fbf')+fl(42,6.5,'#ffc53d');if(v===1)s+=i7tulip(39,79.5,1.25,'#e5484d');if(v===3)s+=fl(40,8,'#ff8fbf')+i7petals(2,4,26,36,42,56,2);if(v===4)s+=fl(31,6,'#ffffff')+fl(37,9,'#ff8fbf')+fl(43,7,'#ffc53d');if(v===5)s+=i7fly(37,56,1.9,'#ffc53d')+fl(13,6,'#ff8fbf')}
+  else if(sea==='summer'){s='<path d="M0 76.5Q6 74.5 12 76.5T24 76.5T36 76.5T48 76.5" fill="none" stroke="'+P.sea[0]+'" stroke-width="1.6" stroke-linecap="round"/><path d="M0 79.5Q12 77.6 24 79.5T48 79V88H0Z" fill="'+P.sand+'"/>'+i7scat(6,7+v,3,82,45,87,(x,y)=>'<circle cx="'+i7(x)+'" cy="'+i7(y)+'" r=".6" fill="'+P.sand2+'"/>');
+    if(v===1||v===4)s+='<path d="M35 84.6a4.6 4.6 0 0 1 9.2 0z" fill="#ffb199"/><path d="M36.8 84.6l2.3-4.1M39.6 84.6v-4.5M42.4 84.6l-2.3-4.1" stroke="#e8836b" stroke-width=".7"/>';
+    if(v===2)s+='<path d="M39.5 77.6l1.4 3.1 3.4.4-2.5 2.3.7 3.4-3-1.7-3 1.7.7-3.4-2.5-2.3 3.4-.4z" fill="#ff8a3d"/><circle cx="39.5" cy="81.9" r=".6" fill="#ffd0a8"/>';if(v===5)s+='<ellipse cx="37" cy="84.6" rx="2.4" ry="1.5" fill="#c9b79a"/><ellipse cx="42.5" cy="85.4" rx="1.7" ry="1.1" fill="#b9a585"/>'}
+  else{s='<path d="M0 80Q12 78 24 80T48 79.4V88H0Z" fill="#8a5a3a"/><path d="M0 80Q12 78 24 80T48 79.4" fill="none" stroke="#b07a4f" stroke-width="1"/>';
+    const lf=(x,y,r,c,k)=>{k=k||1;return '<g transform="rotate('+r+' '+x+' '+y+')"><path d="M'+(x-3.4*k)+' '+y+'Q'+x+' '+(y-2.8*k)+' '+(x+3.4*k)+' '+y+'Q'+x+' '+(y+2.8*k)+' '+(x-3.4*k)+' '+y+'Z" fill="'+c+'"/><path d="M'+(x-3.4*k)+' '+y+'H'+(x+3.4*k)+'" stroke="rgba(0,0,0,.25)" stroke-width=".5"/></g>'};
+    if(v===0||v===2)s+=lf(33,82.5,-20,'#e8792a')+lf(41,83.8,35,'#d9482b')+(v===2?lf(11,84,10,'#f2b33d'):'');if(v===1)s+=lf(39,83,15,'#f2b33d')+lf(34,56,55,'#e8792a',.9);if(v===5)s+=lf(38,83,-10,'#d9482b');
+    if(v===3)s+='<ellipse cx="39" cy="82.6" rx="2.5" ry="3.1" fill="#c48a48"/><path d="M36.2 81.2a2.8 2.1 0 0 1 5.6 0z" fill="#6b4630"/><path d="M39 79.1v-1.4" stroke="#6b4630" stroke-width=".8"/>';
+    if(v===4)s+='<rect x="38" y="79.6" width="2.2" height="4.4" rx="1" fill="#f3e3c4"/><path d="M34.7 80.2a4.4 3.6 0 0 1 8.8 0z" fill="#d9482b"/><circle cx="37.6" cy="78.4" r=".7" fill="#fff"/><circle cx="40.8" cy="78.9" r=".6" fill="#fff"/>'}
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 88" preserveAspectRatio="xMidYMax slice">'+s+'</svg>'}
+function illDeco(k){if(!(curTh()||{}).season)return '';const sea=seaNow(),d=parse(k),v=(d.getFullYear()*7+d.getMonth()*13+d.getDate()*5)%6,key='d|'+sea+'|'+v;let u=I7C.get(key);
+  if(!u){u='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(i7decoSvg(sea,v));I7C.set(key,u)}
+  return '<img class="dco8" src="'+u+'" alt="" draggable="false" data-sea="'+sea+'">'}

@@ -1,12 +1,12 @@
 /* ===================== v6 : navigation, onglets, animations ===================== */
-const TABS6={home:['#accueil','Accueil','home','tHome'],cal:['#calendrier','Calendrier','cal','tCal'],nut:['#nutrition','Nutrition','nut','tNut'],tools:['#outils','Outils','tools','tTools'],pr:['#progres','Progrès','chart','tPr']}; /* v7 : Nutrition remplace Plus (fusionné dans Outils) */
+const TABS6={home:['#accueil','Accueil','home','tHome'],cal:['#calendrier','Calendrier','cal','tCal'],nut:['#nutrition','Nutrition','nut','tNut'],tools:['#outils','Outils','tools','tTools'],pr:['#progres','Progrès','chart','tPr'],notes:['#carnet','Carnet','note','tNotes']}; /* v7.2 : Carnet, masqué par défaut (accessible depuis l'accueil, la nutrition et Outils) */ /* v7 : Nutrition remplace Plus (fusionné dans Outils) */
 function renderTabs(){const nav=document.querySelector('nav.tabs');if(!nav)return;const vis=S.tabs.order.filter(k=>!S.tabs.off.includes(k));
   const html=S.tabs.order.map(k=>{const t=TABS6[k],h=S.tabs.off.includes(k);return '<a href="'+t[0]+'" id="'+t[3]+'"'+(h?' hidden':'')+' aria-current="'+(curV===k?'page':'false')+'">'+ico(t[2])+'<span>'+t[1]+'</span></a>'}).join('')+'<a href="#competition" id="tCo" hidden style="display:none">Compétition</a>';
   if(nav._h!==html){nav.innerHTML=html;nav._h=html}nav.style.setProperty('grid-template-columns','repeat('+vis.length+',1fr)','important')}
 /* ---- ordre des vues pour le sens des transitions ---- */
 let prevKey='',prevIdx=0;
 function viewKey(){const v=curV;return v==='pr'?'pr:'+S.ptab:v==='tools'?'tools:'+S.xtab:v==='set'?'set:'+(S.setSub||''):v}
-function viewIdx(){const v=curV,base=v==='set'?9:S.tabs.order.indexOf(v),sub=v==='pr'?['stats','records','skills'].indexOf(S.ptab):v==='tools'?['tm','wu','adv','tuto'].indexOf(S.xtab):v==='set'?(S.setSub?1:0)+.5:0;return (base<0?9:base)*10+sub}
+function viewIdx(){const v=curV,base=v==='set'?9:S.tabs.order.indexOf(v),sub=v==='pr'?['mz','stats','records','skills'].indexOf(S.ptab):v==='tools'?['tm','wu','adv','tuto'].indexOf(S.xtab):v==='set'?(S.setSub?1:0)+.5:0;return (base<0?9:base)*10+sub}
 function route(){const h=location.hash.slice(1);if(h==='noter'){history.replaceState(null,'','#accueil');route();setTimeout(()=>goTo('note'),300);return}if(h.startsWith('outils-')){S.xtab='tm';tmTab=h.slice(7)==='pyr'?'pyr':h.slice(7)==='emom'?'emom':'rest';history.replaceState(null,'','#outils')}
   S.setSub=location.hash.slice(1).startsWith('reglages-')?location.hash.slice(10):'';
   route5();renderTabs();if(curV==='tools'){const pb=$('plusBar');let h=$('hidT');if(S.tabs.off.length){if(!h){h=document.createElement('div');h.id='hidT';h.className='hidT';pb.prepend(h)}h.innerHTML=S.tabs.off.map(k=>'<a href="'+TABS6[k][0]+'">'+ico(TABS6[k][2])+TABS6[k][1]+'</a>').join('')}else if(h)h.remove()}

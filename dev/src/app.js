@@ -59,24 +59,25 @@ const streak=()=>{let n=0,d=new Date(T);if(!sOf(key(d)).length)d=add(d,-1);while
 const weekCounts=()=>{const w={};S.sessions.forEach(s=>{const k=wkOf(s.date);w[k]=(w[k]||0)+1});return w};
 
 let lastH='#accueil',curV='home';
-function setHead(){const v=curV,hc=v==='home',T2={cal:['Calendrier','Tes séances'],pr:['Progrès','Tes performances'],tools:['Outils',{tm:'Minuteurs',wu:'Échauffement',adv:'Conseils',tuto:'Tutos'}[S.xtab]||'Outils'],set:['Carnet de séances','Réglages'],nut:['Nutrition',typeof nutHead==='function'?nutHead():'Aujourd\'hui']};
+function setHead(){const v=curV,hc=v==='home',T2={cal:['Calendrier','Tes séances'],pr:['Progrès','Tes performances'],tools:['Outils',{tm:'Minuteurs',wu:'Échauffement',adv:'Conseils',tuto:'Tutos'}[S.xtab]||'Outils'],set:['Carnet de séances','Réglages'],nut:['Nutrition',typeof nutHead==='function'?nutHead():'Aujourd\'hui'],notes:['Carnet','Mes notes']};
   document.body.dataset.v=v;$('hLogo').hidden=!hc;$('figs').hidden=!hc;$('back').hidden=v!=='set';$('gear').hidden=v==='set';
   if(hc){$('hKick').textContent='Carnet de séances';$('hello').textContent=shownName()?'Salut '+shownName()+' !':'Salut !'}else{$('hKick').textContent=T2[v][0];$('hello').textContent=T2[v][1]}}
 function route5(){const h=location.hash.slice(1);
-  const M={calendrier:'cal',progres:'pr',stats:'pr',graphiques:'pr',records:'pr',skills:'pr',outils:'tools',seance:'tools',minuteurs:'tools',plus:'tools',echauffement:'tools',conseils:'tools',tutos:'tools',nutrition:'nut',reglages:'set'},v=h.startsWith('reglages')?'set':(M[h]||'home');
-  if(v==='pr'&&h!=='progres')S.ptab=h==='graphiques'?'stats':h;
+  const M={calendrier:'cal',progres:'pr',mesures:'pr',stats:'pr',graphiques:'pr',records:'pr',skills:'pr',outils:'tools',seance:'tools',minuteurs:'tools',plus:'tools',echauffement:'tools',conseils:'tools',tutos:'tools',nutrition:'nut',carnet:'notes',reglages:'set'},v=h.startsWith('reglages')?'set':(M[h]||'home');
+  if(v==='pr'&&h!=='progres')S.ptab=h==='graphiques'?'stats':h==='mesures'?'mz':h;
   if(v==='tools')S.xtab={echauffement:'wu',conseils:'adv',tutos:'tuto',plus:S.xtab&&S.xtab!=='tm'?S.xtab:'wu'}[h]||'tm';
   if(v!=='set')lastH='#'+(h||'accueil');curV=v;const pt=S.ptab,xt=S.xtab;
-  const show={vHome:v==='home',vCal:v==='cal',progBar:v==='pr',vGr:v==='pr'&&pt==='stats',vRe:v==='pr'&&pt==='records',vSk:v==='pr'&&pt==='skills',vTools:v==='tools'&&xt==='tm',plusBar:v==='tools',vWu:v==='tools'&&xt==='wu',vAdv:v==='tools'&&xt==='adv',vTuto:v==='tools'&&xt==='tuto',vNut:v==='nut',vSet:v==='set',vCo:false};
+  const show={vHome:v==='home',vCal:v==='cal',progBar:v==='pr',vMz:v==='pr'&&pt==='mz',vGr:v==='pr'&&pt==='stats',vRe:v==='pr'&&pt==='records',vSk:v==='pr'&&pt==='skills',vTools:v==='tools'&&xt==='tm',plusBar:v==='tools',vWu:v==='tools'&&xt==='wu',vAdv:v==='tools'&&xt==='adv',vTuto:v==='tools'&&xt==='tuto',vNut:v==='nut',vNotes:v==='notes',vSet:v==='set',vCo:false};
   Object.keys(show).forEach(id=>{$(id).hidden=!show[id]});$('fab').hidden=v!=='cal';
-  [['tHome','home'],['tCal','cal'],['tNut','nut'],['tTools','tools'],['tPr','pr']].forEach(([id,x])=>{const e=$(id);if(e)e.setAttribute('aria-current',v===x?'page':'false')});
+  [['tHome','home'],['tCal','cal'],['tNut','nut'],['tTools','tools'],['tPr','pr'],['tNotes','notes']].forEach(([id,x])=>{const e=$(id);if(e)e.setAttribute('aria-current',v===x?'page':'false')});
   setHead();
-  if(v==='pr')$('progSeg').innerHTML=[['stats','Stats'],['records','Records'],['skills','Skills']].map(x=>'<button type="button" data-pt="'+x[0]+'" aria-pressed="'+(pt===x[0])+'">'+x[1]+'</button>').join('');
+  if(v==='pr')$('progSeg').innerHTML=[['mz','Mesures'],['stats','Stats'],['records','Records'],['skills','Skills']].map(x=>'<button type="button" data-pt="'+x[0]+'" aria-pressed="'+(pt===x[0])+'">'+x[1]+'</button>').join('');
   if(v==='tools')$('plusSeg').innerHTML=[['tm','Minuteurs'],['wu','Échauffement'],['adv','Conseils'],['tuto','Tutos']].map(x=>'<button type="button" data-xt="'+x[0]+'" aria-pressed="'+(xt===x[0])+'">'+x[1]+'</button>').join('');
   if(v==='home')renderHome();if(v==='cal')render();
-  if(v==='pr'){if(pt==='stats')renderStatsPage();else if(pt==='records'){renderTests();renderGoals();renderRecs();renderBadges()}else renderSkills()}
+  if(v==='pr'){if(pt==='mz')renderMz();else if(pt==='stats')renderStatsPage();else if(pt==='records'){renderTests();renderGoals();renderRecs();renderBadges()}else renderSkills()}
   if(v==='tools'){if(xt==='tm')renderTm();else if(xt==='wu')renderWU();else if(xt==='adv')renderAdv();else{renderLinks();renderGuideList()}}
   if(v==='nut'&&typeof renderNut==='function')renderNut();
+  if(v==='notes'&&typeof renderNotes==='function')renderNotes();
   if(v==='set'){renderSet();renderSet2()}
   window.scrollTo(0,0);if(v==='home')countUp($('figs'));const cur=Object.keys(show).find(id=>show[id]&&id!=='progBar'&&id!=='plusBar');if(cur)countUp($(cur))}
 function render(){
@@ -95,7 +96,7 @@ function render(){
   else{const mo=view.getMonth();$('month').textContent=view.toLocaleDateString(LOC(),{month:'long',year:'numeric'});g.className='grid';
     const start=monday(view),cells=[];for(let i=0;i<42;i++){const d=add(start,i);if(i>=35&&d.getMonth()!==mo)break;cells.push(d)}
     g.innerHTML=cells.map((d,i)=>{const k=key(d),ss=sOf(k),ty=[];ss.forEach(s=>s.types.filter(okT).forEach(t=>{if(!ty.includes(t))ty.push(t)}));
-      const rest=!ss.length&&isRest(k),scn=ss.length||rest?'<span class="scn">'+illDay(k)+'</span>':'',st=ty.slice(0,3).map(t=>stk(t,'')).join('')+(ty.length>3?'<span class="more">+'+(ty.length-3)+'</span>':'');
+      const rest=!ss.length&&isRest(k),scn=ss.length||rest?'<span class="scn">'+illDay(k)+'</span>':illDeco(k),st=ty.slice(0,3).map(t=>stk(t,'')).join('')+(ty.length>3?'<span class="more">+'+(ty.length-3)+'</span>':'');
       return (i%7===0?'<span class="wn" aria-hidden="true">'+isoW(d)+'</span>':'')+'<button type="button" class="day'+(d.getMonth()!==mo?' out':'')+(k===TK?' today':'')+(k===sel?' sel':'')+(ss.length?' has':'')+(rest?' rest':'')+'" data-k="'+k+'" aria-label="'+esc(fmtDay(d))+(rest?', repos':', '+ss.length+' séance(s)')+'">'+scn+'<span class="n">'+d.getDate()+'</span>'+(ss.length?'<span class="stk">'+st+'</span>':'')+'</button>'}).join('')}
   const run=noRestRun();$('banner').innerHTML=run>=7&&S.restAck!==TK?'<div class="banner rest"><span class="bimg">'+BED+'</span><span><b>'+run+' jours d\'affilée sans repos</b>Ton corps progresse pendant la récupération : pense à t\'accorder une journée off.</span><button type="button" id="restOk">OK</button></div>':'';
   renderDetail();renderStats();if(!$('vHome').hidden)renderHome();if(!$('vGr').hidden)renderStatsPage();
@@ -295,7 +296,7 @@ const PYEX=[['Tractions',10,[{b:5,x:15,y:30},{b:8,x:45,y:60},{b:10,x:90,y:120}]]
 function loadExtra(v){EXTRA.filter(k=>k!=='name'&&k!=='fav'&&k!=='onb').forEach(k=>{S[k]=v&&v[k]!==undefined&&v[k]!==null?clone(v[k]):undefined});
   S.bw=arr(S.bw);S.goals=arr(S.goals);S.links=arr(S.links);S.icon=CH_SP[S.icon]?S.icon:'homme';S.xtab=['wu','adv','tuto'].includes(S.xtab)?S.xtab:'wu';S.lastSeen=+S.lastSeen||0;S.presets=arr(S.presets);S.tpls=arr(S.tpls);S.deloads=arr(S.deloads);S.tset=obj(S.tset);S.skills=obj(S.skills);S.tests=obj(S.tests);S.cnt=obj(S.cnt);S.notes=obj(S.notes);
   S.goal=Math.min(7,Math.max(1,Math.round(+S.goal||3)));S.acc=ACC[S.acc]?S.acc:'jaune';S.calMode=S.calMode==='w'?'w':'m';S.snd=SNDS[S.snd]?S.snd:'bip';S.voice=!!S.voice;S.theme=['dark','light','auto'].includes(S.theme)?S.theme:'dark';
-  S.wuMode=S.wuMode==='street'?'street':'salle';S.wuNote=typeof S.wuNote==='string'?S.wuNote:'';S.wuW=+S.wuW||0;S.fPl=S.fPl||'';S.fTy=S.fTy||'';S.evo=['n','dur','vol'].includes(S.evo)?S.evo:'n';S.ptab=['stats','records','skills'].includes(S.ptab)?S.ptab:'stats';
+  S.wuMode=S.wuMode==='street'?'street':'salle';S.wuNote=typeof S.wuNote==='string'?S.wuNote:'';S.wuW=+S.wuW||0;S.fPl=S.fPl||'';S.fTy=S.fTy||'';S.evo=['n','dur','vol'].includes(S.evo)?S.evo:'n';S.ptab=['mz','stats','records','skills'].includes(S.ptab)?S.ptab:'mz';
   S.tmc=Object.assign({emN:10,emI:60,emT:'',pyEx:'Tractions',pyId:'',pyStart:1,pyTop:10,pyStep:1,pyShape:'ud',pyMode:'prog',pyFix:30,pyR:clone(PYR0)},obj(S.tmc));
   if(!Array.isArray(S.tmc.pyR)||!S.tmc.pyR.length)S.tmc.pyR=clone(PYR0);if(S.tmc.pyTop<2)S.tmc.pyTop=10;
   if(S.live&&!(Array.isArray(S.live.ex)&&S.live.start))S.live=undefined;S.bilanSeen=S.bilanSeen||'';S.restAck=S.restAck||'';
@@ -642,9 +643,22 @@ document.addEventListener('pointerup',drgEnd);document.addEventListener('pointer
 /* ---------- son, voix, vibration, écran allumé ---------- */
 const SNDS={bip:'Bip',gong:'Gong',cloche:'Clochette',sifflet:'Sifflet',muet:'Aucun son'};
 let actx=null,wl=null,spOk=false;
-function audioOn(){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume()}catch(e){}if(S.voice&&!spOk&&'speechSynthesis' in window){try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u);spOk=true}catch(e){}}}
+function audioOn(){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume()}catch(e){}if(S.voice&&!spOk&&'speechSynthesis' in window){try{const u=new SpeechSynthesisUtterance(' '),v=pickVoice();u.volume=0;u.lang=v?v.lang:voiceLang();if(v)u.voice=v;speechSynthesis.speak(u);spOk=true}catch(e){}}}
 function tone(f,d,v,type,dl){if(!actx)return;try{const t=actx.currentTime+(dl||0),o=actx.createOscillator(),g=actx.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.0002,(v||.25)*(S.vol===undefined?1:S.vol)),t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(actx.destination);o.start(t);o.stop(t+d+.05)}catch(e){}}
-function say(t){if(!S.voice||!t||!('speechSynthesis' in window))return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=({fr:'fr-FR',en:'en-GB',nl:'nl-BE'})[S.lang]||'fr-FR';u.rate=1.05;u.volume=S.vol===undefined?1:S.vol;const vv=S.voiceN&&speechSynthesis.getVoices().find(x=>x.name===S.voiceN);if(vv){u.voice=vv;u.lang=vv.lang}speechSynthesis.speak(u)}catch(e){}}
+/* v7.2 : voix. Cause des voix allemandes : la voix choisie était retrouvée par son NOM ; sur iPhone, les mêmes noms
+   (Eddy, Flo, Grandma, Reed, Sandy, Shelley…) existent dans plusieurs langues et la première trouvée était souvent l'allemande.
+   Désormais : identifiant unique (voiceURI), seulement des voix de la langue de l'appli, meilleure voix choisie d'office. */
+const VOICE_ROBOT=/eloquence|novelty|\b(eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley|albert|bahh|bells|boing|bubbles|cellos|jester|organ|superstar|trinoids|whisper|wobble|zarvox|fred|junior|kathy|ralph|bad news|good news)\b/i;
+const voiceLang=()=>({fr:'fr-FR',en:'en-GB',nl:'nl-BE'})[S.lang]||'fr-FR';
+function voiceList(){if(!('speechSynthesis' in window))return [];const lg=(S.lang||'fr').slice(0,2);let L=[];try{L=speechSynthesis.getVoices()}catch(e){}return L.filter(v=>String(v.lang||'').toLowerCase().replace('_','-').slice(0,2)===lg&&!VOICE_ROBOT.test(v.name+' '+v.voiceURI))}
+function voiceScore(v){const n=(v.name+' '+v.voiceURI).toLowerCase(),lc=String(v.lang||'').toLowerCase().replace('_','-'),P={fr:['fr-fr','fr-be','fr-ch','fr-ca'],en:['en-gb','en-us','en-ie','en-au'],nl:['nl-be','nl-nl']}[S.lang]||[],i=P.indexOf(lc);
+  return (/premium|enhanced|amélioré|neural|natural|siri/.test(n)?40:0)+(/google/.test(n)?14:0)+(i>=0?(P.length-i)*3:0)+(v.localService?3:0)+(v.default?2:0)}
+function pickVoice(){const L=voiceList();if(!L.length)return null;if(S.voiceU){const v=L.find(x=>x.voiceURI===S.voiceU);if(v)return v}
+  if(S.voiceN){const v=L.find(x=>x.name===S.voiceN);S.voiceU=v?v.voiceURI:'';S.voiceN='';save();if(v)return v} /* ancien réglage (par nom) : repris seulement dans la bonne langue */
+  return L.slice().sort((a,b)=>voiceScore(b)-voiceScore(a))[0]}
+function say(t){if(!S.voice||!t||!('speechSynthesis' in window))return;try{const ss=speechSynthesis,v=pickVoice(),u=new SpeechSynthesisUtterance(typeof trS==='function'?trS(t):t);
+  u.lang=v?v.lang:voiceLang();if(v)u.voice=v;u.rate=1;u.pitch=1;u.volume=S.vol===undefined?1:S.vol;
+  if(ss.speaking||ss.pending){ss.cancel();setTimeout(()=>ss.speak(u),70)}else ss.speak(u)}catch(e){}} /* jamais deux annonces en même temps ; petit délai après cancel (iPhone) */
 function sTick(n){const k=S.snd;if(k==='bip')tone(660,.12,.25);else if(k==='gong')tone(330,.4,.22);else if(k==='cloche'){tone(1320,.3,.16);tone(2640,.2,.05)}else if(k==='sifflet')tone(1900,.09,.1,'square');if(n)say(String(n))}
 function sGo(w){const k=S.snd;if(k==='bip')tone(990,.6,.35);else if(k==='gong'){tone(196,1.8,.35);tone(392,1.2,.12);tone(588,.8,.05)}else if(k==='cloche'){tone(1568,.9,.25);tone(3136,.6,.07);tone(1568,.9,.2,'sine',.28)}else if(k==='sifflet'){tone(2100,.16,.12,'square');tone(2600,.3,.12,'square',.2)}say(w)}
 function sWin(){if(S.snd==='muet')return;tone(784,.14,.2);tone(988,.14,.2,'sine',.12);tone(1319,.34,.24,'sine',.24)}
@@ -919,7 +933,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)r
   if(t.id==='expPdf'){exportPDF();return}
   if(ds.fpl!==undefined){S.fPl=ds.fpl;save();renderStatsPage();countUp($('mK'));return}
   if(ds.evo){S.evo=ds.evo;save();renderStatsPage();return}
-  if(ds.pt){S.ptab=ds.pt;save();location.hash='#'+ds.pt;return}
+  if(ds.pt){S.ptab=ds.pt;save();location.hash='#'+(ds.pt==='mz'?'mesures':ds.pt);return}
   if(ds.xt){goTo(ds.xt);return}
   if(ds.go){goTo(ds.go);return}
   if(ds.goday){sel=ds.goday;const d=parse(sel);view=new Date(d.getFullYear(),d.getMonth(),1);location.hash='#calendrier';render();return}

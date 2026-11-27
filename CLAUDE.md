@@ -22,10 +22,10 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 - Appli en **un seul fichier** : `index.html` à la racine est **généré**. Ne jamais le modifier à la main : modifier `dev/src/` puis lancer `python3 dev/build.py`.
 - `dev/build.py` assemble : `src/head.html` + `src/style.css` + `src/css/*.css` (ordre alphabétique) + `src/body.html` + `src/app.js`, où les modules `src/js/*.js` (ordre alphabétique) sont insérés au marqueur `/*@@MODS@@*/`.
 - Tout le JavaScript est dans **un seul bloc `{ … }`** : les `const`/`let` d'un module sont visibles des autres modules, mais pas depuis la console ou `page.evaluate` ; les déclarations `function` deviennent globales (testables depuis Playwright). Les `const` d'un module ne sont prêts qu'une fois ce module exécuté : à l'appel au chargement, attention à l'ordre des fichiers.
-- État : objet `S` dans `localStorage` (clé `carnet-seances`). Toute nouvelle clé doit être ajoutée à `EXTRA` (`src/js/10_core6.js`). Version des données `S.v` = 9 (migrations dans `v6Load`, `10_core6.js`).
+- État : objet `S` dans `localStorage` (clé `carnet-seances`). Toute nouvelle clé doit être ajoutée à `EXTRA` (`src/js/10_core6.js`). Version des données `S.v` = 10 (migrations dans `v6Load`, `10_core6.js`).
 - Service worker `sw.js` : cache `carnet-v7-1-0`, à changer à chaque version.
 - Onglets : Accueil · Calendrier · Nutrition · Outils (Minuteurs, Échauffement, Conseils, Tutos) · Progrès (Mesures, Stats, Records, Skills) + Carnet (`notes`, masqué par défaut, donc lien en haut d'Outils) (`TABS6`, `src/js/30_ui6.js`).
-- **v7.2 en cours, non publiée** : l'accueil attend le choix de Diego entre 3 maquettes (voir `dev/PLAN.md`, section v7.2.0). Les maquettes vivent dans `42_hproto.js` / `69_hproto.css` (actives seulement avec `?hp=a|b|c`) : à remplacer par la version choisie.
+- **v7.2 prête, non publiée** (détails dans `dev/PLAN.md`). Accueil choisi par Diego : piste C « Immersif » + widgets de la piste B (`43_home72.js`).
 
 ### Modules importants
 | Fichier | Rôle |
@@ -35,7 +35,7 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 | `src/js/20_chars.js` | moteur des persos (style « Athlète ») : `charSvg()`, poses `CH_POSE`, primitives `chLimb`, `chP`… |
 | `src/js/25_icon6.js` | `charOf()` / `myChar()` (perso de l'utilisateur), `seaOf()` (tenue de saison) |
 | `src/js/40_home6.js`, `41_home7.js` | accueil : cartes `HCARDS`, carte « Mesures » (`poidsCard`, `bwSheet` = feuille « Nouvelle mesure »), poids (`bwTrend`, `bwStatus`), icônes `note`, `pin` |
-| `src/js/42_hproto.js` | maquettes de l'accueil (temporaire, `?hp=a|b|c`) |
+| `src/js/43_home72.js` | accueil v7.2 : scène de saison avec le perso, 3 chiffres, semaine en petites scènes, widgets Mesures / Nutrition / Carnet / Progrès (`home72()`, `w72()`) ; `renderHome()` (40_home6.js) n'ajoute que les cartes optionnelles |
 | `src/js/56_ill7.js` | **système central des illustrations de saison** (voir plus bas) |
 | `src/js/57_season7.js` | décor au trait des thèmes de saison (glyphes, liseré de la barre du bas), particules `#fx7`, `sea7Sync()` |
 | `src/js/58_foods.js` | base d'aliments (100 aliments, valeurs pour 100 g CIQUAL/USDA, portions) : aide à la saisie et lecture des anciennes entrées |
@@ -100,7 +100,7 @@ cd dev && python3 t16.py                                # tests Playwright (~6 m
 - Sur iPhone, l'appli se met à jour en la fermant puis en la rouvrant.
 
 ## Décisions de Diego (à respecter)
-- v7.2 : appli personnelle, pas de coach : objectifs nutrition saisis par l'utilisateur (Kcal et Prot seulement) ; carnet de notes ; Mesures en 1er sous-onglet de Progrès avec la consigne de pesée ; Outils et Réglages gardés tels quels ; été plus « mer et soleil », hiver inchangé ; nouvel accueil seulement après validation d'une des maquettes.
+- v7.2 : accueil = piste C « Immersif » (scène de saison avec le perso) + widgets de la piste B (Mesures, Nutrition, puis Carnet, Progrès) ; printemps personnalisé (arbres en fleurs, verts, pommiers, buissons) ; appli personnelle, pas de coach : objectifs nutrition saisis par l'utilisateur (Kcal et Prot seulement) ; carnet de notes ; Mesures en 1er sous-onglet de Progrès avec la consigne de pesée ; Outils et Réglages gardés tels quels ; été plus « mer et soleil », hiver inchangé ; nouvel accueil seulement après validation d'une des maquettes.
 - v7.1 : système central saison × activité ; thème sans saison = saison réelle ; salle = développé couché ; repos du printemps = pique-nique ; printemps varié ; nutrition en carnet simple ; mesures (poids + tour de taille) mises en avant.
 - v7.0 : accueil minimaliste sans répétitions (perso, Mesures, Nutrition du jour, une seule carte « À la une » ; les autres cartes restent activables dans Réglages) ; onglet Nutrition à la place de « Plus » ; décor de saison « Mix ».
 - v6.3 : persos en style « Athlète » (adultes, sobres, contour fin) ; robot et ninja retirés ; animaux gardés en version adulte ; animations toujours actives par défaut ; ton « Sobre » sans émojis ; pas de vibrations.

@@ -1,5 +1,5 @@
 /* ===================== v6 : accueil ===================== */
-const HCARDS={perso:['Ton objectif perso','target'],poids:['Mesures','scale'],nutri:['Nutrition du jour','nut'],notes:['Carnet','note'],une:['À la une','sparkles'],defi:['Défi du mois','trophy',0],recap:['Récap de la semaine','sparkles',0],last:['Dernière séance','cal',0],tip:['Astuce du jour','bulb',0],test:['Test max du mois','bars',0],deload:['Semaine d\'allègement','wave',0],objectif:['Objectif en cours','target',0],skills:['Prochain skill','star',0],compare:['Toi il y a 3 mois','chart',0]}; /* v7 : accueil épuré (poids, nutrition, une seule carte « À la une ») ; « Tes outils » retiré (doublon de l'onglet Outils) */
+const HCARDS={poids:['Mesures','scale'],nutri:['Nutrition','nut'],notes:['Carnet','note'],prog:['Progrès','chart'],perso:['Ton objectif perso','target'],une:['À la une','sparkles',0],defi:['Défi du mois','trophy',0],recap:['Récap de la semaine','sparkles',0],last:['Dernière séance','cal',0],tip:['Astuce du jour','bulb',0],test:['Test max du mois','bars',0],deload:['Semaine d\'allègement','wave',0],objectif:['Objectif en cours','target',0],skills:['Prochain skill','star',0],compare:['Toi il y a 3 mois','chart',0]}; /* v7 : accueil épuré (poids, nutrition, une seule carte « À la une ») ; « Tes outils » retiré (doublon de l'onglet Outils) */
 /* ---- anneau de la semaine animé (A7) ---- */
 let ringPrev=null;
 function ring(n,goal){const p=Math.min(1,n/goal),C=2*Math.PI*17,p0=ringPrev===null?0:ringPrev;ringPrev=p;
@@ -28,21 +28,15 @@ function hdr6(){const v=curV,hc=v==='home';const h=$('hLogo');if(h&&hc&&!h.first
 function relDay2(k){return relDay(k)}
 function hcard(attrs,ic,kick,title,sub,extra){return '<button type="button" class="hc"'+attrs+'>'+ic+'<div>'+(kick?'<p class="kick">'+kick+'</p>':'')+(title?'<b>'+title+'</b>':'')+(sub?'<p>'+sub+'</p>':'')+(extra||'')+'</div>'+ico('chev','hcv')+'</button>'}
 const icBox=(k,txt)=>'<span class="hcic">'+(txt?esc(txt):ico(k))+'</span>';
-function renderHome(){if(hpV()){hpRender(hpV());return}const wm=monday(T),days=[0,1,2,3,4,5,6].map(i=>key(add(wm,i))),goal=S.goal||3,wn=S.sessions.filter(s=>days.includes(s.date)).length,left=goal-wn,ls=lastSess(),mk=TK.slice(0,7),tdone=Object.keys(obj(S.tests[mk])).length,dl=deloadInfo(),run=noRestRun(),tds=sOf(TK),cards=[];
-  const gap=ls?Math.round((parse(TK)-parse(ls.date))/864e5):-1;
-  let hm;if(!S.sessions.length)hm=msg('first')[2];else if(tds.length)hm=msg('hDone');else if(isRest(TK))hm=msg('hRest');else if(wn>=goal)hm=msg('hGoal');else if(gap>=4)hm=msg('hGap',{d:gap});else if(wn===0)hm=msg('hNew',{k:goal});else hm=msg('hLeft',{g:left});
-  const tdTxt=tds.length?'<div class="tdsum">'+tds.map(s=>'<span class="tdp">'+ico(s.place==='salle'?'salle':s.place==='garage'?'garage':'street')+'<span><span>'+esc(plN[s.place]||'')+'</span>'+(s.ex.length?' · '+s.ex.slice(0,3).map(x=>'<span>'+esc(x)+'</span>').join(', ')+(s.ex.length>3?' +'+(s.ex.length-3):''):'')+'</span></span>').join('')+'</div>':'';
-  $('hStart').innerHTML='<div class="hero'+(S.masc==='off'?' nom':'')+'">'+mascHtml()+'<div class="herot"><p class="kick">'+esc(fmtDay(T))+'</p><h2 class="hbig">Aujourd\'hui</h2><p class="hmsg">'+esc(hm)+'</p>'+tdTxt+'</div></div>'
-   +'<div class="wdots">'+days.map((k,i)=>{const n=sOf(k).length,r=!n&&isRest(k);return '<button type="button" class="wdot'+(n?' on':'')+(r?' rest':'')+(k===TK?' td':'')+(k>TK?' fut':'')+'" data-goday="'+k+'" aria-label="'+esc(fmtDay(parse(k)))+(n?', séance':r?', repos':'')+'"><b>'+DOWI()[i]+'</b><i>'+(n?CHK:r?'💤':parse(k).getDate())+'</i></button>'}).join('')+'</div>'
-   +'<button type="button" class="btn big'+(tds.length?' ghost':'')+'" data-go="note"><span class="pl6">'+ico('check','okic')+'<b class="plus">+</b></span>'+(tds.length?'Noter une autre séance':'Noter une séance')+'</button>';
+/* message du jour (ton choisi dans Réglages > Messages) */
+function homeMsg(){const wm=monday(T),days=[0,1,2,3,4,5,6].map(i=>key(add(wm,i))),goal=S.goal||3,wn=S.sessions.filter(s=>days.includes(s.date)).length,ls=lastSess(),gap=ls?Math.round((parse(TK)-parse(ls.date))/864e5):-1;
+  if(!S.sessions.length)return msg('first')[2];if(sOf(TK).length)return msg('hDone');if(isRest(TK))return msg('hRest');if(wn>=goal)return msg('hGoal');if(gap>=4)return msg('hGap',{d:gap});if(wn===0)return msg('hNew',{k:goal});return msg('hLeft',{g:goal-wn})}
+/* v7.2 : l'accueil est dessiné par home72() (43_home72.js) ; ici, seulement les cartes optionnelles activées dans Réglages */
+function renderHome(){const ls=lastSess(),mk=TK.slice(0,7),tdone=Object.keys(obj(S.tests[mk])).length,dl=deloadInfo(),run=noRestRun(),cards=[];
   if(run>=7&&S.restAck!==TK)cards.push('<div class="hc warnc"><span class="bimg">'+BED+'</span><div><b>'+run+' jours d\'affilée sans repos</b><p>Ton corps progresse pendant la récupération : pense à t\'accorder une journée off. 😴</p></div></div>');
   const one=k=>{let h='';
-    if(k==='perso'&&S.goalT)h=hcard(' data-go6="profil"',icBox('target'),'Ton objectif',esc(S.goalT),'');
-    else if(k==='defi'&&typeof chalCard==='function')h=chalCard();
+    if(k==='defi'&&typeof chalCard==='function')h=chalCard();
     else if(k==='recap'&&typeof recapCard==='function')h=recapCard();
-    else if(k==='poids')h=poidsCard();
-    else if(k==='nutri'&&typeof nutriCard==='function')h=nutriCard();
-    else if(k==='notes'&&typeof notesCard==='function')h=notesCard();
     else if(k==='last'&&ls){const f=feelOf(ls);h='<button type="button" class="hc" data-goday="'+ls.date+'"><span class="hcpic">'+scene(ls.place,ls.date,{who:1,fam:i7fam([ls],ls.place)})+'</span><div><p class="kick">Dernière séance · '+esc(relDay(ls.date))+'</p><b>'+(ls.ex.length?ls.ex.slice(0,3).map(x=>'<span>'+esc(x)+'</span>').join(', ')+(ls.ex.length>3?' +'+(ls.ex.length-3):''):esc(plN[ls.place]||'Séance'))+'</b><p>'+esc([plN[ls.place],ls.tod?todN[ls.tod]:'',ls.dur?fmtDur(ls.dur):''].filter(Boolean).join(' · '))+(f?' · '+f[1]+' '+f[2]:'')+'</p></div>'+ico('chev','hcv')+'</button>'}
     else if(k==='tip'){const tp=TIPS[Math.floor((T-new Date(T.getFullYear(),0,0))/864e5)%TIPS.length];h=hcard(' data-go="'+tp[2]+'"',icBox('bulb'),'Astuce du jour · '+esc(tp[0]),'',esc(tp[1]),'').replace('<p>','<p class="tipt">')}
     else if(k==='test'&&!tdone)h=hcard(' data-go="tests"',icBox('','MAX'),'Test max de '+esc(mName(T.getFullYear(),T.getMonth(),'long')),'Pas encore fait','Tractions, pompes et dips : note ton maximum du mois. 📈');
@@ -51,8 +45,8 @@ function renderHome(){if(hpV()){hpRender(hpV());return}const wm=monday(T),days=[
     else if(k==='skills'){const sk=skNext();if(sk)h=hcard(' data-go="skills"','<span class="hcic emo">'+sk.e+'</span>','Skills · <span>'+esc(sk.n)+'</span> · '+sk.done+'/'+sk.tot,esc(sk.next),'Ta prochaine étape à débloquer')}
     else if(k==='compare'&&typeof cmpCard==='function')h=cmpCard();
     return h};
-  /* « À la une » : une seule carte, la plus utile du moment (sauf celles déjà affichées une par une) */
+  /* « À la une » (si activée) : une seule carte, la plus utile du moment */
   const onK=S.cards.filter(c=>c.on).map(c=>c.k),UNE=[T.getDate()<=12?'test':'',dl.n>=6&&!dl.on?'deload':'',S.chal||T.getDate()<=7?'defi':'','objectif','skills','last','tip'].filter(k=>k&&!onK.includes(k));
-  S.cards.filter(c=>c.on).forEach(c=>{let h='';if(c.k==='une'){for(const k of UNE){h=one(k);if(h)break}if(h)h=h.replace(/^<(button|div|section) class="/,'<$1 class="une7 ')}else h=one(c.k);if(h)cards.push(h)});
-  $('hCards').innerHTML=cards.join('');animRings();plxTick()}
+  S.cards.filter(c=>c.on&&!W72.includes(c.k)&&c.k!=='perso').forEach(c=>{let h='';if(c.k==='une'){for(const k of UNE){h=one(k);if(h)break}if(h)h=h.replace(/^<(button|div|section) class="/,'<$1 class="une7 ')}else h=one(c.k);if(h)cards.push(h)});
+  home72(cards.join(''))}
 document.addEventListener('click',e=>{const b=e.target.closest('#masc');if(b){mascSay();return}const g=e.target.closest('[data-go6]');if(g){location.hash='#reglages-'+g.dataset.go6}});

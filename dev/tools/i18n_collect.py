@@ -41,10 +41,8 @@ with sync_playwright() as p:
     pg.click('#vNotes [data-nb="new"]');pg.wait_for_timeout(300);grab();pg.fill('#nbT','Test');pg.wait_for_timeout(700);grab();close();pg.wait_for_timeout(300);grab()
     pg.locator('#vNotes .nb8n').first.click();pg.wait_for_timeout(300);grab();close()
     pg.fill('#nbQ','zzzz');pg.wait_for_timeout(300);grab();pg.fill('#nbQ','')
-    pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(600);pg.click('#hCards [data-bw7="add"]');grab();close();pg.evaluate('location.hash="#calendrier"');pg.wait_for_timeout(500);pg.click('[data-cal="w"]');pg.wait_for_timeout(400);grab();pg.click('[data-cal="m"]')
-    for v in 'abc':
-        pg.goto(U+'?hp='+v);pg.wait_for_timeout(2600);pg.mouse.click(5,5);grab()
-    pg.goto(U+'?hp=0');pg.wait_for_timeout(2600)
+    pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(600);pg.click('#hStart .w72mz [data-bw7="add"]');grab();close();pg.evaluate('location.hash="#calendrier"');pg.wait_for_timeout(500);pg.click('[data-cal="w"]');pg.wait_for_timeout(400);grab();pg.click('[data-cal="m"]')
+    pg.evaluate('location.hash="#reglages-accueil"');pg.wait_for_timeout(600);grab()
     d=dict(SEED);d.pop('nut');d['bw']=[]
     ctx2=b.new_context(viewport={'width':390,'height':844},has_touch=True)
     ctx2.add_init_script('if(!sessionStorage.getItem("s")){localStorage.setItem("carnet-seances",'+json.dumps(json.dumps(d))+');localStorage.setItem("carnet-info","x");sessionStorage.setItem("s","1")}')

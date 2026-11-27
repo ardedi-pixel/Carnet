@@ -21,7 +21,7 @@ with sync_playwright() as p:
         ctx=b.new_context(viewport={'width':VW,'height':VH},device_scale_factor=2,has_touch=True)
         ctx.add_init_script('if(!sessionStorage.getItem("s")){localStorage.setItem("carnet-seances",'+json.dumps(json.dumps(SEED))+');localStorage.setItem("carnet-info","x");sessionStorage.setItem("s","1")}')
         pg=ctx.new_page();errs=[];pg.on('pageerror',lambda e:errs.append(str(e)));pg.on('console',lambda m:errs.append('console:'+m.text) if m.type=='error' else None)
-        pg.goto(U+'?hp=0');pg.wait_for_timeout(3300);pg.add_style_tag(content='#warn{display:none!important}');pg.mouse.click(5,5);pg.wait_for_timeout(300)
+        pg.goto(U);pg.wait_for_timeout(3300);pg.add_style_tag(content='#warn{display:none!important}');pg.mouse.click(5,5);pg.wait_for_timeout(300)
         fs=[]
         for h in ['accueil','calendrier','nutrition','mesures','carnet','outils']:
             pg.evaluate('location.hash="#'+h+'"');pg.wait_for_timeout(1300);f=O+'%s_%d_%s.png'%(th,VW,h);pg.screenshot(path=f);fs.append(f)

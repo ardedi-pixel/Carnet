@@ -14,7 +14,7 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 - **Clarifier avant de coder** quand une demande est vague ou que plusieurs directions sont possibles : 2 à 4 questions avec des propositions concrètes et une option recommandée. Ne pas poser de question inutile quand c'est clair.
 - Pour un travail visuel, montrer un brouillon tôt (planche d'images) **et continuer le travail pendant qu'il regarde** ; corriger en route selon ses retours. Ne jamais s'arrêter en attendant sa réponse.
 - Design : minimaliste, moderne, cohérent, pensé mobile d'abord. Pas de doublons, pas d'éléments décoratifs gratuits, pas d'émojis ni de look enfantin.
-- **Ne jamais commit ni push sans son accord explicite.** Quand il l'a donné, finir par le lien et la version entre guillemets : `https://ardedi-pixel.github.io/Carnet/ « 7.2.0 »`.
+- **Ne jamais commit ni push sans son accord explicite.** Quand il l'a donné, finir par le lien et la version entre guillemets : `https://ardedi-pixel.github.io/Carnet/ « 7.3.0 »`.
 - Ne jamais dire « testé » sans l'avoir réellement testé (tests automatiques + captures).
 - Tenir `dev/PLAN.md` à jour à chaque version (section « vX.Y.Z »).
 
@@ -23,17 +23,17 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 - `dev/build.py` assemble : `src/head.html` + `src/style.css` + `src/css/*.css` (ordre alphabétique) + `src/body.html` + `src/app.js`, où les modules `src/js/*.js` (ordre alphabétique) sont insérés au marqueur `/*@@MODS@@*/`.
 - Tout le JavaScript est dans **un seul bloc `{ … }`** : les `const`/`let` d'un module sont visibles des autres modules, mais pas depuis la console ou `page.evaluate` ; les déclarations `function` deviennent globales (testables depuis Playwright). Les `const` d'un module ne sont prêts qu'une fois ce module exécuté : à l'appel au chargement, attention à l'ordre des fichiers.
 - État : objet `S` dans `localStorage` (clé `carnet-seances`). Toute nouvelle clé doit être ajoutée à `EXTRA` (`src/js/10_core6.js`). Version des données `S.v` = 10 (migrations dans `v6Load`, `10_core6.js`).
-- Service worker `sw.js` : cache `carnet-v7-2-0`, à changer à chaque version.
+- Service worker `sw.js` : cache `carnet-v7-3-0`, à changer à chaque version.
 - Onglets : Accueil · Calendrier · Nutrition · Outils (Minuteurs, Échauffement, Conseils, Tutos) · Progrès (Mesures, Stats, Records, Skills) + Carnet (`notes`, masqué par défaut, donc lien en haut d'Outils) (`TABS6`, `src/js/30_ui6.js`).
-- **v7.2.0 publiée** (détails dans `dev/PLAN.md`). Accueil choisi par Diego : piste C « Immersif » + widgets de la piste B (`43_home72.js`) ; la scène suit le lieu le plus fréquent (`homePlace()`, réglage `S.hscn`).
+- **v7.3.0 publiée** (répétition au toucher, hip thrust, coupe, veste de saison, badges ; détails dans `dev/PLAN.md`). Accueil choisi par Diego : piste C « Immersif » + widgets de la piste B (`43_home72.js`) ; la scène suit le lieu le plus fréquent (`homePlace()`, réglage `S.hscn`).
 
 ### Modules importants
 | Fichier | Rôle |
 |---|---|
 | `src/app.js` | routeur, calendrier (vues mois et semaine, détail du jour), formulaire de séance ; `scene()` délègue à `illScene()` |
 | `src/js/10_core6.js` | thèmes (`THEMES`, dont les 4 saisons), `applyAcc()`, migrations, `EXTRA` |
-| `src/js/20_chars.js` | moteur des persos (style « Athlète ») : `charSvg()`, poses `CH_POSE`, primitives `chLimb`, `chP`… |
-| `src/js/25_icon6.js` | `charOf()` / `myChar()` (perso de l'utilisateur), `seaOf()` (tenue de saison) |
+| `src/js/20_chars.js` | moteur des persos (style « Athlète ») : `charSvg()`, poses `CH_POSE`, primitives `chLimb`, `chP`… ; `charAnim(o,dur,p1,p2,once)` (once = une répétition lancée par `beginElement()`) ; jambes libres `P.lp` + chaussure tournée `chShoeR` (hip thrust) |
+| `src/js/25_icon6.js` | `charOf()` / `myChar()` (perso de l'utilisateur), `seaOf()` (tenue de saison) ; coupe par perso `S.char.hsp[homme|femme]` |
 | `src/js/40_home6.js`, `41_home7.js` | accueil : cartes `HCARDS`, carte « Mesures » (`poidsCard`, `bwSheet` = feuille « Nouvelle mesure »), poids (`bwTrend`, `bwStatus`), icônes `note`, `pin` |
 | `src/js/43_home72.js` | accueil v7.2 : scène de saison avec le perso, 3 chiffres, semaine en petites scènes, widgets Mesures / Nutrition / Carnet / Progrès (`home72()`, `w72()`) ; `renderHome()` (40_home6.js) n'ajoute que les cartes optionnelles |
 | `src/js/56_ill7.js` | **système central des illustrations de saison** (voir plus bas) |
@@ -42,16 +42,18 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 | `src/js/62_nutri.js` | nutrition « carnet » (v7.2) |
 | `src/js/64_notes.js` | Carnet de notes (`#carnet`) |
 | `src/js/66_mesures.js` | page Mesures (`#mesures`, 1er sous-onglet de Progrès) |
-| `src/js/70_stats6.js` | Progrès, « Poids et mensurations » (`renderBW`, consigne `#mzTip`) |
+| `src/js/70_stats6.js` | Progrès, « Poids et mensurations » (`renderBW`, consigne `#mzTip`) ; badges en pin's sur la veste (`renderJacket`, `PIN_C`) ; liste des badges : `badgeList()` dans `app.js` (32, étiquette `l`) |
+| `src/js/71_jacket7.js` | veste des badges, **une par saison** (`jacketSvg(saison)` : doudoune, bomber, coupe-vent, velours ; emplacements `JK_XY`) |
 | `src/js/85_share6.js` | cartes de partage, `exFam()` / `mainEx()` (famille d'exercice) |
 | `src/js/94_dict.js`, `95_i18n.js` | traductions EN/NL |
-| `src/css/66_v7.css`, `67_nutri.css`, `68_v71.css`, `70_v72.css` | styles v7 (saisons, nutrition, scènes, mesures, carnet, réglages compacts, été v7.2) |
+| `src/css/66_v7.css`, `67_nutri.css`, `68_v71.css`, `70_v72.css`, `71_v73.css` | styles v7 (saisons, nutrition, scènes, mesures, carnet, réglages compacts, été v7.2, veste et pin's v7.3) |
 
 ### Système d'illustrations de saison (v7.1, `src/js/56_ill7.js`)
 - `seaNow()` = saison active : celle du thème de saison (`printemps`, `ete`, `automne`, `hiver`, ou « Selon la saison ») ; avec un autre thème (Nuit, Minimal…), la **saison réelle** (déc.-fév. hiver, mars-mai printemps, juin-août été, sept.-nov. automne). Choix de Diego.
 - `illScene(lieu,{who,fam})` : décor large 160 x 100 (cartes de séance, semaine, accueil, partages). Street propre à chaque saison ; garage et salle montrent la saison par la porte ou les fenêtres. `who:1` ajoute le perso.
 - `illTile('train'|'rest',{place,fam})` : scène portrait 48 x 88 des cases du calendrier, servie en `<img>` (data URL mise en cache par clé saison | type | lieu | exercice | perso).
 - `illDay(k)` : séance → entraînement (tractions, dips, squat ; **salle = développé couché**, pose `CH_POSE.bench`) ; repos → transat (été), **pique-nique** (printemps), couverture et feuilles (automne), sac de couchage près d'un bonhomme de neige (hiver), avec « Zzz » ; jour vide → rien.
+- Accueil (v7.3) : **toucher le perso = une répétition** de l'exercice montré (`illScene(…,{rep:1})`, `mascRep()` dans `40_home6.js`) : traction, dips, squat, développé couché (barre à la poitrine) ; perso « Femme » à la salle : **hip thrust** (`i7hip()`, aussi dans le calendrier). `.who7` porte `data-ex` et `data-rd`. Dans Chrome chaque `<svg>` imbriqué a sa propre horloge SMIL (pour figer une image : pause + heure sur chaque `<svg>`).
 - `illGround()` (sol du perso de l'accueil), `i7bandSvg()` (paysage coloré au-dessus de la barre d'onglets, variable CSS `--sband`).
 - Règle : **aucun dessin ne dépend de la date de la séance** ; tout passe par `seaNow()`. Chaque élément porte `data-sea` (utilisé par les tests).
 - Printemps varié (demande de Diego) : pommiers en fleurs, arbres verts, tulipes, papillons, pas seulement des cerisiers.
@@ -89,7 +91,7 @@ cd dev && python3 t16.py                                # tests Playwright (~6 m
 - Captures (dans `dev/tools/out/`, ignoré par git) : `python3 dev/tools/shots_seasons.py 390 844 printemps ete automne hiver nuit` (planche par thème : accueil, calendrier, nutrition, outils, progrès, idées) ; `python3 dev/tools/shots_calendar.py 375 667` (calendrier mois, repos, semaine) ; `python3 dev/tools/preview_scenes.py` (planche de toutes les scènes par saison).
 - Toujours vérifier en **390 x 844 et 375 x 667**, dans les 4 saisons et en Nuit / Minimal, puis regarder les images.
 - Les tests utilisent la date du jour (`TK0`, `TK`) : plus de date en dur.
-- Captures : `shots_seasons.py` montre accueil, calendrier, nutrition, mesures, carnet, outils.
+- Captures : `shots_seasons.py` montre accueil, calendrier, nutrition, mesures, carnet, outils et la veste des badges.
 
 ## Publier (seulement avec l'accord de Diego)
 1. Monter la version à 4 endroits : `APP_V` (`dev/src/app.js`), `APP6` (`dev/src/js/10_core6.js`), `version.json`, cache `C` de `sw.js` (`carnet-vX-Y-Z`).
@@ -100,6 +102,7 @@ cd dev && python3 t16.py                                # tests Playwright (~6 m
 - Sur iPhone, l'appli se met à jour en la fermant puis en la rouvrant.
 
 ## Décisions de Diego (à respecter)
+- v7.3 : toucher le perso = une répétition (développé couché, traction…) ; perso « Femme » = hip thrust à la place du développé couché ; plus d'accessoires à débloquer ; plus de badges ; veste des badges différente par saison (suit le thème, saison réelle avec un thème sans saison).
 - v7.2 : accueil = piste C « Immersif » (scène de saison avec le perso, au lieu où la personne s'entraîne le plus : street, garage ou salle, réglable) + widgets de la piste B (Mesures, Nutrition, puis Carnet, Progrès) ; printemps personnalisé (arbres en fleurs, verts, pommiers, buissons) ; appli personnelle, pas de coach : objectifs nutrition saisis par l'utilisateur (Kcal et Prot seulement) ; carnet de notes ; Mesures en 1er sous-onglet de Progrès avec la consigne de pesée ; Outils et Réglages gardés tels quels ; été plus « mer et soleil », hiver inchangé ; nouvel accueil seulement après validation d'une des maquettes.
 - v7.1 : système central saison × activité ; thème sans saison = saison réelle ; salle = développé couché ; repos du printemps = pique-nique ; printemps varié ; nutrition en carnet simple ; mesures (poids + tour de taille) mises en avant.
 - v7.0 : accueil minimaliste sans répétitions (perso, Mesures, Nutrition du jour, une seule carte « À la une » ; les autres cartes restent activables dans Réglages) ; onglet Nutrition à la place de « Plus » ; décor de saison « Mix ».

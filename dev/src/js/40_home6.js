@@ -15,7 +15,10 @@ function mascState(){const td=sOf(TK).length>0,h=new Date().getHours(),wm=monday
 /* D3 : décor derrière le perso selon l'heure (matin : lever de soleil ; soir et nuit : ciel étoilé ; journée : disque d'origine) */
 function mascScene(){const h=new Date().getHours();return h>=5&&h<10?'morning':h>=17&&h<21?'evening':h>=21||h<5?'night':''}
 function mascHtml(){if(S.masc==='off')return '';const m=mascState(),sc=mascScene();return '<button type="button" class="masc m-'+m[0]+(S.masc==='mini'?' mini':'')+(sc?' scn':'')+'" id="masc" data-say="'+m[2]+'" aria-label="Ton personnage">'+(sc?'<span class="msc sc-'+sc+'" aria-hidden="true"></span>':'')+'<span class="mgr7" aria-hidden="true">'+illGround()+'</span>'+charSvg(myChar({pose:m[0],ex:m[1]}))+'</button>'}
-function mascSay(){const b=$('masc');if(!b)return;b.classList.remove('jump');void b.offsetWidth;b.classList.add('jump');b.addEventListener('animationend',()=>b.classList.remove('jump'),{once:true});const p=document.querySelector('#hStart .hmsg');if(!p)return;if(p.dataset.base===undefined)p.dataset.base=p.textContent;
+/* v7.3 : toucher le perso de la scène = une répétition de son exercice (animation SMIL préparée par illScene, rep = 1) ; sinon petit saut */
+function mascRep(b){const A=b.querySelectorAll('animate,animateTransform');if(!A.length||rmOn())return false;if(b.classList.contains('rep'))return true;const g=b.querySelector('.who7'),d=(+(g&&g.dataset.rd)||1.4)*1000;
+  b.classList.add('rep');A.forEach(a=>{try{a.beginElement()}catch(e){}});clearTimeout(mascRep._t);mascRep._t=setTimeout(()=>b.classList.remove('rep'),d+80);return true}
+function mascSay(){const b=$('masc');if(!b)return;if(!mascRep(b)){b.classList.remove('jump');void b.offsetWidth;b.classList.add('jump');b.addEventListener('animationend',()=>b.classList.remove('jump'),{once:true})}const p=document.querySelector('#hStart .hmsg');if(!p)return;if(p.dataset.base===undefined)p.dataset.base=p.textContent;
   p.textContent=msg(b.dataset.say||'mIdle');p.classList.remove('say');void p.offsetWidth;p.classList.add('say');clearTimeout(mascSay._t);
   mascSay._t=setTimeout(()=>{if(!p.isConnected)return;p.textContent=p.dataset.base;delete p.dataset.base;p.classList.remove('say')},3600)}
 /* ---- illustration d'écran vide (V5) ---- */

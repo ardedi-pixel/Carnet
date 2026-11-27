@@ -1,22 +1,21 @@
 /* ===================== v6 : icône de l'appli, avatar, photo ===================== */
 const lvlNow=()=>lvlOf(xpTot());
-const accUnlocked=()=>CH_ACC.filter(a=>lvlNow()>=a[2]).map(a=>a[0]);
 const spUnl=k=>!!CH_SP[k]&&(!CH_SP[k].lock||rwHas('char:'+k));
 /* D10 : le perso se muscle avec la série de semaines (4 puis 12, comme les badges) ; D1 : tenue selon le thème de saison */
 const musLvl=()=>{const w=wStreak();return w>=12?2:w>=4?1:0};
 const seaOf=()=>{const s=seaNow();return s==='winter'?'hiver':s==='summer'?'ete':''}; /* tenue de saison : suit la saison active (56_ill7.js) */
 function charOf(sp,extra){sp=CH_SP[sp]?sp:'homme';const d=CH_SP[sp].def,c=obj(S.char),col=obj(c.col),pal=CH_SP[sp].pal,np=pal==='skin'?6:pal.length,ci=col[sp];
-  const o={sp,acc:curAcc(),c:Number.isInteger(ci)&&ci>=0&&ci<np?ci:d.c,hs:c.hs||d.hs||'court',hc:c.hc||d.hc||'brun',sh:CH_SHIRT[c.sh]!==undefined?c.sh:'',ac:arr(c.ac).filter(a=>accUnlocked().includes(a)),mus:musLvl(),sea:seaOf()};
-  if(sp==='femme'&&!c.hs)o.hs='queue';if(sp==='femme'&&!c.hc)o.hc='chatain';
+  const hp=obj(c.hsp),hsOk=h=>CH_HS.some(x=>x[0]===h); /* v7.3 : coupe enregistrée par perso (homme, femme) */
+  const o={sp,acc:curAcc(),c:Number.isInteger(ci)&&ci>=0&&ci<np?ci:d.c,hs:hsOk(hp[sp])?hp[sp]:hsOk(c.hs)?c.hs:d.hs||'court',hc:c.hc||d.hc||'brun',sh:CH_SHIRT[c.sh]!==undefined?c.sh:'',mus:musLvl(),sea:seaOf()};
   return Object.assign(o,extra||{})}
 const myChar=extra=>charOf(S.icon,extra);
-const iconSvg=k=>charSvg(k===S.icon||!k?myChar({pose:'icon',bg:1}):charOf(k,{pose:'icon',bg:1,ac:[],sh:''}));
+const iconSvg=k=>charSvg(k===S.icon||!k?myChar({pose:'icon',bg:1}):charOf(k,{pose:'icon',bg:1,sh:''}));
 const myIconHtml=()=>S.useP&&S.photo?'<img class="phi" src="'+S.photo+'" alt="">':iconSvg(S.icon);
 function iconDoc(k){if(S.useP&&S.photo)return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 200 200"><image href="'+S.photo+'" xlink:href="'+S.photo+'" width="200" height="200" preserveAspectRatio="xMidYMid slice"/></svg>';return iconSvg(k||S.icon)}
 const iconTiles=()=>CH_ORDER.map(k=>{const ok=spUnl(k);return '<button type="button" class="ict'+(ok?'':' lk')+'" data-icon="'+k+'" aria-pressed="'+(!S.useP&&S.icon===k)+'"'+(ok?'':' aria-disabled="true"')+'><span class="itile">'+iconSvg(k)+(ok?'':'<i class="lki">'+ico('lock')+'</i>')+'</span><span>'+esc(CH_SP[k].n)+'</span></button>'}).join('')+(S.photo?'<button type="button" class="ict" data-icon="photo" aria-pressed="'+S.useP+'"><span class="itile"><img class="phi" src="'+S.photo+'" alt=""></span><span>Ma photo</span></button>':'');
 /* image PNG d'une icône (canvas) */
 async function iconPng(size){const im=await svgImg(iconDoc(S.icon));if(!im)return '';const c=document.createElement('canvas');c.width=c.height=size;const g=c.getContext('2d');g.drawImage(im,0,0,size,size);try{return c.toDataURL('image/png')}catch(e){return ''}}
-const isDefIcon=()=>!S.useP&&!S.char.sh&&!arr(S.char.ac).length&&!obj(S.char.col)[S.icon]&&!S.char.hs&&!S.char.hc&&!S.accX&&S.th==='nuit';
+const isDefIcon=()=>!S.useP&&!S.char.sh&&!obj(S.char.col)[S.icon]&&!obj(S.char.hsp)[S.icon]&&!S.char.hs&&!S.char.hc&&!S.accX&&S.th==='nuit';
 let iconTok=0;
 async function applyIcon(){const k=CH_SP[S.icon]?S.icon:'homme',h=$('hLogo'),html=myIconHtml();if(h)h.innerHTML=html;document.querySelectorAll('#splash .lg').forEach(e=>e.innerHTML=html);
   const ml=document.querySelector('link[rel=manifest]');if(ml)ml.setAttribute('href','manifest-'+k+'.webmanifest');

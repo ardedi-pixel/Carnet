@@ -36,11 +36,34 @@ function i7tulip(x,y,s,c){return '<path d="M'+i7(x)+' '+i7(y)+'V'+i7(y-6*s)+'" s
 const I7TUL=['#e5484d','#ffc53d','#ff8fbf','#ffffff','#f76b15'];
 const i7tulips=(n,seed,x0,x1,y,s)=>i7scat(n,seed,x0,y,x1,y+.01,(x,yy,r,i)=>i7tulip(x,y+r*1.5,s*(.85+r*.3),I7TUL[i%I7TUL.length]));
 function i7fly(x,y,s,c){return '<g transform="rotate(-12 '+i7(x)+' '+i7(y)+')"><ellipse cx="'+i7(x-1.3*s)+'" cy="'+i7(y-.8*s)+'" rx="'+i7(1.4*s)+'" ry="'+i7(1.1*s)+'" fill="'+c+'"/><ellipse cx="'+i7(x+1.3*s)+'" cy="'+i7(y-.8*s)+'" rx="'+i7(1.4*s)+'" ry="'+i7(1.1*s)+'" fill="'+c+'"/><ellipse cx="'+i7(x-1*s)+'" cy="'+i7(y+.9*s)+'" rx="'+i7(.9*s)+'" ry="'+i7(.8*s)+'" fill="'+c+'" opacity=".85"/><ellipse cx="'+i7(x+1*s)+'" cy="'+i7(y+.9*s)+'" rx="'+i7(.9*s)+'" ry="'+i7(.8*s)+'" fill="'+c+'" opacity=".85"/><rect x="'+i7(x-.3*s)+'" y="'+i7(y-1.8*s)+'" width="'+i7(.6*s)+'" height="'+i7(3.4*s)+'" rx="'+i7(.3*s)+'" fill="#3a2a20"/></g>'}
-/* développé couché : banc, perso allongé bras tendus, disque vu de profil (u = 1 pour une tuile) */
-CH_POSE.bench={hd:[100,39],ty:73,el:[[150,84],[150,84]],ha:[[178,84],[178,84]],tl:'fist',tr:'fist',lg:'stand'};
-function i7bench(cx,cy,u,fy){return '<rect x="'+i7(cx-10*u)+'" y="'+i7(cy+7*u)+'" width="'+i7(1.8*u)+'" height="'+i7(fy-cy-7*u)+'" fill="#1d1d22"/><rect x="'+i7(cx+11*u)+'" y="'+i7(cy+7*u)+'" width="'+i7(1.8*u)+'" height="'+i7(fy-cy-7*u)+'" fill="#1d1d22"/><rect x="'+i7(cx-14*u)+'" y="'+i7(cy+4.8*u)+'" width="'+i7(30*u)+'" height="'+i7(3.2*u)+'" rx="'+i7(1.6*u)+'" fill="#33333b"/><rect x="'+i7(cx-13*u)+'" y="'+i7(cy+5.3*u)+'" width="'+i7(28*u)+'" height="'+i7(.8*u)+'" rx="'+i7(.4*u)+'" fill="#ffffff" opacity=".18"/>'
-  +i7who('bench',cx-20*u,cy-20*u,40*u,{rot:-90,ex:'effort',sea:''})
-  +'<circle cx="'+i7(cx-3.2*u)+'" cy="'+i7(cy-15.6*u)+'" r="'+i7(6.4*u)+'" fill="#2c2c33" stroke="#141418" stroke-width="'+i7(.7*u)+'"/><circle cx="'+i7(cx-3.2*u)+'" cy="'+i7(cy-15.6*u)+'" r="'+i7(4*u)+'" fill="none" stroke="#4a4a54" stroke-width="'+i7(.9*u)+'"/><circle cx="'+i7(cx-3.2*u)+'" cy="'+i7(cy-15.6*u)+'" r="'+i7(1.3*u)+'" fill="#c9c9cf"/>'}
+/* développé couché : banc, perso allongé bras tendus, disque vu de profil (u = 1 pour une tuile) ; rep = une répétition au toucher (barre jusqu'à la poitrine) */
+CH_POSE.bench={hd:[100,39],ty:73,el:[[150,84],[150,84]],ha:[[178,84],[178,84]],tl:'fist',tr:'fist',lg:'stand',nosh:1};
+CH_POSE.benchB={hd:[100,39],ty:73,el:[[112,100],[112,100]],ha:[[135,86],[135,86]],tl:'fist',tr:'fist',lg:'stand',nosh:1};
+const I7REP=d=>' dur="'+d+'s" begin="indefinite" fill="remove" calcMode="spline" keyTimes="0;.45;1" keySplines=".45 0 .4 1;.45 0 .4 1"'; /* même rythme que charAnim(…, once) */
+const i7plate=(x,y,u,mv,d)=>'<g>'+(mv?'<animateTransform attributeName="transform" type="translate" values="0 0;'+i7(mv[0])+' '+i7(mv[1])+';0 0"'+I7REP(d)+'/>':'')+'<circle cx="'+i7(x)+'" cy="'+i7(y)+'" r="'+i7(6.4*u)+'" fill="#2c2c33" stroke="#141418" stroke-width="'+i7(.7*u)+'"/><circle cx="'+i7(x)+'" cy="'+i7(y)+'" r="'+i7(4*u)+'" fill="none" stroke="#4a4a54" stroke-width="'+i7(.9*u)+'"/><circle cx="'+i7(x)+'" cy="'+i7(y)+'" r="'+i7(1.3*u)+'" fill="#c9c9cf"/></g>';
+function i7bench(cx,cy,u,fy,rep){if(myChar({}).sp==='femme')return i7hip(cx,fy,u,rep); /* v7.3 : perso « Femme » : hip thrust */
+  return '<rect x="'+i7(cx-10*u)+'" y="'+i7(cy+7*u)+'" width="'+i7(1.8*u)+'" height="'+i7(fy-cy-7*u)+'" fill="#1d1d22"/><rect x="'+i7(cx+11*u)+'" y="'+i7(cy+7*u)+'" width="'+i7(1.8*u)+'" height="'+i7(fy-cy-7*u)+'" fill="#1d1d22"/><rect x="'+i7(cx-14*u)+'" y="'+i7(cy+4.8*u)+'" width="'+i7(30*u)+'" height="'+i7(3.2*u)+'" rx="'+i7(1.6*u)+'" fill="#33333b"/><rect x="'+i7(cx-13*u)+'" y="'+i7(cy+5.3*u)+'" width="'+i7(28*u)+'" height="'+i7(.8*u)+'" rx="'+i7(.4*u)+'" fill="#ffffff" opacity=".18"/>'
+  +i7who('bench',cx-20*u,cy-20*u,40*u,Object.assign({rot:-90,ex:'effort',sea:''},rep?{alt:'benchB',dur:1.4}:{}))
+  +i7plate(cx-3.2*u,cy-15.6*u,u,rep?[.4*u,8.6*u]:0,1.4)} /* main tendue (178,84) → poitrine (135,86), dans le repère tourné */
+/* v7.3 : hip thrust (perso « Femme ») : haut du dos posé sur le bord d'un banc vu de bout, pieds à plat, barre sur les hanches.
+   Repos = hanches en haut (corps à l'horizontale) ; la répétition fait descendre les hanches en pivotant sur le bord du banc.
+   Les genoux sont recalculés pour que les pieds restent posés (même longueur de cuisse et de tibia). */
+function i7hip(cx,fy,u,rep){const k=.2*u,M=Math.max(0,Math.min(2,myChar({}).mus|0)),W=23+M*2,bx=cx-6*u,bt=fy-4.2*u,x0=bx-(100-W)*k,y0=bt-78*k,aA=-90,aB=-66,D=1.4,ty=73;
+  const T=(p,a)=>{const r=a*Math.PI/180,dx=x0+p[0]*k-bx,dy=y0+p[1]*k-bt;return [bx+dx*Math.cos(r)-dy*Math.sin(r),bt+dx*Math.sin(r)+dy*Math.cos(r)]},
+    Ti=(q,a)=>{const r=-a*Math.PI/180,dx=q[0]-bx,dy=q[1]-bt;return [(bx+dx*Math.cos(r)-dy*Math.sin(r)-x0)/k,(bt+dx*Math.sin(r)+dy*Math.cos(r)-y0)/k]},
+    knee=(h,f,L1,L2)=>{const dx=f[0]-h[0],dy=f[1]-h[1],d=Math.hypot(dx,dy)||1,a=(L1*L1-L2*L2+d*d)/(2*d),hh=Math.sqrt(Math.max(0,L1*L1-a*a)),mx=h[0]+a*dx/d,my=h[1]+a*dy/d,p1=[mx+hh*dy/d,my-hh*dx/d],p2=[mx-hh*dy/d,my+hh*dx/d];return p1[1]<p2[1]?p1:p2},
+    Lt=32*k,LEG=[[96,2],[100,0]]; /* jambe du fond puis jambe devant : position de la hanche dans le perso */
+  const feet=LEG.map(l=>{const h=T([l[0],ty+58+l[1]],aA),kn=[h[0]+Lt,h[1]];return {kn,an:[kn[0]+.6*k,fy-6.2*k]}});
+  const pose=a=>{const lp=LEG.map((l,i)=>{const hp=[l[0],ty+58+l[1]],f=feet[i],kn=a===aA?f.kn:knee(T(hp,a),f.an,Lt,Math.hypot(f.an[0]-f.kn[0],f.an[1]-f.kn[1])),r=q=>{const v=Ti(q,a);return [f2(v[0]-100),f2(v[1]-ty)]};return [[hp[0]-100,hp[1]-ty],r(kn),r(f.an)]});
+    return {hd:[100,39],ty,el:[[102,101],[100+W+10,97]],ha:[[100+W+2,116],[100+W+4,118]],tl:'grip',tr:'grip',lg:'ht',lp,sr:-a,nosh:1}};
+  CH_POSE.htA=pose(aA);CH_POSE.htB=pose(aB);
+  const o=myChar({ex:'effort',sea:''}),svg=(rep?charAnim(o,D,'htA','htB',1):charSvg(Object.assign({},o,{pose:'htA'}))).replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'');
+  const bar=[100+W+6,120],pA=T(bar,aA),pB=T(bar,aB);
+  return '<rect x="'+i7(bx-8.6*u)+'" y="'+i7(bt)+'" width="'+i7(9.2*u)+'" height="'+i7(2.8*u)+'" rx="'+i7(1.2*u)+'" fill="#33333b"/><rect x="'+i7(bx-8*u)+'" y="'+i7(bt+.5*u)+'" width="'+i7(8*u)+'" height="'+i7(.7*u)+'" rx="'+i7(.35*u)+'" fill="#ffffff" opacity=".18"/>'
+   +'<rect x="'+i7(bx-5*u)+'" y="'+i7(bt+2.8*u)+'" width="'+i7(2.2*u)+'" height="'+i7(fy-bt-3.8*u)+'" fill="#1d1d22"/><rect x="'+i7(bx-8*u)+'" y="'+i7(fy-1.2*u)+'" width="'+i7(8*u)+'" height="'+i7(1.2*u)+'" rx="'+i7(.5*u)+'" fill="#1d1d22"/>'
+   +'<g class="hip7" transform="rotate('+aA+' '+i7(bx)+' '+i7(bt)+')">'+(rep?'<animateTransform attributeName="transform" type="rotate" values="'+aA+' '+i7(bx)+' '+i7(bt)+';'+aB+' '+i7(bx)+' '+i7(bt)+';'+aA+' '+i7(bx)+' '+i7(bt)+'"'+I7REP(D)+'/>':'')
+   +'<svg x="'+i7(x0)+'" y="'+i7(y0)+'" width="'+i7(200*k)+'" height="'+i7(200*k)+'" viewBox="0 0 200 200" overflow="visible">'+svg+'</svg></g>'
+   +i7plate(pA[0],pA[1],u*.74,rep?[pB[0]-pA[0],pB[1]-pA[1]]:0,D)}
 /* pique-nique : couverture à carreaux et panier */
 function i7picnic(x,y,w,h){let s='<rect x="'+i7(x)+'" y="'+i7(y)+'" width="'+i7(w)+'" height="'+i7(h)+'" rx="1.2" fill="#ffffff"/>';const n=8,m=3,cw=w/n,ch=h/m;
   for(let i=0;i<n;i++)for(let j=0;j<m;j++)if((i+j)%2===0)s+='<rect x="'+i7(x+i*cw)+'" y="'+i7(y+j*ch)+'" width="'+i7(cw)+'" height="'+i7(ch)+'" fill="#e5484d" opacity=".85"/>';
@@ -69,12 +92,13 @@ const i7flowers=(n,seed,x0,y0,x1,y1,k)=>i7scat(n,seed,x0,y0,x1,y1,(x,y,r)=>'<cir
 function i7zzz(x,y,s){let p='';[[0,0,1],[1.25,-1.5,.78],[2.3,-2.8,.6]].forEach(z=>{const w=s*z[2],X=x+z[0]*s,Y=y+z[1]*s;p+='M'+i7(X)+' '+i7(Y)+'h'+i7(w)+'l'+i7(-w)+' '+i7(w)+'h'+i7(w)});
   return '<path d="'+p+'" fill="none" stroke="#1d2433" stroke-opacity=".5" stroke-width="'+i7(s*.62)+'" stroke-linecap="round" stroke-linejoin="round"/><path d="'+p+'" fill="none" stroke="#fff" stroke-width="'+i7(s*.3)+'" stroke-linecap="round" stroke-linejoin="round"/>'}
 /* ---- le perso de l'utilisateur, dessiné par le moteur des persos (même style partout) ---- */
-function i7who(pose,x,y,w,o){o=o||{};const svg=charSvg(myChar(Object.assign({pose},o.ex?{ex:o.ex}:{},o.sea!==undefined?{sea:o.sea}:{}))),m=svg.match(/viewBox="([^"]+)"/),vb=m?m[1]:'0 0 200 200',p=vb.split(' ').map(Number),h=w*p[3]/p[2];
+function i7who(pose,x,y,w,o){o=o||{};const co=myChar(Object.assign({pose},o.ex?{ex:o.ex}:{},o.sea!==undefined?{sea:o.sea}:{})),svg=o.alt?charAnim(co,o.dur||1.4,pose,o.alt,1):charSvg(co),m=svg.match(/viewBox="([^"]+)"/),vb=m?m[1]:'0 0 200 200',p=vb.split(' ').map(Number),h=w*p[3]/p[2];
   let s='<svg x="'+i7(x)+'" y="'+i7(y)+'" width="'+i7(w)+'" height="'+i7(h)+'" viewBox="'+vb+'" overflow="visible">'+svg.replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'')+'</svg>';
   if(o.rot)s='<g transform="rotate('+o.rot+' '+i7(x+w/2)+' '+i7(y+h/2)+')">'+s+'</g>';return s}
 /* exercice dominant d'une séance → pose (tractions par défaut dehors, squat en salle) */
 function i7fam(ss,place){const f=ss&&ss.length?exFam(mainEx(ss[0])):'cheer';return f==='cheer'?(place==='salle'?'sq':'pull'):f==='push'?'dip':f} /* pompes → dips : la pompe de face se lit mal en petit */
 const I7POSE={pull:'pullB',dip:'dipB',push:'pushB',sq:'sqB'};
+const I7ALT={pullB:['pullA',1.5],dipB:['dipA',1.3],pushB:['pushA',1.2],sqB:['sqA',1.4]}; /* v7.3 : pose de l'autre bout de la répétition, durée (s) */
 const I7DOOR='<rect x="6" y="14" width="56" height="62" rx="2" fill="#6b7486"/><g stroke="#4a5262" stroke-width="2"><path d="M6 24h56M6 34h56M6 44h56M6 54h56M6 64h56"/></g><rect x="6" y="64" width="56" height="12" fill="#ffd166" opacity=".35"/>',
   I7MIR='<g fill="url(#gMir)"><rect x="8" y="40" width="44" height="34"/><rect x="58" y="40" width="44" height="34"/><rect x="108" y="40" width="44" height="34"/></g>';
 /* vue sur l'extérieur (porte de garage ouverte, fenêtres de la salle) : même en intérieur, la saison se voit */
@@ -90,7 +114,7 @@ function i7view(sea,R,id){const P=ILL7[sea],x=Math.min(...R.map(r=>r[0])),y=Math
 function illScene(place,o){o=o||{};const sea=seaNow();if(place!=='street'){let s=place==='garage'?GAR:place==='salle'?GYM:'';if(!s)return '';
     if(place==='garage'){const v=i7view(sea,[[6,30,56,46]],'v7g'+sea.slice(0,2));s=s.replace(I7DOOR,'<defs>'+v[0]+'</defs>'+v[1]+'<rect x="6" y="14" width="56" height="16" rx="2" fill="#6b7486"/><g stroke="#4a5262" stroke-width="2"><path d="M6 20h56M6 26h56"/></g><rect x="6" y="29" width="56" height="2.4" fill="#3e4554"/>')}
     else{const v=i7view(sea,[[8,40,44,34],[58,40,44,34],[108,40,44,34]],'v7y'+sea.slice(0,2));s=s.replace(I7MIR,'<defs>'+v[0]+'</defs>'+v[1]+'<g fill="none" stroke="#121214" stroke-width="2"><rect x="8" y="40" width="44" height="34"/><rect x="58" y="40" width="44" height="34"/><rect x="108" y="40" width="44" height="34"/><path d="M30 40v34M80 40v34M130 40v34"/></g>')}
-    s=s.replace('<svg ','<svg data-sea="'+sea+'" ');if(o.who)s=s.replace(/<\/svg>$/,i7sceneWho(place,o.fam||'pull')+'</svg>');return s}
+    s=s.replace('<svg ','<svg data-sea="'+sea+'" ');if(o.who)s=s.replace(/<\/svg>$/,i7sceneWho(place,o.fam||'pull',o.rep)+'</svg>');return s}
   const P=ILL7[sea],id='i7'+sea.slice(0,2);let d=i7grad(id+'k',P.sky[0],P.sky[1]),s='<rect width="160" height="100" fill="url(#'+id+'k)"/>';
   if(sea==='winter'){s+='<circle cx="120" cy="30" r="11" fill="#f4f7fb" opacity=".85"/><g fill="#8a9cb3" opacity=".75"><rect x="0" y="40" width="15" height="42"/><rect x="17" y="30" width="12" height="52"/><rect x="31" y="46" width="16" height="36"/><rect x="96" y="50" width="14" height="32"/><rect x="132" y="36" width="20" height="46"/></g><g fill="#fff"><rect x="0" y="38" width="15" height="3" rx="1.5"/><rect x="17" y="28" width="12" height="3" rx="1.5"/><rect x="31" y="44" width="16" height="3" rx="1.5"/><rect x="96" y="48" width="14" height="3" rx="1.5"/><rect x="132" y="34" width="20" height="3" rx="1.5"/></g>'
     +i7fir(12,82,30,1)+i7fir(26,82,20,1)+'<path d="M0 79Q20 75 40 79T80 78T120 79T160 78V100H0Z" fill="'+P.snow+'"/><path d="M0 90Q30 86 60 90T120 89T160 90" fill="none" stroke="'+P.snow2+'" stroke-width="2"/>'+i7snowman(146,90,1.05)+i7flakes(30,7,0,0,160,78,1.3)}
@@ -105,13 +129,14 @@ function illScene(place,o){o=o||{};const sea=seaNow();if(place!=='street'){let s
     +i7tree(14,82,42,I7FALL)+i7tree(146,82,46,I7FALL)+'<path d="M0 79Q40 77 80 79T160 79V100H0Z" fill="'+P.ground+'"/><path d="M0 79H160" stroke="'+P.ground2+'" stroke-width="2"/>'+i7leaves(34,9,2,82,158,98,1.4)+i7leaves(12,4,0,6,160,74,1.3)}
   s+='<g stroke="#1b1e26" stroke-width="3.2" stroke-linecap="round"><path d="M44 81V40M84 81V40M124 81V52M42 41h44M84 53h42"/></g><g stroke="#c8e600" stroke-width="2"><path d="M44 81V64M84 81V64M124 81V68"/></g>';
   if(sea==='winter')s+='<g fill="#fff"><rect x="40" y="37.5" width="48" height="3" rx="1.5"/><rect x="82" y="49.5" width="46" height="3" rx="1.5"/></g>';
-  if(o.who)s+=i7sceneWho('street',o.fam||'pull');
+  if(o.who)s+=i7sceneWho('street',o.fam||'pull',o.rep);
   return '<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice" data-sea="'+sea+'"><defs>'+d+'</defs>'+s+'</svg>'}
-function i7sceneWho(place,fam){return '<g class="who7">'+i7sceneWho0(place,fam)+'</g>'} /* v7.2 : groupe du perso (petit saut au toucher, respiration) */
-function i7sceneWho0(place,fam){const sea=place==='street'?undefined:'';
-  if(place==='garage')return fam==='pull'||fam==='cheer'?i7who('pullB',66,12.2,26,{sea}):i7who(I7POSE[fam]||'sqB',94,77-(fam==='push'?230:fam==='sq'?241:260)*.2,40,{sea});
-  if(place==='salle')return i7bench(82,60,1.5,77); /* à la salle : développé couché */
-  return fam==='pull'||fam==='cheer'?i7who('pullB',44,28,40):i7who(I7POSE[fam],88,81-(fam==='push'?230:fam==='sq'?241:260)*.2,40)}
+/* v7.2 : groupe du perso (respiration) ; v7.3 : rep = 1 prépare une répétition jouée au toucher (data-rd = durée en s) */
+function i7sceneWho(place,fam,rep){const pull=fam==='pull'||fam==='cheer'||!I7POSE[fam],ps=pull?'pullB':I7POSE[fam],d=place==='salle'?1.4:(I7ALT[ps]||[0,1.4])[1];return '<g class="who7" data-ex="'+(place==='salle'?(myChar({}).sp==='femme'?'hip':'bench'):pull?'pull':fam)+'"'+(rep?' data-rd="'+d+'"':'')+'>'+i7sceneWho0(place,fam,rep)+'</g>'}
+function i7sceneWho0(place,fam,rep){const sea=place==='street'?undefined:'',pull=fam==='pull'||fam==='cheer'||!I7POSE[fam],ps=pull?'pullB':I7POSE[fam],o=x=>Object.assign(x||{},rep&&I7ALT[ps]?{alt:I7ALT[ps][0],dur:I7ALT[ps][1]}:{});
+  if(place==='garage')return pull?i7who('pullB',66,12.2,26,o({sea})):i7who(ps,94,77-(fam==='push'?230:fam==='sq'?241:260)*.2,40,o({sea}));
+  if(place==='salle')return i7bench(82,60,1.5,77,rep); /* à la salle : développé couché (hip thrust pour le perso « Femme ») */
+  return pull?i7who('pullB',44,28,40,o()):i7who(ps,88,81-(fam==='push'?230:fam==='sq'?241:260)*.2,40,o())}
 /* ---- petite scène portrait 48 x 88 (cases du calendrier) ---- */
 function i7tileSvg(kind,sea,place,fam){const P=ILL7[sea],id='t7'+sea.slice(0,2);let d=i7grad(id+'k',P.sky2[0],P.sky2[1]),s='',top='';
   const indoor=kind==='train'&&place!=='street';

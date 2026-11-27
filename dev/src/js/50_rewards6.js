@@ -13,19 +13,12 @@ function rwReveal(i){const r=REWARDS[i];if(!r)return;const isCh=r[0].startsWith(
   document.body.appendChild(o);requestAnimationFrame(()=>o.classList.add('on'));setTimeout(()=>{o.classList.add('open');if(!rmOn())confetti();sWin()},900)}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-rw]');if(!b)return;const v=b.dataset.rw,o=$('rw6');if(o)o.remove();if(v==='close')return;const [t,k]=v.split(':');
   if(t==='theme'){S.th=k;S.accX='';applyAcc();applyIcon()}else{S.icon=k;S.useP=false;applyIcon()}save();route();toast('C\'est appliqué ✓')});
-/* ---- R4 : accessoires gagnés avec le rang de skills ---- */
-function accCheck(){const L=lvlNow();if(S.lvSeen<0){S.lvSeen=L;S.char=obj(S.char);S.char.ac=accUnlocked();save();return false}
-  if(L<=S.lvSeen){S.lvSeen=L;return false}const nw=CH_ACC.filter(a=>a[2]>S.lvSeen&&a[2]<=L);S.lvSeen=L;if(!nw.length){save();return false}
-  S.char=obj(S.char);S.char.ac=[...new Set(arr(S.char.ac).concat(nw.map(a=>a[0])))];save();applyIcon();const a=nw[nw.length-1];
-  let o=$('rw6');if(o)o.remove();o=document.createElement('div');o.id='rw6';o.className='rec6 on';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');
-  o.innerHTML='<div class="recin"><div class="recch">'+charSvg(myChar({pose:'flex',ex:'grin'}))+'</div><p class="kick">Niveau '+esc(LVL[L][1])+'</p><h2>Nouvel accessoire : '+esc(a[1].toLowerCase())+'</h2><p class="rws">Ton personnage le porte déjà. Tu peux le retirer dans Réglages, Personnage.</p><div class="acts"><button type="button" class="btn" data-rw="close">Continuer</button></div></div>';
-  document.body.appendChild(o);setTimeout(()=>{if(!rmOn())confetti();sWin()},300);return true}
 /* D10 : écran « Ton perso prend du muscle » quand la série passe 4 puis 12 semaines */
 function musCheck(){const L=musLvl();if(typeof S.musSeen!=='number')S.musSeen=0;if(L<S.musSeen){S.musSeen=L;save();return false}if(L===S.musSeen)return false;S.musSeen=L;save();
   let o=$('rw6');if(o)o.remove();o=document.createElement('div');o.id='rw6';o.className='rec6 on';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');
   o.innerHTML='<div class="recin"><div class="recch">'+charSvg(myChar({pose:'flex',ex:'grin'}))+'</div><p class="kick">'+wStreak()+' semaines d\'affilée</p><h2>'+(L>1?'Ton perso est encore plus musclé':'Ton perso prend du muscle')+'</h2><p class="rws">'+(L>1?'Ta régularité paie. Garde ta série pour le rester.':'Ta régularité se voit. Continue : à 12 semaines, il sera encore plus costaud.')+'</p><div class="acts"><button type="button" class="btn" data-rw="close">Continuer</button></div></div>';
   document.body.appendChild(o);setTimeout(()=>{if(!rmOn())confetti();sWin()},300);return true}
-function afterRewards(){setTimeout(()=>{if($('rec6')||$('rw6')||$('hey')){setTimeout(afterRewards,2500);return}if(accCheck())return;if(musCheck())return;const e=rwEarned();if(e>S.rw){const i=S.rw;S.rw=i+1;save();rwReveal(i)}},3400)}
+function afterRewards(){setTimeout(()=>{if($('rec6')||$('rw6')||$('hey')){setTimeout(afterRewards,2500);return}if(musCheck())return;const e=rwEarned();if(e>S.rw){const i=S.rw;S.rw=i+1;save();rwReveal(i)}},3400)}
 function reward(em,title,sub){reward5(em,title,sub);afterRewards()}
 /* ---- R1 : écran « Nouveau record » ---- */
 function celebrate(name,v,unit,prev){const u=unitL(unit),hasP=prev!==undefined&&prev>0&&prev<v;let o=$('rec6');if(o)o.remove();o=document.createElement('div');o.id='rec6';o.className='rec6';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');o.setAttribute('aria-label','Nouveau record');

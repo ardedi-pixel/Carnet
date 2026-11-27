@@ -270,11 +270,17 @@ function wStreak(){const w=new Set(S.sessions.map(s=>wkOf(s.date)));let st=monda
 function bestWStreak(){const w=new Set(S.sessions.map(s=>wkOf(s.date)));let b=0;w.forEach(k=>{b=Math.max(b,wStreakFrom(w,parse(k)))});return b}
 function goalWeeksBest(){const w=weekCounts(),g=S.goal||3;let best=0;Object.keys(w).forEach(k=>{if(w[k]<g)return;let n=0,d=parse(k);while((w[key(d)]||0)>=g&&n<520){n++;d=add(d,-7)}best=Math.max(best,n)});return best}
 function testMonthsStreak(){const has=k=>Object.keys(obj(S.tests[k])).length>0;let best=0;Object.keys(S.tests).filter(has).forEach(k=>{const [y,m]=k.split('-').map(Number);let n=0,d=new Date(y,m-1,1);while(has(d.getFullYear()+'-'+pad(d.getMonth()+1))&&n<240){n++;d=new Date(d.getFullYear(),d.getMonth()-1,1)}best=Math.max(best,n)});return best}
+/* v7.3 : 10 badges de plus (200 séances, 26 et 52 semaines, 10 records, les quatre saisons, 24 h, soir, week-end, défi, mesures) ; l = étiquette affichée si différente de la clé */
+function recN(){return S.recs.reduce((a,r)=>a+arr(r.hist).filter((h,i,H)=>i>0&&h.v>Math.max(...H.slice(0,i).map(x=>x.v))).length,0)}
 function badgeList(){const n=S.sessions.length,bw=bestWStreak(),pl=new Set(S.sessions.map(s=>s.place)),rb=S.recs.some(r=>r.beat||r.hist.length>1),c=obj(S.cnt),skc=SKILLS.reduce((a,sk)=>a+Object.keys(skDone(sk.k)).length,0),skf=SKILLS.some(sk=>Object.keys(skDone(sk.k)).length>=sk.st.length);
-  return [['1','Première séance',n>=1],['10','10 séances',n>=10],['25','25 séances',n>=25],['50','50 séances',n>=50],['100','100 séances',n>=100],['4s','4 semaines d\'affilée',bw>=4],['12s','12 semaines d\'affilée',bw>=12],['R','Premier record battu',rb],['3L','Street, garage et salle',pl.size>=3],
+  const sea=new Set(S.sessions.map(s=>['h','h','p','p','p','e','e','e','a','a','a','h'][+s.date.slice(5,7)-1])),we=S.sessions.filter(s=>[0,6].includes(parse(s.date).getDay())).length,mz=arr(S.bw).length+arr(obj(S.meas).taille).length,df=arr(S.chalH).some(x=>x.done)||!!(S.chal&&S.chal.won);
+  return [['1','Première séance',n>=1],['10','10 séances',n>=10],['25','25 séances',n>=25],['50','50 séances',n>=50],['100','100 séances',n>=100],['200','200 séances',n>=200],
+   ['4s','4 semaines d\'affilée',bw>=4],['12s','12 semaines d\'affilée',bw>=12],['26s','26 semaines d\'affilée',bw>=26],['52s','52 semaines d\'affilée',bw>=52],['R','Premier record battu',rb],['10R','10 records battus',recN()>=10],
+   ['3L','Street, garage et salle',pl.size>=3],['4sa','Une séance à chaque saison',sea.size>=4,' '],
    ['EM','EMOM terminé',(c.emom||0)>=1],['E5','5 EMOM terminés',(c.emom||0)>=5],['PY','Pyramide terminée',(c.pyr||0)>=1],['P5','5 pyramides terminées',(c.pyr||0)>=5],['10↑','Pyramide jusqu\'à 10',(c.pyr10||0)>=1],
-   ['2h','Séance de 2 h',S.sessions.some(s=>sDur(s)>=120)],['AM','5 séances le matin',S.sessions.filter(s=>s.tod==='matin').length>=5],['🔥','10 séances « au top »',S.sessions.filter(s=>s.feel===3).length>=10],['4×','Objectif de la semaine 4 fois d\'affilée',goalWeeksBest()>=4],
-   ['MAX','Test max 3 mois d\'affilée',testMonthsStreak()>=3],['S1','Première étape de skill',skc>=1],['S10','10 étapes de skills',skc>=10],['★','Un skill complet',skf]].map(b=>({k:b[0],t:b[1],on:b[2]}))}
+   ['2h','Séance de 2 h',S.sessions.some(s=>sDur(s)>=120)],['24h','24 h d\'entraînement au total',S.sessions.reduce((a,s)=>a+sDur(s),0)>=1440],['AM','5 séances le matin',S.sessions.filter(s=>s.tod==='matin').length>=5],['PM','5 séances le soir',S.sessions.filter(s=>s.tod==='soir').length>=5],['WE','10 séances le week-end',we>=10],
+   ['🔥','10 séances « au top »',S.sessions.filter(s=>s.feel===3).length>=10,'TOP'],['4×','Objectif de la semaine 4 fois d\'affilée',goalWeeksBest()>=4],['DF','Défi du mois réussi',df],
+   ['MAX','Test max 3 mois d\'affilée',testMonthsStreak()>=3],['KG','10 mesures notées',mz>=10],['S1','Première étape de skill',skc>=1],['S10','10 étapes de skills',skc>=10],['★','Un skill complet',skf]].map(b=>({k:b[0],t:b[1],on:!!b[2],l:b[3]||b[0]}))}
 function renderBadges5(){const b=badgeList(),on=b.filter(x=>x.on).length;$('bdSub').textContent=on+' badge'+(on>1?'s':'')+' sur '+b.length+' · série actuelle : '+wStreak()+' semaine'+(wStreak()>1?'s':'')+' d\'affilée';$('badges').innerHTML=b.map(x=>'<div class="bd'+(x.on?' on':'')+'"><i>'+esc(x.k)+'</i>'+esc(x.t)+'</div>').join('')}
 function renderSet(){$('setName').value=S.name||'';const n=$('setNick');if(n)n.value=S.nick||'';const g=$('setGoalT');if(g)g.value=S.goalT||''}
 let onbStep=0;
@@ -286,7 +292,7 @@ function showOnb(n){onbStep=n;let o=$('onb');if(!o){o=document.createElement('di
   o.querySelector('input')?.focus()}
 function onbGo(a){if(onbStep===0){const v=($('onbName')||{}).value;S.name=(v||'').trim()}if(a==='done'){S.onb=true;S.lastSeen=Date.now();$('onb')?.remove();save();route();return}save();showOnb(Number(a))}
 /* ===================== v4 ===================== */
-const APP_V='7.2.0';
+const APP_V='7.3.0';
 const ACC={jaune:['#e4ff1a','#7d8c00','Jaune fluo','#5c6800'],vert:['#3dff8b','#0c8a45','Vert','#08773a'],orange:['#ff9f1c','#a35a00','Orange','#9a4f00'],bleu:['#38c8ff','#0a6f99','Bleu','#0a6a92'],rose:['#ff5fa8','#a3245f','Rose','#a3245f'],violet:['#b18cff','#5b3fb0','Violet','#5b3fb0']};
 const arr=x=>Array.isArray(x)?x:[],obj=x=>x&&typeof x==='object'&&!Array.isArray(x)?x:{};
 const EXTRA=['name','fav','onb','live','bw','goals','acc','goal','bilanSeen','restAck','calMode','tmc','v','tset','skills','tests','presets','tpls','snd','voice','theme','cnt','deloads','notes','wuNote','wuMode','wuW','fPl','fTy','evo','ptab','icon','links','lastSeen','xtab'];

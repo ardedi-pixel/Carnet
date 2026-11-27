@@ -1,4 +1,4 @@
-# Captures par thème (saisons, clair, nuit) : python3 sea7shots.py W H theme1 theme2 ...
+# Captures par thème (saisons, clair, nuit ; accueil, calendrier, nutrition, mesures, carnet, outils, veste des badges) : python3 sea7shots.py W H theme1 theme2 ...
 import os,sys
 from pathlib import Path
 DEV=Path(__file__).resolve().parents[1]
@@ -23,8 +23,10 @@ with sync_playwright() as p:
         pg=ctx.new_page();errs=[];pg.on('pageerror',lambda e:errs.append(str(e)));pg.on('console',lambda m:errs.append('console:'+m.text) if m.type=='error' else None)
         pg.goto(U);pg.wait_for_timeout(3300);pg.add_style_tag(content='#warn{display:none!important}');pg.mouse.click(5,5);pg.wait_for_timeout(300)
         fs=[]
-        for h in ['accueil','calendrier','nutrition','mesures','carnet','outils']:
-            pg.evaluate('location.hash="#'+h+'"');pg.wait_for_timeout(1300);f=O+'%s_%d_%s.png'%(th,VW,h);pg.screenshot(path=f);fs.append(f)
+        for h in ['accueil','calendrier','nutrition','mesures','carnet','outils','records']:
+            pg.evaluate('location.hash="#'+h+'"');pg.wait_for_timeout(1300)
+            if h=='records':pg.evaluate("(document.getElementById('bdJkt')||document.body).scrollIntoView({block:'center'})");pg.wait_for_timeout(500) # v7.3 : veste des badges
+            f=O+'%s_%d_%s.png'%(th,VW,h);pg.screenshot(path=f);fs.append(f)
         ims=[Image.open(x) for x in fs];w,h=ims[0].size;sc=0.5
         sh=Image.new('RGB',(int(w*sc)*len(ims)+10*(len(ims)-1),int(h*sc)),'white')
         for i,im in enumerate(ims):sh.paste(im.resize((int(w*sc),int(h*sc))),(i*(int(w*sc)+10),0))

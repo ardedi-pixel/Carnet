@@ -95,7 +95,8 @@ with sync_playwright() as p:
     step('B5',B5)
     def B5b():
         pg.evaluate('location.hash="#records"');pg.wait_for_timeout(700)
-        ok(pg.locator('#bdJkt .pin').count()==22 and not pg.locator('#badges').is_visible(),'B v6.2 : veste à pin\'s (22 emplacements), liste repliée')
+        ok(pg.locator('#bdJkt .pin').count()==32 and not pg.locator('#badges').is_visible(),'B veste à pin\'s (32 badges), liste repliée')
+        ok(pg.evaluate("document.querySelector('#bdJkt .jkt').dataset.jk===seaNow()&&document.querySelector('#bdJkt svg').dataset.jk===seaNow()"),'B v7.3 : la veste suit la saison active ('+pg.evaluate('seaNow()')+')')
         pg.locator('#bdJkt .pin.on').first.click(force=True);pg.wait_for_timeout(200);ok('débloqué' in T(pg,'#bdInfo'),'B v6.2 : toucher un pin\'s affiche le badge')
         pg.locator('#bdMore').scroll_into_view_if_needed();pg.click('#bdMore');pg.wait_for_timeout(300)
         ok(pg.locator('#badges').is_visible() and pg.locator('#badges .bd').count()>6,'B v6.1 : tous les badges au toucher')
@@ -419,7 +420,7 @@ with sync_playwright() as p:
         s=st(pg);base=[x for x in s['sessions'] if x['place']!='salle'];D=[time.strftime('%Y-%m-%d',time.localtime(time.time()-86400*i)) for i in range(1,30,2)]
         s['sessions']=[{'id':'sl'+str(i),'date':d,'place':'salle','types':['force'],'ex':['Développé couché'],'dur':45} for i,d in enumerate(D)]+[x for x in base if x['date']<D[-1]]
         pg.evaluate("s=>localStorage.setItem('carnet-seances',JSON.stringify(s))",s);pg.reload();pg.wait_for_timeout(2300);pg.mouse.click(5,5);pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(600)
-        ok(pg.locator('#hStart .h72h.indoor[data-place="salle"]').count()==1 and pg.locator('#masc svg[data-sea] .who7').count()==1,'J surtout à la salle : l\'accueil montre la salle avec le perso (développé couché)')
+        ok(pg.locator('#hStart .h72h.indoor[data-place="salle"]').count()==1 and pg.locator('#masc svg[data-sea] .who7[data-ex="bench"]').count()==1,'J surtout à la salle : l\'accueil montre la salle avec le perso (développé couché)')
         ok(pg.locator('#season').count()==0,'J salle : pas de particules de saison à l\'intérieur')
         pg.evaluate('location.hash="#reglages-accueil"');pg.wait_for_timeout(400);ok(pg.locator('[data-c6="hscn:auto"][aria-pressed="true"]').count()==1 and 'Salle' in T(pg,'#hoEd .h72note'),'J réglage « Décor de l\'accueil » (automatique : Salle)')
         pg.click('[data-c6="hscn:garage"]');pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(500);ok(pg.locator('#hStart .h72h[data-place="garage"]').count()==1,'J décor choisi à la main : Garage')
@@ -429,5 +430,45 @@ with sync_playwright() as p:
         ok(pg.evaluate("illScene('street',{who:1,fam:'pull'}).split('#b3e09a').length>4"),'J printemps : rangée d\'arbres au loin dans la scène Street')
         ok(pg.evaluate("document.documentElement.scrollWidth<=innerWidth+1"),'J pas de débordement horizontal')
     step('J5',J5)
+    ctx.close()
+    # ===== K : v7.3 : une répétition au toucher, hip thrust (perso Femme), coupe de cheveux, plus d'accessoires, veste de saison, nouveaux badges =====
+    d=dict(SEED);d['th']='printemps';d['hscn']='street';d['char']={'ac':['bandeau','couronne']}
+    ctx,pg=mk(b,d);pg.goto(U);pg.wait_for_timeout(2900);pg.mouse.click(5,5)
+    def K1():
+        g=pg.locator('#masc .who7');ok(g.count()==1 and g.get_attribute('data-ex') in ('pull','dip','sq') and float(g.get_attribute('data-rd') or 0)>1 and pg.locator('#masc animate').count()>4,'K street : exercice prêt à jouer (une répétition de '+str(g.get_attribute('data-ex'))+')')
+        ok(pg.evaluate("(()=>{const s=illScene('street',{who:1,fam:'pull',rep:1});return s.includes('data-ex=\"pull\"')&&s.includes('begin=\"indefinite\"')&&!illScene('street',{who:1,fam:'pull'}).includes('<animate')})()"),'K traction : répétition préparée seulement sur l\'accueil (rep)')
+        ok(pg.evaluate("[...document.querySelectorAll('#masc animate,#masc animateTransform')].every(a=>a.getAttribute('begin')==='indefinite')"),'K la répétition ne part pas toute seule')
+        pg.click('#masc');pg.wait_for_timeout(250);ok(pg.locator('#masc.rep').count()==1 and pg.locator('#hStart .hmsg.say').count()==1,'K toucher le perso : une répétition et un message')
+        pg.wait_for_timeout(1700);ok(pg.locator('#masc.rep').count()==0,'K fin de la répétition (retour à la pose de départ)')
+        h=pg.inner_html('#masc .who7');ok('#e53935' not in h and '#f5c542' not in h,'K accessoires retirés (bandeau, couronne) même s\'ils étaient enregistrés')
+    step('K1',K1)
+    def K2():
+        pg.evaluate('location.hash="#reglages-perso"');pg.wait_for_timeout(500)
+        ok(pg.locator('#chEd [data-acc6]').count()==0 and 'Accessoires' not in T(pg,'#chEd'),'K réglages : plus d\'accessoires à débloquer')
+        a=pg.inner_html('#chEd .chprev');pg.click('#chEd [data-hs6="degrade"]');pg.wait_for_timeout(400)
+        ok(st(pg)['char'].get('hsp',{}).get('homme')=='degrade' and pg.locator('#chEd [data-hs6="degrade"][aria-pressed="true"]').count()==1 and pg.inner_html('#chEd .chprev')!=a,'K coupe du perso homme modifiable (aperçu mis à jour)')
+        pg.click('#chEd [data-icon="femme"]');pg.wait_for_timeout(400);ok(pg.locator('#chEd [data-hs6="queue"][aria-pressed="true"]').count()==1,'K perso femme : sa propre coupe (queue-de-cheval par défaut)')
+        pg.click('#chEd [data-hs6="carre"]');pg.wait_for_timeout(400);hs=st(pg)['char'].get('hsp',{})
+        ok(hs.get('femme')=='carre' and hs.get('homme')=='degrade' and pg.locator('#chEd [data-hs6="carre"][aria-pressed="true"]').count()==1,'K coupe du perso femme modifiable, celle de l\'homme gardée')
+    step('K2',K2)
+    def K3():
+        pg.evaluate('location.hash="#reglages-accueil"');pg.wait_for_timeout(400);pg.click('[data-c6="hscn:salle"]');pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(600)
+        ok(pg.locator('#masc .who7[data-ex="hip"] .hip7').count()==1 and pg.locator('#masc .hip7 > animateTransform[type="rotate"]').count()==1,'K perso femme à la salle : hip thrust (et non développé couché)')
+        pg.click('#masc');pg.wait_for_timeout(250);ok(pg.locator('#masc.rep').count()==1,'K hip thrust : une répétition au toucher')
+        ok(pg.evaluate("decodeURIComponent(illTile('train',{place:'salle'})).includes('hip7')"),'K calendrier : séance à la salle en hip thrust pour le perso femme')
+        pg.evaluate('location.hash="#reglages-perso"');pg.wait_for_timeout(400);pg.click('#chEd [data-icon="homme"]');pg.wait_for_timeout(300);pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(600)
+        ok(pg.locator('#masc .who7[data-ex="bench"]').count()==1 and pg.locator('#masc .hip7').count()==0 and not pg.evaluate("decodeURIComponent(illTile('train',{place:'salle'})).includes('hip7')"),'K perso homme à la salle : développé couché')
+        pg.click('#masc');pg.wait_for_timeout(250);ok(pg.locator('#masc.rep').count()==1,'K développé couché : une répétition au toucher')
+        pg.evaluate('location.hash="#reglages-accueil"');pg.wait_for_timeout(400);pg.click('[data-c6="hscn:auto"]');pg.wait_for_timeout(200)
+    step('K3',K3)
+    def K4():
+        for th,sea in [('hiver','winter'),('printemps','spring'),('ete','summer'),('automne','autumn')]:
+            pg.evaluate('location.hash="#reglages-apparence"');pg.wait_for_timeout(400);pg.click('[data-th6="'+th+'"]');pg.wait_for_timeout(300);pg.evaluate('location.hash="#records"');pg.wait_for_timeout(700)
+            ok(pg.locator('#bdJkt .jkt[data-jk="'+sea+'"] svg[data-jk="'+sea+'"]').count()==1 and pg.locator('#bdJkt .pin').count()==32,'K thème '+th+' : sa veste de badges ('+sea+')')
+        ok(pg.locator('#bdJkt .pin.sea4').count()==1 and pg.evaluate("badgeList().map(b=>b.k).filter(k=>['200','26s','52s','10R','4sa','24h','PM','WE','DF','KG'].includes(k)).length")==10,'K 10 nouveaux badges (dont « Une séance à chaque saison »)')
+        ok(not any(re.search(r'[\U0001F300-\U0001FAFF]',x) for x in pg.locator('#bdJkt .pin b').all_inner_texts()),'K pin\'s sans émoji')
+        pg.locator('#bdJkt .pin').nth(13).click(force=True);pg.wait_for_timeout(200);ok('à débloquer' in T(pg,'#bdInfo') or 'débloqué' in T(pg,'#bdInfo'),'K toucher un pin\'s : nom du badge')
+        ok(pg.evaluate("document.documentElement.scrollWidth<=innerWidth+1"),'K pas de débordement horizontal')
+    step('K4',K4)
     ctx.close();b.close()
 print('\n'.join(log));print('TOTAL',sum(1 for l in log if l.startswith('OK')),'/',len(log));print('ERRORS',errs[:12])

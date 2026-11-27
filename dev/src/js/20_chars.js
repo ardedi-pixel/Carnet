@@ -17,7 +17,6 @@ const CH_SP={
  panda:{n:'Panda',t:'panda',pal:[['#f6f4ef','Classique']],def:{c:0}}
 };
 const CH_ORDER=['homme','femme','chat','loup','ours','gorille','panda'];
-const CH_ACC=[['bandeau','Bandeau',1],['gants','Gants',3],['medaille','Médaille',5],['couronne','Couronne',7]]; /* débloqué au niveau de skills (index LVL) */
 let CHN=0;
 /* ---- couleurs ---- */
 function chHex(h){h=String(h||'#888').replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16);return[(n>>16)&255,(n>>8)&255,n&255]}
@@ -76,7 +75,7 @@ const CH_VBI=[30,8,140,140];
 /* paires de poses animées par exercice, durée d'un aller-retour (s) */
 const CH_ANIM={pull:['pullA','pullB',1.5],dip:['dipA','dipB',1.3],push:['pushA','pushB',1.2],sq:['sqA','sqB',1.3],cheer:['idle','cheer',1.1]};
 /* ---- mains (taille adulte) ---- */
-function chHand(P,type,col,side,gl,C){const c=gl||col,x=P[0],y=P[1],ln=gl?'#5b5d66':chDk(col,.4),paw=!gl&&C.t!=='human'&&C.t!=='gorilla';let o='';
+function chHand(P,type,col,side,C){const c=col,x=P[0],y=P[1],ln=chDk(col,.4),paw=C.t!=='human'&&C.t!=='gorilla';let o='';
   if(type==='thumb'){const tx=side>0?-3.2:3.2;o+=chP('M'+(tx-2.4)+' -2 L'+(tx-2.4)+' -10 Q'+(tx-2.4)+' -13 '+tx+' -13 Q'+(tx+2.4)+' -13 '+(tx+2.4)+' -10 L'+(tx+2.4)+' -2 Z',c)}
   if(type==='open'){const F=[[-3.6,-2,-5.4,-10],[-1.2,-3,-1.6,-11.6],[1.4,-3,2,-11.6],[3.8,-2,5.6,-9.6],[4.8,1.6,9.4,-1.4]];
     o+=F.map(f=>chSt('M'+f[0]+' '+f[1]+' L'+f[2]+' '+f[3],3.4+CHOL*2,CK)).join('')+chC(0,0,5.6,CK,CHOL*2)+F.map(f=>chSt('M'+f[0]+' '+f[1]+' L'+f[2]+' '+f[3],3.4,c)).join('')+chC(0,0,5.6,c,0);
@@ -85,7 +84,6 @@ function chHand(P,type,col,side,gl,C){const c=gl||col,x=P[0],y=P[1],ln=gl?'#5b5d
   if(paw)o+=chSt('M-2.2 2.6 V4.8',1.4,CK)+chSt('M2.2 2.6 V4.8',1.4,CK);
   else if(type==='grip')o+=chSt('M-3.2 -1.4 Q0 -3 3.2 -1.4',1.3,ln)+chSt('M-3.2 1.6 Q0 0 3.2 1.6',1.3,ln);
   else o+=chSt('M-2.6 -1.8 Q0 -3 2.6 -1.8',1.2,chDk(col,.22));
-  if(gl)o+=chP('M-5.6 3.2 Q0 6.4 5.6 3.2 L5.2 5.8 Q0 8.6 -5.2 5.8 Z',chLt(gl,.25),1.6);
   return chG(x,y,o)}
 /* ---- visage adulte (repère tête, ovale rx 15.6 x ry 18.6) ---- */
 function chFace(ex,fem,hc,sk){let s='';const bc=chDk(hc,.15),lip=fem?'#a8505a':CK;
@@ -178,28 +176,19 @@ function chHeadAnimal(C,o,ex){const t=C.t,b=C.base,eff=ex==='effort'||ex==='focu
     s+=smile?chP('M-6.6 15.4 Q0 24 6.6 15.4 Q0 17.6 -6.6 15.4 Z','#7a2330',2.4):chSt('M0 12.6 V15.6 M-5.4 16.4 Q-2.7 19.4 0 15.8 Q2.7 19.4 5.4 16.4',2.6,CK);
     top=-33;band=[-14,32];eye=[12.3,1.4]}
   return {s,top,band,eye}}
-/* ---- accessoires de tête ---- */
-function chHeadAccHuman(acc,H){let s='';
-  if(acc.includes('bandeau')){const c='#e53935';s+=chP('M-16.4 -9 Q0 -14 16.4 -9 L16.6 -4.6 Q0 -9.6 -16.6 -4.6 Z',c,2)+chTube([[15.6,-7],[22.6,-4.4],[25,.6]],2.6,c)+chTube([[15.6,-7],[23,-9.6],[27,-7.4]],2.6,c)+chC(15.6,-7,2.6,chDk(c,.15),1.6)}
-  if(acc.includes('couronne')){const y=H.top+2;s+='<g transform="rotate(-8 0 '+y+')">'+chP('M-9 '+y+' L-10.4 '+(y-9.6)+' L-4.8 '+(y-4.8)+' L0 '+(y-12)+' L4.8 '+(y-4.8)+' L10.4 '+(y-9.6)+' L9 '+y+' Z','#f5c542',2)+chC(0,y-12,1.7,'#ff4d6d',1.2)+chC(-10.4,y-9.6,1.4,'#4dd2ff',1.2)+chC(10.4,y-9.6,1.4,'#4dd2ff',1.2)+'</g>'}
-  return s}
-function chHeadAccAnimal(acc,H){let s='';
-  if(acc.includes('bandeau')&&H.band){const y=H.band[0],w=H.band[1],c='#e53935';s+=chP('M'+(-w)+' '+y+' Q0 '+(y-11)+' '+w+' '+y+' L'+(w+.4)+' '+(y+7.4)+' Q0 '+(y-3.4)+' '+(-w-.4)+' '+(y+7.4)+' Z',c,3.2)+chTube([[w-1,y+3],[w+12,y+8],[w+16,y+16]],4.4,c)+chTube([[w-1,y+3],[w+13,y-1],[w+20,y+3]],4.4,c)+chC(w-1,y+3,4.4,chDk(c,.15),2.6)}
-  if(acc.includes('couronne')){const y=H.top+4;s+='<g transform="rotate(-9 0 '+y+')">'+chP('M-15 '+y+' L-17.4 '+(y-16)+' L-8 '+(y-8)+' L0 '+(y-20)+' L8 '+(y-8)+' L17.4 '+(y-16)+' L15 '+y+' Z','#f5c542',3.2)+chC(0,y-20,2.8,'#ff4d6d',2)+chC(-17.4,y-16,2.4,'#4dd2ff',2)+chC(17.4,y-16,2.4,'#4dd2ff',2)+chSt('M-13 '+(y-3.6)+' H13',2.2,'#c8930f')+'</g>'}
-  return s}
 /* ---- tenue de saison (D1) : bonnet et écharpe en hiver, lunettes de soleil en été ---- */
 const CH_WOOL='#e2483d',CH_WOOLL='#f7f3ee';
-function chBeanieHuman(H,acc){const top=Math.max(Math.min(H.top-4,-25),-29),c=CH_WOOL,cd=chDk(c,.2);
+function chBeanieHuman(H){const top=Math.max(Math.min(H.top-4,-25),-29),c=CH_WOOL,cd=chDk(c,.2);
   let s=chP('M-15.4 -10 C-15.8 '+f2(top+8)+' -9 '+f2(top)+' 0 '+f2(top)+' C9 '+f2(top)+' 15.8 '+f2(top+8)+' 15.4 -10 Z',c,2.4);
   s+=chSt('M-7.6 -12 Q-7.4 '+f2(top+6)+' -3 '+f2(top+2)+'',1.4,cd)+chSt('M7.6 -12 Q7.4 '+f2(top+6)+' 3 '+f2(top+2),1.4,cd)+chSt('M0 -12 V'+f2(top+2),1.4,cd);
   s+='<rect x="-17" y="-13.6" width="34" height="7.6" rx="3.8" fill="'+CH_WOOLL+'" stroke="'+CK+'" stroke-width="2.4"/>'+[-.6,-.3,0,.3,.6].map(k=>chSt('M'+f2(17*k)+' -11.6 V-8',1.1,'#d9d2c7')).join('');
-  if(!acc.includes('couronne'))s+=chC(0,top-2.6,4.2,CH_WOOLL,2.4);
+  s+=chC(0,top-2.6,4.2,CH_WOOLL,2.4);
   return {s,top}}
-function chBeanieAnimal(C,H,acc){const t=C.t,b=H.band||[-13,30.4],y=t==='gorilla'?-21:b[0]-1,w=b[1]+1.5,top=Math.max(Math.min(H.top-3,-38),-44),c=CH_WOOL,cd=chDk(c,.2);
+function chBeanieAnimal(C,H){const t=C.t,b=H.band||[-13,30.4],y=t==='gorilla'?-21:b[0]-1,w=b[1]+1.5,top=Math.max(Math.min(H.top-3,-38),-44),c=CH_WOOL,cd=chDk(c,.2);
   let s=chP('M'+f2(-w+2)+' '+f2(y)+' C'+f2(-w+1)+' '+f2(top+9)+' '+f2(-w*.55)+' '+f2(top)+' 0 '+f2(top)+' C'+f2(w*.55)+' '+f2(top)+' '+f2(w-1)+' '+f2(top+9)+' '+f2(w-2)+' '+f2(y)+' Z',c);
   s+=chSt('M'+f2(-w*.5)+' '+f2(y-3)+' Q'+f2(-w*.47)+' '+f2(top+11)+' '+f2(-w*.2)+' '+f2(top+3.5),2,cd)+chSt('M'+f2(w*.5)+' '+f2(y-3)+' Q'+f2(w*.47)+' '+f2(top+11)+' '+f2(w*.2)+' '+f2(top+3.5),2,cd)+chSt('M0 '+f2(y-3)+' V'+f2(top+3),2,cd);
   s+='<rect x="'+f2(-w)+'" y="'+f2(y-5)+'" width="'+f2(w*2)+'" height="11" rx="5.5" fill="'+CH_WOOLL+'" stroke="'+CK+'" stroke-width="'+CHOL+'"/>'+[-.6,-.3,0,.3,.6].map(k=>chSt('M'+f2(w*k)+' '+f2(y-2.4)+' V'+f2(y+3.4),1.6,'#d9d2c7')).join('');
-  if(!acc.includes('couronne'))s+=chC(0,top-3.5,6.5,CH_WOOLL);
+  s+=chC(0,top-3.5,6.5,CH_WOOLL);
   if(t==='bear'){const L=C.light;s+=chC(-24,-21,10.4,C.base)+chC(-24,-21,5.4,L,0)+chC(24,-21,10.4,C.base)+chC(24,-21,5.4,L,0)}
   if(t==='panda')s+=chC(-24.6,-22,10.6,'#26262b')+chC(24.6,-22,10.6,'#26262b');
   return {s,top}}
@@ -217,12 +206,16 @@ function chTail(C,P){if(P.lg==='push')return '';const t=C.t,b=C.base,y=P.ty+52;
   return ''}
 /* ---- jambes, chaussures, short ou legging, torse ---- */
 function chShoe(ax,ay,d){const o=d>0?1:-1;return chP('M'+f2(ax-9.6*o)+' '+f2(ay+5.6)+' Q'+f2(ax-9.6*o)+' '+f2(ay-1.6)+' '+f2(ax-3*o)+' '+f2(ay-1.6)+' L'+f2(ax+4*o)+' '+f2(ay-1.6)+' Q'+f2(ax+10.4*o)+' '+f2(ay-.6)+' '+f2(ax+10.4*o)+' '+f2(ay+3.4)+' L'+f2(ax+10.4*o)+' '+f2(ay+6.2)+' L'+f2(ax-9.6*o)+' '+f2(ay+6.2)+' Z','#e9eaee')+chSt('M'+f2(ax-8*o)+' '+f2(ay+3.6)+' H'+f2(ax+8.6*o),1.4,'#9aa0aa')}
+/* v7.3 : chaussure tournée de deg degrés autour de la cheville (pied à plat quand le perso est allongé) */
+function chShoeR(ax,ay,deg){const r=deg*Math.PI/180,c=Math.cos(r),n=Math.sin(r),q=(x,y)=>f2(ax+x*c-y*n)+' '+f2(ay+x*n+y*c);
+  return chP('M'+q(-9.6,5.6)+' Q'+q(-9.6,-1.6)+' '+q(-3,-1.6)+' L'+q(4,-1.6)+' Q'+q(10.4,-.6)+' '+q(10.4,3.4)+' L'+q(10.4,6.2)+' L'+q(-9.6,6.2)+' Z','#e9eaee')+chSt('M'+q(-8,3.6)+' L'+q(8.6,3.6),1.4,'#9aa0aa')}
 function chLegs(P,C,o,M){if(P.lg==='push')return '';const hum=C.t==='human',fem=C.fem,ty=P.ty,lc=fem?'#2b2a3d':hum?C.base:C.arm,sq=P.lg==='sq'?P.sq||0:0;let s='';
+  if(P.lp){P.lp.forEach(l=>{s+=chLimb(l[0],l[1],l[2],14.5+M,11.5+M*.6,lc)+chShoeR(l[2][0],l[2][1],P.sr||0)});return chG(100,ty,s)} /* v7.3 : jambes posées librement (hip thrust) */
   const L=[-1,1].map(d=>P.lg==='hang'?[[d*10,58],[d*10.5,85],[d*9,109]]:P.lg==='sq'?[[d*11,58],[d*(12+sq*.95),58+(53-sq)*.55],[d*(11.5+sq*.35),111-sq]]:[[d*11,58],[d*12,86],[d*11.5,111]]);
   L.forEach((l,i)=>{s+=chLimb(l[0],l[1],l[2],14.5+M,11.5+M*.6,lc)});
   L.forEach((l,i)=>{s+=chShoe(l[2][0],l[2][1],i?1:-1)});
   return chG(100,ty,s)}
-function chTorso(P,C,o,shirt,W,M,acc){const hum=C.t==='human',fem=C.fem,ty=P.ty,sk=C.base,bot=fem?'#2b2a3d':'#1f2130',psh=P.lg==='push',acol=o.acc||'#e4ff1a';let s='';
+function chTorso(P,C,o,shirt,W,M){const hum=C.t==='human',fem=C.fem,ty=P.ty,sk=C.base,bot=fem?'#2b2a3d':'#1f2130',psh=P.lg==='push',acol=o.acc||'#e4ff1a';let s='';
   const nl=chLum(shirt)>.6?chDk(shirt,.25):chLt(shirt,.18);
   if(!psh){if(fem)s+=chP('M-18.6 22 L18.6 22 L19.6 38 L-19.6 38 Z',hum?sk:C.fur)+chP('M-20 34 L20 34 L21 48 L-21 48 Z',bot);
     else s+=chP('M-21 40 L21 40 L23 68 L3 68 L0 57 L-3 68 L-23 68 Z',bot)+chSt('M-21.6 44 L-22.6 64',1.6,acol)+chSt('M21.6 44 L22.6 64',1.6,acol)}
@@ -230,14 +223,14 @@ function chTorso(P,C,o,shirt,W,M,acc){const hum=C.t==='human',fem=C.fem,ty=P.ty,
   s+=chP('M'+f2(-W)+' 3 Q'+f2(-W-2)+' -1 '+f2(-W+5)+' -3 Q0 -8 '+f2(W-5)+' -3 Q'+f2(W+2)+' -1 '+f2(W)+' 3 L'+wb+' '+yb+' Q0 '+(yb+3)+' '+(-wb)+' '+yb+' Z',shirt);
   s+=chSt('M-8 -4 Q0 4 8 -4',2,nl);
   if(M>1)s+=chSt('M'+f2(-W*.62)+' 12 Q'+f2(-W*.3)+' 17 -1.4 13.4 M'+f2(W*.62)+' 12 Q'+f2(W*.3)+' 17 1.4 13.4',1.8,chLum(shirt)>.6?chDk(shirt,.2):chLt(shirt,.14));
-  if(acc.includes('medaille')&&!psh)s+=chSt('M-6.4 -3 L-1.6 15 M6.4 -3 L1.6 15',3.4,'#3d7be0')+chC(0,20,5.6,'#f5c542',2)+chP('M0 16.6 l1.1 2.2 2.4 .3 -1.8 1.7 .5 2.4 -2.2 -1.2 -2.2 1.2 .5 -2.4 -1.8 -1.7 2.4 -.3 Z','#c8930f',0);
   return chG(100,ty,s)}
 /* ---- le personnage complet ---- */
-function charSvg(o){o=o||{};const sp0=CH_SP[o.sp]?o.sp:'homme';o=Object.assign({},CH_SP[sp0].def,o,{sp:sp0});const sp=sp0,P=CH_POSE[o.pose]||CH_POSE.idle,H=P.H||200,id='q'+(++CHN)+'_',C=chCols(o),shirt=chShirtCol(o),acc=Array.isArray(o.ac)?o.ac:[],hum=C.t==='human';
+function charSvg(o){o=o||{};const sp0=CH_SP[o.sp]?o.sp:'homme';o=Object.assign({},CH_SP[sp0].def,o,{sp:sp0});const sp=sp0,P=CH_POSE[o.pose]||CH_POSE.idle,H=P.H||200,id='q'+(++CHN)+'_',C=chCols(o),shirt=chShirtCol(o),hum=C.t==='human';
   const ic=o.pose==='icon',M=ic?0:Math.max(0,Math.min(2,o.mus|0)),SEA=ic?'':o.sea==='hiver'||o.sea==='ete'?o.sea:'';CHOL=COL;
   const ex=o.ex||(o.pose==='sleep'?'sleep':ic?(sp==='homme'?'focus':'neutral'):o.pose==='hang'?'neutral':/^(pull|dip|push|sq)/.test(o.pose||'')?'effort':'grin');
-  const gl=acc.includes('gants')?'#26272c':'',W=(C.fem?23:C.t==='gorilla'?33:30)+M*(C.fem?2:2.5);let s='',defs='';
+  const W=(C.fem?23:C.t==='gorilla'?33:30)+M*(C.fem?2:2.5);let s='',defs='';
   if(o.bg){const a=o.bgc||o.acc||'#e4ff1a';defs+='<linearGradient id="'+id+'bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+chLt(a,.22)+'"/><stop offset="1" stop-color="'+chDk(a,.14)+'"/></linearGradient>';s+='<rect width="200" height="'+H+'" fill="url(#'+id+'bg)"/>'}
+  else if(P.nosh){} /* allongé (banc) : pas d'ombre au sol */
   else if(P.lg==='stand')s+=chE(100,P.ty+119,34,4.4,'#000',0,' opacity=".13"');
   else if(P.lg==='sq')s+=chE(100,P.gy,34,4.4,'#000',0,' opacity=".13"');
   else if(P.lg==='push')s+=chE(100,P.ha[0][1]+10,56,4.4,'#000',0,' opacity=".13"');
@@ -253,27 +246,24 @@ function charSvg(o){o=o||{};const sp0=CH_SP[o.sp]?o.sp:'homme';o=Object.assign({
   const hd=P.hd,hsc=o.hsc||1,hT='translate('+f2(hd[0])+' '+f2(hd[1])+')'+(P.hrot?' rotate('+P.hrot+')':'')+(hsc!==1?' scale('+hsc+')':'');
   s+='<rect x="'+f2(hd[0]-5.6)+'" y="'+f2(hd[1]+11)+'" width="11.2" height="'+f2(P.ty-hd[1]-8)+'" fill="'+(hum?C.base:C.fur)+'" stroke="'+CK+'" stroke-width="'+COL+'"/>';
   if(hum){const hb=chHairBack(o.hs||'court',CH_HAIRC[o.hc]||CH_HAIRC.brun);if(hb)s+='<g transform="'+hT+'">'+hb+'</g>'}
-  s+=chTorso(P,C,o,shirt,W,M,acc);
+  s+=chTorso(P,C,o,shirt,W,M);
   if(SEA==='hiver')s+=chScarf(P);
   if(P.bar)s+='<rect x="8" y="'+f2(P.bar-5)+'" width="184" height="10" rx="5" fill="#222228"/><rect x="12" y="'+f2(P.bar-3.6)+'" width="176" height="2.4" rx="1.2" fill="#ffffff" opacity=".26"/>';
   /* tête */
   let hs;
-  if(hum){const Hd=chHeadHuman(C,o,ex);let hx='',ha=acc,hh=Hd;
-    if(SEA==='hiver'){const bn=chBeanieHuman(Hd,acc);hx=bn.s;ha=acc.filter(a=>a!=='bandeau');hh=Object.assign({},Hd,{top:bn.top-2})}else if(SEA==='ete')hx=chShades(Hd.eye,0);
-    hs=Hd.s+hx+chHeadAccHuman(ha,hh)}
-  else{CHOL=4.4;const Hd=chHeadAnimal(C,o,ex);let hx='',ha=acc,hh=Hd;
-    if(SEA==='hiver'){const bn=chBeanieAnimal(C,Hd,acc);hx=bn.s;ha=acc.filter(a=>a!=='bandeau');hh=Object.assign({},Hd,{top:bn.top})}else if(SEA==='ete')hx=chShades(Hd.eye,1);
-    hs='<g transform="scale('+AN_SC+')">'+Hd.s+hx+chHeadAccAnimal(ha,hh)+'</g>';CHOL=COL}
+  if(hum){const Hd=chHeadHuman(C,o,ex);const hx=SEA==='hiver'?chBeanieHuman(Hd).s:SEA==='ete'?chShades(Hd.eye,0):'';hs=Hd.s+hx}
+  else{CHOL=4.4;const Hd=chHeadAnimal(C,o,ex);const hx=SEA==='hiver'?chBeanieAnimal(C,Hd).s:SEA==='ete'?chShades(Hd.eye,1):'';hs='<g transform="scale('+AN_SC+')">'+Hd.s+hx+'</g>';CHOL=COL}
   s+='<g transform="'+hT+'">'+hs+'</g>';
-  const hc=C.hand;s+=chHand(P.ha[0],P.tl,hum?C.base:hc,-1,gl,C)+chHand(P.ha[1],P.tr,hum?C.base:hc,1,gl,C);
+  const hc=C.hand;s+=chHand(P.ha[0],P.tl,hum?C.base:hc,-1,C)+chHand(P.ha[1],P.tr,hum?C.base:hc,1,C);
   if(P.zz)s+='<g fill="none" stroke-linecap="round" stroke-linejoin="round">'+[[22,-8,6.4],[33,-20,5],[42,-30,3.8]].map(z=>{const x=hd[0]+z[0],y=hd[1]+z[1],d='M'+x+' '+y+' h'+z[2]+' l'+(-z[2])+' '+f2(z[2]*1.15)+' h'+z[2];return chSt(d,z[2]*.42+4,CK)+chSt(d,z[2]*.42,o.zc||'#bfe6ff')}).join('')+'</g>';
   const vb=o.vb||P.vb;
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+(vb?vb.join(' '):'0 0 200 '+H)+'"'+(o.cls?' class="'+o.cls+'"':'')+' aria-hidden="true">'+(defs?'<defs>'+defs+'</defs>':'')+s+'</svg>'}
 /* ---- animation SMIL : fusion de deux poses (traction par défaut) ---- */
-function charAnim(o,dur,p1,p2){o=Object.assign({},o);const n0=CHN;const a=charSvg(Object.assign({},o,{pose:p1||'pullA'}));CHN=n0;const b=charSvg(Object.assign({},o,{pose:p2||'pullB'}));
+/* once = 1 : une seule répétition, lancée par beginElement() (toucher le perso de l'accueil) */
+function charAnim(o,dur,p1,p2,once){o=Object.assign({},o);const n0=CHN;const a=charSvg(Object.assign({},o,{pose:p1||'pullA'}));CHN=n0;const b=charSvg(Object.assign({},o,{pose:p2||'pullB'}));
   const re=/<([a-zA-Z]+)((?:\s+[\w:-]+="[^"]*")*)\s*(\/?)>/g,ta=[...a.matchAll(re)],tb=[...b.matchAll(re)];if(ta.length!==tb.length)return a;
   const pa=s=>{const m={};for(const x of s.matchAll(/([\w:-]+)="([^"]*)"/g))m[x[1]]=x[2];return m},AN=['d','x','y','cx','cy','r','rx','ry','width','height','x1','y1','x2','y2'],D=(dur||1.5)+'s';
-  const sp=' calcMode="spline" keyTimes="0;.45;1" keySplines=".45 0 .4 1;.45 0 .4 1" dur="'+D+'" repeatCount="indefinite"';
+  const sp=' calcMode="spline" keyTimes="0;.45;1" keySplines=".45 0 .4 1;.45 0 .4 1" dur="'+D+'"'+(once?' begin="indefinite" fill="remove"':' repeatCount="indefinite"');
   let out='',last=0;for(let i=0;i<ta.length;i++){const A=ta[i],B=tb[i];out+=a.slice(last,A.index);last=A.index+A[0].length;const xa=pa(A[2]),xb=pa(B[2]);let an='';
     AN.forEach(k=>{if(xa[k]!==undefined&&xa[k]!==xb[k])an+='<animate attributeName="'+k+'" values="'+xa[k]+';'+xb[k]+';'+xa[k]+'"'+sp+'/>'});
     if(xa.transform&&xa.transform!==xb.transform){const t1=/translate\(([-\d.]+)[ ,]([-\d.]+)\)/.exec(xa.transform),t2=/translate\(([-\d.]+)[ ,]([-\d.]+)\)/.exec(xb.transform||''),sc=/scale\(([-\d.]+)\)/.exec(xa.transform),s=sc&&!/^translate\([^)]*\)\s*scale/.test(xa.transform)?1:sc?+sc[1]:1;

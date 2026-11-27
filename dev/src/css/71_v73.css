@@ -1,0 +1,9 @@
+/* ===================== v7.3 : veste des badges selon la saison, pin's ===================== */
+.jkt .pin{width:9.4%}
+.jkt .pin:not(.on){border:1.5px solid rgba(16,34,58,.24);background:rgba(255,255,255,.2);color:rgba(16,34,58,.42);font-size:clamp(8px,2.7cqw,12px)}
+.jkt[data-jk="spring"] .pin:not(.on){border-color:rgba(96,30,48,.22);background:rgba(255,255,255,.26);color:rgba(96,30,48,.42)}
+.jkt[data-jk="autumn"] .pin:not(.on){border-color:rgba(255,236,214,.34);background:rgba(255,236,214,.08);color:rgba(255,236,214,.55)}
+.pin.sea4.on b,.bd6 .bd.sea4.on .bdm{background:conic-gradient(#7cc564 0 25%,#ffc93d 0 50%,#ff8a2b 0 75%,#7fc7ff 0)}
+.pin.sea4:not(.on) b{width:44%;aspect-ratio:1;border-radius:50%;background:conic-gradient(rgba(0,0,0,.22) 0 25%,rgba(0,0,0,.1) 0 50%,rgba(0,0,0,.22) 0 75%,rgba(0,0,0,.1) 0)}
+.jkt[data-jk="autumn"] .pin.sea4:not(.on) b{background:conic-gradient(rgba(255,236,214,.5) 0 25%,rgba(255,236,214,.25) 0 50%,rgba(255,236,214,.5) 0 75%,rgba(255,236,214,.25) 0)}
+.jkt>svg{filter:drop-shadow(0 6px 10px rgba(0,0,0,.18))}

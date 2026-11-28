@@ -9,4 +9,4 @@ function splash6(){const sp=$('splash');if(!sp)return;try{localStorage.setItem('
   sp.addEventListener('click',end);setTimeout(end,S.splash==='anim'?1600:1100)}
 function splTop(){return 1.1*1.45} /* 1 répétition (1,1 s) + la montée suivante (45 % du cycle) */
 function v6Init(){measureDyn();applyAcc();applyIcon();renderTabs();sheetDrag($('sheet'),close,()=>!form||(!form.ex.length&&!Object.keys(form.perf||{}).length&&!(form.note||'').trim()));sheetDrag($('gsheet'),closeSheet);
-  rmSync();chalSync();splash6();miniSync();i18nStart();if(S.onb&&!$('onb'))setTimeout(()=>{if(!$('bil'))afterRewards()},2500);route();tmRestore();if(typeof spTickStart==='function'&&S.supp){spTickStart();spDrain()}} /* v7.4 : un minuteur en cours reprend où il en était */
+  rmSync();chalSync();splash6();miniSync();i18nStart();if(S.onb&&!$('onb'))setTimeout(()=>{if(!$('bil'))afterRewards()},2500);if(typeof plBoot==='function')plBoot();route();tmRestore();if(typeof spTickStart==='function'&&S.supp){spTickStart();spDrain()}} /* v7.4 : un minuteur en cours reprend où il en était */

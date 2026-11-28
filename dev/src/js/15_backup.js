@@ -78,6 +78,9 @@ function bkMerge(cur,inc){const R={add:{},upd:{},kept:{}},m=JSON.parse(JSON.stri
   if(b.supp&&typeof b.supp==='object'){m.supp=m.supp&&typeof m.supp==='object'?m.supp:{};m.supp.list=bkById(m.supp.list,b.supp.list,R,'c');const LG=m.supp.log=m.supp.log||{};
     for(const d in (b.supp.log||{})){LG[d]=LG[d]||{};for(const k in b.supp.log[d]){const x=LG[d][k],y=b.supp.log[d][k];if(!x||bkTs(y)>bkTs(x))LG[d][k]=y}}
     m.supp.ev=bkUnion(m.supp.ev,b.supp.ev).sort((a,c)=>(a.t||0)-(c.t||0));for(const k in b.supp)if(m.supp[k]===undefined)m.supp[k]=b.supp[k]}
+  /* planificateur (v7.7) : programmes et séances prévues par id, le plus récent gagne */
+  if(b.plan&&typeof b.plan==='object'){m.plan=m.plan&&typeof m.plan==='object'?m.plan:{};m.plan.progs=bkById(m.plan.progs,b.plan.progs,R,'p');m.plan.it=bkById(m.plan.it,b.plan.it,R,'i');
+    if(m.plan.progs.filter(p=>p.act).length>1){const a=m.plan.progs.filter(p=>p.act).sort((x,y)=>(y.u||0)-(x.u||0));a.slice(1).forEach(p=>{p.act=false})}}
   /* le reste (réglages, perso, compteurs…) : ce téléphone d'abord, la sauvegarde seulement si absent ici */
   for(const k in b)if(m[k]===undefined||m[k]===null||m[k]==='')m[k]=b[k];m.onb=!!(cur.onb||inc.onb);
   return {data:m,rep:R}}

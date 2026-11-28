@@ -76,7 +76,7 @@ CODE=re.compile(r'^[#.\[]|data-|https?:|\.(html|js|png|jpg|json|svg|css|ics)\b|=
 # Code mort (compétition de l'époque claude.ai, jamais affichée : vCo toujours masqué) et textes propres à une langue : ignorés
 IGN=re.compile(r"Personne n'a encore de séance cette semaine|compétition|Compétition|claude\.ai|compte Claude|Tes compétitions|Premier à 5 points|Gagné par|ton adversaire|Personne n'a encore rejoint|Égalité|Tu mènes|mène\. À toi|Séances cette semaine\.|Copier le code|^Quitter$|^Actualiser$|^Membre$|^Code :|Impossible de partager tes scores|Sur l'année · séances par mois|Le premier mois n'est pas encore|Aucune compétition|Crée-en une|^Cette semaine$|Créée ! Envoie|Le code fait 12|Rejoint\. Le créateur|Hors ligne : enregistré|synchronisation dès que possible|Three, two|Drie, twee|Trois, deux|^Language: |^Taal: ")
 # Morceaux vérifiés dans l'appli (phrase complète, modèle {*} ou clé avec nombres) : voir trtest dans dev/PLAN.md v7.6
-SKIP_FRAG={', séance','secondes de','· réussi !','sans OFF',"Fin de l'échauffement à",'Fin du repos à','Modifier ·','· filtre actif','Pyramide ·','· rang maximum, respect ! 👑','Séance dupliquée le'}
+SKIP_FRAG={', séance','secondes de','· réussi !','sans OFF',"Fin de l'échauffement à",'Fin du repos à','Modifier ·','· filtre actif','Pyramide ·','· rang maximum, respect ! 👑','Séance dupliquée le','· répétitions','· secondes'}
 SKIP={'Content-Type','AbortError','MacIntel','Escape','Enter','Firefox','Edge','Samsung Internet','Safari','Chrome','Zoom','Notification','Archivo','Inter','Helvetica'}
 FRW=re.compile(r"\b(de|la|le|les|des|du|et|ou|en|au|aux|sans|avec|pour|par|sur|un|une|ton|ta|tes|mon|ma|mes)\b")
 def is_ui(t):

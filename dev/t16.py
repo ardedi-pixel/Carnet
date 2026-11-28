@@ -814,5 +814,90 @@ with sync_playwright() as p:
         pg.evaluate("localStorage.removeItem('carnet-seances')");pg.reload();pg.wait_for_timeout(3600)
         ok('Données retrouvées' in T(pg,'#gbox') and pg.locator('#onb').count()==0,'O données effacées du téléphone : sauvegarde automatique retrouvée et proposée')
     step('O6',O6)
+    # ===== P : v7.7 : planificateur (programmes, séances prévues, prévu / réalisé, détail par série, reporter) =====
+    _td=_dt.date.fromisoformat(TK0);DW=_td.isoweekday();DW2=DW%7+1
+    d=dict(SEED);d['lang']='fr';d['th']='nuit'
+    d['plan']={'progs':[{'id':'pA','n':'Force A','ds':'','d0':TK0,'wk':0,'act':True,'u':1,'ts':[{'id':'tA','n':'Haut du corps','dow':[DW],'pl':'street','no':'Gainage avant','ex':[{'x':'Tractions','s':3,'r':'10','kg':'','rest':120,'no':''},{'x':'Dips','s':3,'r':'8-10','kg':10,'rest':90,'no':'Lent'}]},{'id':'tB','n':'Bas du corps','dow':[DW2],'pl':'','no':'','ex':[{'x':'Squat','s':3,'r':'10','kg':40,'rest':120,'no':''}]}]}],
+      'it':[{'id':'iM','pid':'pA','tid':'tA','d':DD(-2),'d0':DD(-2),'st':'plan','sn':{'n':'Haut du corps','pl':'street','no':'','ex':[{'x':'Tractions','s':3,'r':'10'}]},'u':1}]}
+    d['rest']=[r for r in d.get('rest',[]) if r not in (DD(1),DD(2),DD(3))]
+    ctx,pg=mk(b,d);pg.goto(U+'#calendrier');pg.wait_for_timeout(2600);pg.mouse.click(5,5);pg.evaluate(CLEAN)
+    def P1():
+        it=st(pg)['plan']['it'];fut=[i for i in it if i['id']!='iM']
+        ok(len(fut)>=12 and min(i['d'] for i in fut)>=TK0 and max(i['d'] for i in fut)<=DD(42),'P séances prévues créées 6 semaines à l\'avance, jamais dans le passé ('+str(len(fut))+')')
+        ok(all(_dt.date.fromisoformat(i['d']).isoweekday()==(DW if i['tid']=='tA' else DW2) for i in fut),'P séances prévues aux bons jours de la semaine')
+        ok(pg.evaluate("plSt(PLN().it.find(i=>i.id==='iM'))")=='miss' and 'manquée' in T(pg,'#plStrip'),'P séance passée sans rien de noté = manquée (signalée sur le bandeau)')
+        ok('Force A' in T(pg,'#plStrip') and pg.locator('#grid .day.plh').count()>=1 and pg.locator('#grid .pl7c').count()>=1,'P calendrier : bandeau du programme et marques des séances prévues')
+        pg.click('#grid [data-k="'+TK0+'"]');pg.wait_for_timeout(300);t=T(pg,'#detail')
+        ok(pg.locator('#detail .pl7card').count()==1 and 'Haut du corps' in t and 'Prévue' in t and '3 × 8-10 · 10 kg' in t,'P détail du jour : séance prévue avec séries, répétitions et charges')
+    step('P1',P1)
+    def P2():
+        pg.click('#detail [data-pla^="log:"]');pg.wait_for_timeout(500)
+        ok(pg.locator('#cEx [data-ex="Tractions"][aria-pressed="true"]').count()>=1 and pg.locator('#cEx [data-ex="Dips"][aria-pressed="true"]').count()>=1 and pg.locator('#cPl [data-pl="street"][aria-pressed="true"]').count()==1,'P « Noter cette séance » : exercices et lieu préremplis')
+        ok(pg.get_attribute('[data-pf="Dips"][data-pk="r"]','placeholder')=='8-10','P valeurs prévues affichées en gris')
+        pg.click('[data-pfd="Tractions"]');pg.wait_for_timeout(200)
+        for i,v in enumerate(['10','9','8']):pg.fill('[data-ps="Tractions"][data-pi="%d"][data-pk="r"]'%i,v)
+        pg.click('[data-pfd="Dips"]');pg.wait_for_timeout(200);pg.click('[data-psplan="Dips"]');pg.wait_for_timeout(200)
+        ok(pg.input_value('[data-pf="Tractions"][data-pk="s"]')=='3' and pg.input_value('[data-pf="Tractions"][data-pk="r"]')=='10' and pg.input_value('[data-ps="Dips"][data-pi="2"][data-pk="kg"]')=='10','P détail par série : résumé calculé, « Comme prévu » remplit les séries')
+        pg.click('#ok');pg.wait_for_timeout(500);pg.click('#rcGo');pg.wait_for_timeout(1400);pg.evaluate(CLEAN)
+        dd=st(pg);s0=[x for x in dd['sessions'] if x['date']==TK0][-1];it=[i for i in dd['plan']['it'] if i['d']==TK0][0]
+        ok([z['r'] for z in s0['perf']['Tractions']['sets']]==[10,9,8] and s0['perf']['Tractions']['s']==3 and s0['perf']['Tractions']['r']==10,'P séance enregistrée série par série (10/9/8), résumé gardé pour les records')
+        ok(it.get('sid')==s0['id'] and pg.evaluate("plSt(PLN().it.find(i=>i.d==='"+TK0+"'))")=='done','P séance reliée à la séance prévue : faite')
+        ok(it['sn']['ex'][0]['r']=='10' and it['sn']['ex'][1]['kg']==10,'P le prévu n\'est pas remplacé par le réalisé')
+        pg.click('#grid [data-k="'+TK0+'"]');pg.wait_for_timeout(300);t=T(pg,'#detail .pl7card')
+        ok('Faite' in t and '10 / 9 / 8' in t and 'Prévu' in t,'P comparaison prévu / fait dans le détail du jour')
+        ok('10/9/8' in pg.evaluate("perfTxt({perf:{Tractions:{s:3,r:10,sets:[{r:10},{r:9},{r:8}]}}},'Tractions')"),'P séance affichée série par série (10/9/8)')
+    step('P2',P2)
+    def P3():
+        pg.wait_for_timeout(3000);pg.evaluate(CLEAN) # laisse passer le message « Séance enregistrée · Partager »
+        pg.evaluate("plMoveSheet('iM')");pg.wait_for_timeout(300);t=T(pg,'#gbox')
+        ok('Prochain jour libre' in t and 'Garder le programme' in t and 'Marquer non faite' in t,'P séance manquée : propositions (reporter, garder, non faite)')
+        dest=pg.evaluate("plProps(PLN().it.find(i=>i.id==='iM'))[0].d");free=pg.evaluate("plFree('"+dest+"')")
+        ok(dest>=TK0 and free,'P jour proposé libre (pas d\'autre séance prévue, pas de repos)')
+        pg.locator('[data-plmv]').first.click();pg.wait_for_timeout(400);i=[x for x in st(pg)['plan']['it'] if x['id']=='iM'][0]
+        ok(i['d']==dest and i['d0']==DD(-2) and pg.evaluate("plSt(PLN().it.find(i=>i.id==='iM'))")=='post','P reportée : nouvelle date, date d\'origine gardée')
+        pg.click('#undo');pg.wait_for_timeout(300);ok([x for x in st(pg)['plan']['it'] if x['id']=='iM'][0]['d']==DD(-2),'P report annulable')
+        nx=pg.evaluate("PLN().it.filter(i=>i.d>'"+TK0+"'&&i.tid==='tB').map(i=>i.id)")[0];nx2=pg.evaluate("PLN().it.filter(i=>i.d>'"+TK0+"'&&i.tid==='tA').map(i=>[i.id,i.d])")[0]
+        pg.evaluate("plMoveTo('"+nx+"','"+nx2[1]+"')");pg.wait_for_timeout(300);sw=pg.evaluate("[PLN().it.find(i=>i.id==='"+nx+"').d,PLN().it.find(i=>i.id==='"+nx2[0]+"').d]")
+        ok(sw[0]==nx2[1] and sw[1]!=nx2[1],'P déposer sur une autre séance prévue = les échanger')
+        pg.evaluate("location.hash='#calendrier'");pg.wait_for_timeout(300);k=pg.evaluate("PLN().it.find(i=>i.id==='"+nx+"').d")
+        if pg.locator('#grid [data-k="'+k+'"]').count()==0:pg.click('#next');pg.wait_for_timeout(300)
+        pg.click('#grid [data-k="'+k+'"]');pg.wait_for_timeout(300);pg.click('#detail [data-pla^="skip:"]');pg.wait_for_timeout(300)
+        ok(pg.evaluate("plSt(PLN().it.find(i=>i.id==='"+nx+"'))")=='skip' and pg.locator('#detail [data-pla^="undo:"]').count()==1,'P « Non faite » : gardée dans l\'historique, remise possible')
+        ok(pg.locator('#detail #rest').count()==1,'P jour de repos possible une fois la séance marquée non faite')
+    step('P3',P3)
+    def P4():
+        sid=[x for x in st(pg)['sessions'] if x['date']==TK0][-1]['id'];pg.evaluate("delSession('"+sid+"')");pg.wait_for_timeout(300)
+        ok(not [i for i in st(pg)['plan']['it'] if i['d']==TK0][0].get('sid'),'P séance supprimée : la séance prévue redevient à faire')
+        pg.click('#undo');pg.wait_for_timeout(300);ok([i for i in st(pg)['plan']['it'] if i['d']==TK0][0].get('sid')==sid,'P suppression annulée : lien remis')
+        pg.evaluate("location.hash='#programmes'");pg.wait_for_timeout(500)
+        ok(pg.locator('#calPl .pl7p.on').count()==1 and pg.locator('#grid').is_hidden(),'P page Programmes (dans le Calendrier)')
+        pg.click('#calPl [data-pla="new"]');pg.wait_for_timeout(400);pg.click('#gbox [data-pla="save"]');pg.wait_for_timeout(200)
+        ok('nom' in T(pg,'#plErr'),'P éditeur : nom obligatoire')
+        pg.fill('#plN','Street B');t=pg.locator('#gbox .pl7t').first;tid=t.get_attribute('data-t')
+        while pg.locator('#gbox .pl7t').first.locator('.pl7d.on').count():pg.locator('#gbox .pl7t').first.locator('.pl7d.on').first.click();pg.wait_for_timeout(100)
+        pg.locator('#gbox .pl7t').first.locator('[data-pld="%d"]'%DW2).click();pg.wait_for_timeout(150)
+        pg.fill('[data-pladd="'+tid+'"]','Pompes');pg.click('[data-pla="addx:'+tid+'"]');pg.wait_for_timeout(150)
+        ok(pg.locator('#gbox .pl7er').count()==1 and pg.input_value('#gbox .pl7er [data-plf="s"]')=='3','P éditeur : exercice ajouté avec 3 séries par défaut')
+        pg.click('#gbox [data-pla="save"]');pg.wait_for_timeout(400);P=st(pg)['plan']
+        ok(len(P['progs'])==2 and [p['act'] for p in P['progs']]==[True,False],'P nouveau programme enregistré sans remplacer l\'actif')
+        pid=P['progs'][1]['id'];n_past=len([i for i in P['it'] if i['pid']=='pA' and (i['d']<TK0 or i.get('sid'))])
+        pg.click('#calPl [data-pla="act:'+pid+'"]');pg.wait_for_timeout(400);P=st(pg)['plan']
+        ok([p['act'] for p in P['progs']]==[False,True] and all(i['pid']==pid for i in P['it'] if i['d']>TK0 and not i.get('sid')),'P changer de programme : un seul actif, séances à venir remplacées')
+        ok(len([i for i in P['it'] if i['pid']=='pA' and (i['d']<TK0 or i.get('sid'))])==n_past,'P changer de programme garde l\'historique de l\'ancien')
+    step('P4',P4)
+    def P5():
+        m=pg.evaluate("(()=>{const c=JSON.parse(JSON.stringify(packData())),x=JSON.parse(JSON.stringify(c));x.plan.progs.push({id:'pZ',n:'Autre',ts:[],act:false,u:Date.now()});x.plan.it.push({id:'iZ',pid:'pZ',tid:'t',d:'"+DD(5)+"',d0:'"+DD(5)+"',st:'plan',sn:{n:'Z',ex:[]},u:Date.now()});const r=bkMerge(c,x);return [r.data.plan.progs.length,r.data.plan.it.some(i=>i.id==='iZ')]})()")
+        ok(m==[3,True],'P sauvegarde : programmes et séances prévues fusionnés')
+        pg.evaluate("location.hash='#accueil'");pg.wait_for_timeout(600);ok('prévue' in T(pg,'#hStart').lower(),'P accueil : séance prévue rappelée sous « Noter une séance »')
+    step('P5',P5)
+    ctx.close()
+    d=dict(SEED);d['lang']='en';d['th']='nuit'
+    ctx,pg=mk(b,d,locale='en-GB');pg.goto(U+'#calendrier');pg.wait_for_timeout(2400);pg.mouse.click(5,5)
+    def P6():
+        r=pg.evaluate("a=>a.map(t=>trS(t))",['Séance prévue','Reporter la séance','Prévu : 3 × 10','Séance reportée au Monday 30 November','Planifier mes séances','Prévue aujourd\'hui : Haut du corps'])
+        ok(r==['Planned session','Move the session','Planned: 3 × 10','Session moved to Monday 30 November','Plan my sessions','Planned today: Haut du corps'],'P planificateur traduit en anglais '+str(r))
+        ok('Plan my sessions' in T(pg,'#plStrip'),'P bandeau « Plan my sessions » en anglais sans programme')
+    step('P6',P6)
+    ctx.close()
     ctx.close();b.close()
 print('\n'.join(log));print('TOTAL',sum(1 for l in log if l.startswith('OK')),'/',len(log));print('ERRORS',errs[:12])

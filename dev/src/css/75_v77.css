@@ -1,0 +1,118 @@
+/* ===================== v7.7 : planificateur (programmes, séances prévues, prévu / réalisé, détail par série) ===================== */
+:root{--pl-plan:var(--lead);--pl-done:#22c55e;--pl-part:#f59e0b;--pl-miss:#e5484d;--pl-skip:var(--mute)}
+/* bandeau du programme au-dessus du calendrier */
+.pl7strip{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;margin:0 0 12px;border-radius:16px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
+.pl7strip>.ico{flex:none;width:22px;height:22px;color:var(--lead)}
+.pl7strip span:not(.chev){flex:1;min-width:0;display:grid;gap:2px}
+.pl7strip b{font-weight:800;font-size:calc(15px*var(--fs,1));overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl7strip small{color:var(--mute);font-size:calc(12.5px*var(--fs,1));line-height:1.35}
+.pl7strip small.pl7miss{color:var(--pl-miss);font-weight:700}
+.pl7strip.none{border-style:dashed;background:transparent}
+.pl7strip .chev{flex:none;font-size:22px;color:var(--mute)}
+/* marques dans le calendrier (mois) : anneau pointillé = prévue, plein = manquée */
+.day .pl7c{position:absolute;left:50%;bottom:5px;transform:translateX(-50%);width:16px;height:4px;border-radius:3px;background:var(--pl-plan);opacity:.95;pointer-events:none}
+.day .pl7c.st-miss{background:var(--pl-miss)}
+.day .pl7c.st-part{background:var(--pl-part)}
+.day .pl7c.st-skip{background:var(--pl-skip);opacity:.5}
+.day.plh:not(.has){box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--lead) 55%,transparent)}
+.day.plm:not(.has){box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--pl-miss) 60%,transparent)}
+/* vue semaine */
+.pl7w{display:grid;gap:2px;min-width:0}
+.pl7w b{font-weight:800;font-size:calc(14px*var(--fs,1));display:flex;align-items:center;gap:6px}
+.pl7w small{color:var(--mute);font-size:calc(12.5px*var(--fs,1));overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl7chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:calc(11.5px*var(--fs,1));font-weight:800;letter-spacing:.01em;background:color-mix(in srgb,var(--lead) 20%,transparent);color:var(--ink);white-space:nowrap;flex:none}
+.pl7chip.st-done{background:color-mix(in srgb,var(--pl-done) 22%,transparent)}
+.pl7chip.st-part{background:color-mix(in srgb,var(--pl-part) 24%,transparent)}
+.pl7chip.st-miss{background:color-mix(in srgb,var(--pl-miss) 22%,transparent)}
+.pl7chip.st-skip{background:var(--card2);color:var(--mute)}
+.pl7chip.st-post{background:color-mix(in srgb,var(--lead) 14%,transparent);outline:1px dashed color-mix(in srgb,var(--lead) 70%,transparent)}
+/* carte de la séance prévue (détail du jour) */
+.pl7card{border:1.5px dashed color-mix(in srgb,var(--lead) 60%,transparent);border-radius:16px;padding:12px 14px;margin:0 0 12px;background:color-mix(in srgb,var(--lead) 5%,transparent)}
+.pl7card.st-done,.pl7card.st-part{border-style:solid;border-color:var(--line);background:var(--card)}
+.pl7card.st-miss{border-color:color-mix(in srgb,var(--pl-miss) 60%,transparent)}
+.pl7card.st-skip{opacity:.75}
+.pl7h{display:flex;align-items:center;gap:10px}
+.pl7h>div{flex:1;min-width:0}
+.pl7h b{display:block;font-weight:800;font-size:calc(16px*var(--fs,1))}
+.pl7h small{display:block;color:var(--mute);font-size:calc(12.5px*var(--fs,1))}
+.pl7dot{flex:none;width:10px;height:10px;border-radius:50%;background:var(--pl-plan)}
+.st-done .pl7dot{background:var(--pl-done)}.st-part .pl7dot{background:var(--pl-part)}.st-miss .pl7dot{background:var(--pl-miss)}.st-skip .pl7dot{background:var(--pl-skip)}
+.pl7no{margin:8px 0 0;font-size:calc(13px*var(--fs,1));color:var(--mute)}
+.pl7xs{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:0}
+.pl7x{display:grid;grid-template-columns:1fr auto auto;gap:4px 10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.pl7x:first-child{border-top:0}
+.pl7xn{font-weight:700;font-size:calc(14px*var(--fs,1));grid-column:1/-1}
+.pl7xp,.pl7xd{display:grid;gap:0}
+.pl7xp small,.pl7xd small{font-size:calc(11px*var(--fs,1));color:var(--mute);text-transform:uppercase;letter-spacing:.04em}
+.pl7xp b,.pl7xd b{font-size:calc(13.5px*var(--fs,1));font-weight:700}
+.pl7x.d2 .pl7xd b{color:var(--pl-done)}.pl7x.d1 .pl7xd b{color:var(--pl-part)}.pl7x.d0 .pl7xd b{color:var(--pl-miss)}
+.pl7xr{display:inline-flex;align-items:center;gap:4px;color:var(--mute);font-size:calc(12.5px*var(--fs,1));justify-self:end}
+.pl7xr .ico{width:15px;height:15px}
+.pl7xno{grid-column:1/-1;font-style:normal;color:var(--mute);font-size:calc(12.5px*var(--fs,1))}
+.pl7acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.pl7acts .btn .ico{width:16px;height:16px}
+/* page Programmes */
+#calPl{display:grid;gap:14px}
+.pl7top{display:flex;align-items:center;gap:10px}.pl7top h2{flex:1;margin:0}
+.pl7top .ico.flip{transform:rotate(180deg)}
+.pl7intro{margin:0}
+.pl7p{border:1px solid var(--line);border-radius:18px;padding:14px;background:var(--card)}
+.pl7p.on{border-color:color-mix(in srgb,var(--lead) 70%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--lead) 40%,transparent) inset}
+.pl7ph{display:flex;align-items:flex-start;gap:10px}.pl7ph>div{flex:1;min-width:0}
+.pl7ph b{display:block;font-weight:800;font-size:calc(17px*var(--fs,1))}
+.pl7ph small{display:block;color:var(--mute);font-size:calc(13px*var(--fs,1));margin-top:2px}
+.pl7ds{margin:8px 0 0;font-size:calc(14px*var(--fs,1));color:var(--mute)}
+.pl7tl{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+.pl7tl li{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:8px 10px;border-radius:12px;background:var(--card2)}
+.pl7tl b{font-weight:700;font-size:calc(14px*var(--fs,1))}.pl7tl span{color:var(--mute);font-size:calc(12.5px*var(--fs,1));font-weight:700}
+.pl7tl small{grid-column:1/-1;color:var(--mute);font-size:calc(12.5px*var(--fs,1));overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl7pa{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}.pl7pa .ib{margin-left:auto}
+.pl7empty{display:grid;gap:4px;padding:18px;border:1.5px dashed var(--line);border-radius:18px;text-align:center}
+.pl7empty small{color:var(--mute)}
+.pl7arch summary{cursor:pointer;font-weight:700;color:var(--mute)}
+.pl7ar{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}.pl7ar span{flex:1}
+.ib.sure{background:color-mix(in srgb,var(--pl-miss) 22%,transparent);color:var(--pl-miss)}
+/* éditeur */
+.pl7f{display:grid;gap:4px;margin-bottom:10px}.pl7f small{color:var(--mute);font-size:calc(12.5px*var(--fs,1));font-weight:700}
+.pl7f textarea{width:100%;box-sizing:border-box}
+.pl7f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pl7f2 select,.pl7f2 input{width:100%;box-sizing:border-box;min-width:0;flex:none}
+.pl7in{width:100%;box-sizing:border-box;height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);padding:0 12px;font:inherit;font-size:calc(16px*var(--fs,1))}
+.pl7ts{display:grid;gap:12px;margin-bottom:10px}
+.pl7t{border:1px solid var(--line);border-radius:16px;padding:12px;display:grid;gap:10px;background:var(--card)}
+.pl7th{display:flex;gap:8px;align-items:center}.pl7tn{font-weight:800}
+.pl7dw{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.pl7d{height:38px;border-radius:10px;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);font:700 calc(12.5px*var(--fs,1)) var(--ft);cursor:pointer;padding:0}
+.pl7d.on{background:var(--lead);color:var(--on-lead,#101010);border-color:var(--lead)}
+.pl7pls{display:flex;flex-wrap:wrap;gap:6px}
+.pl7pls .chip.on{background:var(--lead);color:var(--on-lead,#101010);border-color:var(--lead)}
+.pl7ers{display:grid;gap:8px}
+.pl7er{display:grid;gap:6px;padding:10px;border-radius:12px;background:var(--card2)}
+.pl7er1{display:flex;gap:6px;align-items:center}.pl7er1 .pl7in{font-weight:700;background:var(--card)}
+.pl7er2{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.pl7er2 label{display:grid;gap:2px;min-width:0}.pl7er2 small{font-size:calc(11px*var(--fs,1));color:var(--mute);font-weight:700}
+.pl7er2 input,.pl7er2 select{width:100%;min-width:0;box-sizing:border-box;height:40px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);padding:0 6px;font:inherit;font-size:calc(15px*var(--fs,1));flex:none}
+.pl7eno{height:38px;font-size:calc(14px*var(--fs,1));background:var(--card)}
+.pl7add{display:flex;gap:8px}.pl7add .pl7in{flex:1}
+.pl7rest{margin:10px 0;color:var(--mute);font-size:calc(13.5px*var(--fs,1))}.pl7rest b{color:var(--ink)}
+.pl7chk{display:flex;gap:10px;align-items:center;margin:6px 0;font-weight:700}
+.pl7chk input{width:22px;height:22px;accent-color:var(--lead)}
+/* reporter */
+.pl7opts{display:grid;gap:8px;margin-bottom:8px}
+.pl7opt{display:grid;gap:3px;text-align:left;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);font:inherit;cursor:pointer}
+.pl7opt b{font-size:calc(15px*var(--fs,1))}.pl7opt small{color:var(--mute);font-size:calc(13px*var(--fs,1))}
+.pl7od{grid-template-columns:1fr auto;align-items:center}.pl7od b{grid-column:1/-1}
+.pl7od input{height:40px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);padding:0 8px;font:inherit;min-width:0}
+/* formulaire : détail par série */
+.pf .pfd{grid-column:1/-1;display:grid;gap:6px;padding:8px 0 4px}
+.pfs{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px;align-items:center}
+.pfs>span{font-size:calc(12px*var(--fs,1));color:var(--mute);font-weight:700;min-width:58px}
+.pfs input{min-width:0}
+.pfdb{display:flex;gap:6px;flex-wrap:wrap}
+.pftg{grid-column:1/-1;justify-self:start;border:0;background:transparent;color:var(--lead);font:700 calc(13px*var(--fs,1)) var(--ft);padding:2px 0;cursor:pointer}
+.pfpl{grid-column:1/-1;font-size:calc(12px*var(--fs,1));color:var(--mute);margin:-2px 0 2px}
+/* accueil : séance prévue */
+.pl7home{display:flex;align-items:center;gap:8px;margin:10px 2px 0;font-size:calc(13.5px*var(--fs,1));font-weight:700}
+.pl7home.off{color:var(--mute);font-weight:600}
+.pl7home.off .pl7dot{background:var(--mute)}
+.cdg.pl7g{width:auto;height:auto;padding:10px 14px;border-radius:14px;background:var(--lead);color:var(--on-lead,#101010);font-weight:800}

@@ -10,6 +10,7 @@ CHROME={'executable_path':'/usr/bin/google-chrome'} if os.path.exists('/usr/bin/
 U='http://127.0.0.1:8768/';LANG=sys.argv[1] if len(sys.argv)>1 else 'en';OUT=sys.argv[2] if len(sys.argv)>2 else str(DEV/'tools'/'out'/('manque_'+LANG+'.json'))
 TD=datetime.date.today().isoformat()
 SEED=json.load(open(DEV/'seed.json'));SEED.update({'musSeen':2,'th':'hiver','lang':LANG,'onb':True,'rest':[TD]})
+if os.environ.get('NAME'):SEED['name']=os.environ['NAME']  # v7.6 : un autre prénom que Diego (les phrases ne doivent pas dépendre du prénom)
 SEED['carnet']=[{'id':'n1','c':'nut','t':'Repas','b':'Test','pin':True,'d':1764100000000,'u':1764150000000}]
 SEED['bw']=[{'d':'2026-11-05','v':77.6},{'d':'2026-11-19','v':78.1},{'d':TD,'v':78.4}];SEED['meas']={'taille':[{'d':TD,'v':82}],'brasG':[{'d':'2026-11-05','v':36},{'d':TD,'v':36.5}],'brasD':[{'d':'2026-11-05','v':36.5},{'d':TD,'v':37}],'clav':[{'d':TD,'v':41}],'haut':[{'d':TD,'v':1.78}]}
 def _dd(n):return (datetime.date.today()+datetime.timedelta(days=n)).isoformat()
@@ -39,7 +40,7 @@ allT={}
 LOCALE={'fr':'fr-FR','en':'en-US','nl':'nl-NL'}.get(LANG,'fr-FR')
 def mk(b,seed,ua=None):
     ctx=b.new_context(viewport={'width':390,'height':844},has_touch=True,is_mobile=bool(ua),user_agent=ua,locale=LOCALE) if ua else b.new_context(viewport={'width':390,'height':844},has_touch=True,locale=LOCALE)
-    init='localStorage.setItem("carnet-info","x");'+('localStorage.setItem("carnet-seances",'+json.dumps(json.dumps(seed))+');localStorage.setItem("carnet-inst","1");' if seed else 'localStorage.setItem("carnet-lang","'+LANG+'");')
+    init='localStorage.setItem("carnet-info","x");localStorage.setItem("carnet-bkn",String(Date.now()));'+('localStorage.setItem("carnet-seances",'+json.dumps(json.dumps(seed))+');localStorage.setItem("carnet-inst","1");' if seed else 'localStorage.setItem("carnet-lang","'+LANG+'");')
     ctx.add_init_script('if(!sessionStorage.getItem("s")){'+init+'sessionStorage.setItem("s","1")}');return ctx
 with sync_playwright() as p:
     b=p.chromium.launch(**CHROME)
@@ -95,7 +96,7 @@ with sync_playwright() as p:
             except Exception:pass
     try:pg.evaluate("spIntake('"+_dd(-1)+"','mg|0')");pg.click('[data-spia$="~miss"]');grab('oubli');close()
     except Exception:pass
-    pg.evaluate("spBanner('"+k+"',spDay('"+k+"').slice(0,2))");grab('bandeau');pg.evaluate("spBanner('"+k+"',spDay('"+k+"').slice(0,1))");grab('bandeau 1')
+    pg.evaluate("spBanner('"+k+"',spDay('"+k+"').slice(0,2))");grab('bandeau');pg.evaluate("spBanner('"+k+"',spDay('"+k+"').slice(0,1))");grab('bandeau 1');pg.evaluate("typeof spBannerHide==='function'&&spBannerHide()")
     pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(600);grab('accueil compléments')
     pg.evaluate('location.hash="#calendrier"');pg.wait_for_timeout(500);pg.click('#calSeg [data-cal="c"]');grab('calendrier onglet compléments');pg.click('#calSeg [data-cal="m"]')
     pg.evaluate("document.querySelector('#hStart')&&0")

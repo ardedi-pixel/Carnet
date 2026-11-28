@@ -68,7 +68,7 @@ function cdMove(x,y){if(!cd)return;cd.g.style.transform='translate('+(x-36)+'px,
 document.addEventListener('pointermove',e=>{if(cd)cdMove(e.clientX,e.clientY)});
 document.addEventListener('touchmove',e=>{if(cd){e.preventDefault();const t=e.touches[0];cdMove(t.clientX,t.clientY)}},{passive:false});
 function cdEnd(){if(!cd)return;const c=cd;cd=null;c.g.remove();c.day.classList.remove('lift');document.querySelectorAll('#grid .day.drop').forEach(z=>z.classList.remove('drop'));setTimeout(()=>{window.__cdrag=0},60);
-  if(!c.tgt)return;const s=S.sessions.find(q=>q.id===c.id);if(!s)return;const from=s.date;s.date=c.tgt;S.rest=S.rest.filter(k=>k!==c.tgt);sel=c.tgt;render();save();
+  if(!c.tgt)return;const s=S.sessions.find(q=>q.id===c.id);if(!s)return;const from=s.date;s.date=c.tgt;s.u=Date.now();S.rest=S.rest.filter(k=>k!==c.tgt);sel=c.tgt;render();save();
   snack('Séance déplacée au '+dLong(c.tgt),'Annuler',()=>{s.date=from;sel=from;render();save()})}
 document.addEventListener('pointerup',cdEnd);document.addEventListener('touchend',cdEnd);document.addEventListener('pointercancel',cdEnd);
 

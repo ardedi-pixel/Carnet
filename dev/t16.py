@@ -7,7 +7,7 @@ log=[];errs=[];PG=[]
 def ok(c,m):log.append(('OK   ' if c else 'FAIL ')+m)
 def mk(b,data=None,vw=390,vh=844,locale='fr-FR'):
     ctx=b.new_context(viewport={'width':vw,'height':vh},device_scale_factor=2,has_touch=True,accept_downloads=True,locale=locale)
-    if data is not None: ctx.add_init_script('if(!sessionStorage.getItem("seeded")){localStorage.setItem("carnet-seances",'+json.dumps(json.dumps(data))+');localStorage.setItem("carnet-info","x");sessionStorage.setItem("seeded","1")}')
+    if data is not None: ctx.add_init_script('if(!sessionStorage.getItem("seeded")){localStorage.setItem("carnet-seances",'+json.dumps(json.dumps(data))+');localStorage.setItem("carnet-info","x");localStorage.setItem("carnet-bkn",String(Date.now()));sessionStorage.setItem("seeded","1")}')
     pg=ctx.new_page();PG.clear();PG.append(pg);pg.on('pageerror',lambda e:errs.append(str(e)))
     pg.on('console',lambda m:errs.append('console: '+m.text) if m.type=='error' and 'fonts.g' not in m.text and 'Failed to load resource' not in m.text and 'ERR_' not in m.text else None)
     return ctx,pg
@@ -485,7 +485,7 @@ with sync_playwright() as p:
     FAKEBIP="window.addEventListener('load',()=>setTimeout(()=>{const e=new Event('beforeinstallprompt');e.prompt=()=>{window.__pr=1;return Promise.resolve()};e.userChoice=Promise.resolve({outcome:'accepted'});window.dispatchEvent(e)},300))"
     def mku(ua,data=None,init=None,locale='fr-FR',vw=412,vh=915):
         c=b.new_context(viewport={'width':vw,'height':vh},device_scale_factor=2,has_touch=True,is_mobile=True,user_agent=ua,locale=locale)
-        if data is not None:c.add_init_script('if(!sessionStorage.getItem("seeded")){localStorage.setItem("carnet-seances",'+json.dumps(json.dumps(data))+');localStorage.setItem("carnet-info","x");sessionStorage.setItem("seeded","1")}')
+        if data is not None:c.add_init_script('if(!sessionStorage.getItem("seeded")){localStorage.setItem("carnet-seances",'+json.dumps(json.dumps(data))+');localStorage.setItem("carnet-info","x");localStorage.setItem("carnet-bkn",String(Date.now()));sessionStorage.setItem("seeded","1")}')
         if init:c.add_init_script(init)
         pgx=c.new_page();PG.clear();PG.append(pgx);pgx.on('pageerror',lambda e:errs.append(str(e)));return c,pgx
     ctx,pg=mku(UA_AND);pg.goto(U);pg.wait_for_timeout(2600)
@@ -728,5 +728,91 @@ with sync_playwright() as p:
         ok(n==0 or 'Prise notée' in T(pg,'#snackT'),'N accueil : cocher sans ouvrir la fiche')
         dd=st(pg);ok('supp' in dd and len(dd['supp']['list'])>=8 and 'ntab' in dd,'N sauvegarde : compléments, cycles, horaires et historique dans les données')
     step('N8',N8)
+    ctx.close()
+    # ===== O : v7.6 : traductions sûres (autre prénom, phrases à trou, néerlandais), messages courts, animation d'entrée, sauvegarde =====
+    d=dict(SEED);d['lang']='en';d['name']='Isabel';d['th']='nuit'
+    ctx,pg=mk(b,d,locale='en-GB');pg.goto(U);pg.wait_for_timeout(2600);pg.mouse.click(5,5)
+    def O1():
+        r=pg.evaluate("a=>a.map(trS)",["Noter les charges et les répétitions chaque semaine pour voir s'il faut modifier le programme, et demander conseil à Diego.","Ensuite : l'échauffement articulaire","Au boulot Isabel.","Pyramide « Mon EMOM » prête","Tractions · 1/3","120 secondes de gainage","Séance déplacée au Tuesday 3 December","Supprimer l'objectif"])
+        ok(r[0].startswith('Log weights') and 'Diego' in r[0],'O texte qui contient « Diego » traduit pour une autre personne (Isabel)')
+        ok(r[1]=='Next: the joint warm-up','O échauffement : « Ensuite : l\'échauffement articulaire » traduit')
+        ok(r[2]=='Get to work, Isabel.','O prénom bien séparé (« Get to work, Isabel. »)')
+        ok(r[3]=='Pyramid “Mon EMOM” ready' and r[6]=='Session moved to Tuesday 3 December','O phrase à trou : texte de l\'utilisateur et date gardés, phrase traduite')
+        ok(r[4]=='Pull-ups · 1/3' and r[5]=='120 seconds of plank' and r[7]=='Delete the goal','O « A · B » et nom d\'exercice en minuscules traduits')
+        pg.evaluate("location.hash='#conseils'");pg.wait_for_timeout(600);txt=T(pg,'#advBox')
+        ok('Noter les charges' not in txt and 'ask Diego for advice' in txt,'O Conseils en anglais : carte « Tracking » entièrement traduite')
+        pg.evaluate("location.hash='#echauffement'");pg.wait_for_timeout(600);w=pg.locator('[data-wut]').filter(has_text=re.compile('5|4|3'))
+        pg.evaluate("tmStart({k:'rest',sec:300,lab:'Échauffement',next:'Ensuite : l\\'échauffement articulaire'});tmShow(true)");pg.wait_for_timeout(700)
+        t=T(pg,'#tmo');ok('Warm-up' in t and 'Next: the joint warm-up' in t and 'End the warm-up' in t and 'End the rest' not in t and 'Ensuite' not in t,'O minuteur d\'échauffement : tout en anglais, « End the warm-up »')
+        pg.screenshot(path='./t16_o_wu_en.png');pg.evaluate("tmStop()")
+    step('O1',O1)
+    def O2():
+        import importlib.util as _iu
+        sp=_iu.spec_from_file_location('i18n_static','./tools/i18n_static.py');m=_iu.module_from_spec(sp);sp.loader.exec_module(m)
+        miss=m.scan(False);ok(len(miss)==0,'O code : aucun texte affiché sans traduction ('+str(len(miss))+' manquant(s))')
+        dsrc=open('./src/js/94_dict.js',encoding='utf-8').read();dec=json.JSONDecoder();en_,_=dec.raw_decode(dsrc,dsrc.index('const DICT_EN=')+14);nl_,_=dec.raw_decode(dsrc,dsrc.index('const DICT_NL=')+14)
+        ok(set(en_)==set(nl_),'O dictionnaires : mêmes clés en anglais et en néerlandais ('+str(len(en_))+')')
+    step('O2',O2)
+    ctx.close()
+    d=dict(SEED);d['lang']='nl';d['name']='Sam';d['th']='nuit'
+    ctx,pg=mk(b,d,locale='nl-BE');pg.goto(U);pg.wait_for_timeout(2600);pg.mouse.click(5,5)
+    def O3():
+        r=pg.evaluate("a=>a.map(trS)",['Tractions','Pompes','Salle','{0} tractions','Fentes','Rowing haltère','Copié !'])
+        ok(r==['Optrekken','Opdrukken','Sportschool','{0} keer optrekken','Uitvalspassen','Roeien met halter','Gekopieerd!'],'O néerlandais : vrais termes néerlandais (plus d\'anglais) '+str(r))
+        pg.evaluate("location.hash='#records'");pg.wait_for_timeout(600);pg.click('[data-rplus="0"]');pg.wait_for_timeout(300)
+        ok(T(pg,'#undo')=='Ongedaan maken' and T(pg,'#snackT').startswith('Goed gedaan'),'O néerlandais : message après modification traduit (et « Ongedaan maken »)')
+    step('O3',O3)
+    ctx.close()
+    d=dict(SEED);d['lang']='fr';d['th']='nuit';d['splash']='anim'
+    ctx,pg=mk(b,d);t0=time.time();pg.goto(U)
+    def O4():
+        pg.wait_for_timeout(900);a=pg.locator('#splash').count()==1
+        pg.wait_for_timeout(1500);b_=pg.locator('#splash').count()==0
+        ok(a and b_,'O animation d\'entrée raccourcie : une traction et demie (finie en moins de 2,4 s)')
+        top=pg.evaluate("splTop()");ok(abs(top-1.595)<0.01,'O le perso s\'arrête menton au-dessus de la barre (1,5 répétition)')
+    step('O4',O4)
+    def O5():
+        pg.mouse.click(5,5);pg.evaluate(CLEAN);pg.evaluate("location.hash='#records'");pg.wait_for_timeout(600)
+        v0=st(pg)['recs'][0]['hist'][-1]['v'];pg.click('[data-rplus="0"]');pg.wait_for_timeout(150);pg.click('[data-rplus="0"]');pg.wait_for_timeout(300)
+        ok(pg.locator('#rec6').count()==0 and T(pg,'#snackT')=='Bien joué ! Nouveau record','O record + : petit message rapide, plus d\'écran plein')
+        pg.click('#undo');pg.wait_for_timeout(300);ok(st(pg)['recs'][0]['hist'][-1]['v']==v0,'O « Annuler » remet la valeur d\'avant (deux appuis = une annulation)')
+        pg.click('[data-rplus="0"]');pg.wait_for_timeout(2600);vis=pg.locator('#snack[hidden]').count()==0;pg.wait_for_timeout(1300)
+        ok(vis and pg.locator('#snack[hidden]').count()==1,'O le message disparaît seul (environ 3,5 s)')
+        pg.evaluate("toast('x')");pg.wait_for_timeout(2100);ok(pg.evaluate("document.getElementById('toast').className")=='','O petit message du haut : moins de 2 s')
+    step('O5',O5)
+    def O6():
+        n0=len(st(pg)['sessions']);sid=pg.evaluate("bkSnap('man')");pg.wait_for_timeout(300);L=pg.evaluate("bkList()")
+        ok(L and L[0]['k']=='man' and L[0]['n']['s']==n0,'O sauvegarde manuelle enregistrée sur le téléphone (IndexedDB)')
+        g=pg.evaluate("bkGet('"+L[0]['id']+"')");ok(g and len(g['sessions'])==n0,'O sauvegarde relue à l\'identique')
+        inc=json.loads(json.dumps(st(pg)));inc['sessions']=inc['sessions'][:2]+[{'id':'sO1','date':DD(-3),'place':'garage','types':['force'],'ex':['Dips'],'u':int(time.time()*1000)}]
+        inc['sessions'][0]=dict(inc['sessions'][0],note='Note venue de l\'autre appareil',u=int(time.time()*1000)+9000);inc['lang']='en'
+        m=pg.evaluate("x=>{const r=bkMerge(JSON.parse(JSON.stringify(packData())),x);return [r.data.sessions.length,r.data.sessions.find(s=>s.id===x.sessions[0].id).note,r.data.lang,r.rep.add.s,r.rep.upd.s]}",inc)
+        ok(m[0]==n0+1 and m[3]==1,'O fusion : séance en plus ajoutée, aucune supprimée')
+        ok(m[1]=='Note venue de l\'autre appareil' and m[4]==1,'O fusion : la version la plus récente est gardée')
+        ok(m[2]=='fr','O fusion : la langue de ce téléphone est gardée')
+        path=os.path.abspath('./t16_bk.json');json.dump({'app':'carnet-de-seances','format':1,'exported':'2026-11-01T10:00:00Z','appV':'7.5.0','data':inc},open(path,'w'))
+        pg.evaluate("location.hash='#reglages-donnees'");pg.wait_for_timeout(600);ok(pg.locator('#bk7 .bk7st').count()==1 and 'Enregistré sur ce téléphone' in T(pg,'#bk7'),'O Réglages > Données : état de la sauvegarde')
+        pg.click('#bk7 [data-bk="imp"]');pg.wait_for_timeout(300)
+        with pg.expect_file_chooser() as fc:pg.click('[data-bk="file"]')
+        fc.value.set_files(path);pg.wait_for_timeout(800);t=T(pg,'#gbox')
+        ok('1 séance en plus' in t and '1 différente' in t and 'Fusionner' in t and 'Remplacer' in t,'O import : aperçu avant tout changement (comparaison avec ce téléphone)')
+        pg.click('#bkGo');pg.wait_for_timeout(900);ok(len(st(pg)['sessions'])==n0+1 and st(pg)['lang']=='fr','O import : fusion appliquée')
+        pg.click('#undo');pg.wait_for_timeout(700);ok(len(st(pg)['sessions'])==n0,'O import : fusion annulable')
+        ok(any(x['k']=='safe' and x['why']=='merge' for x in pg.evaluate("bkList()")),'O sauvegarde automatique faite avant la fusion')
+        pg.click('#bk7 [data-bk="imp"]');pg.wait_for_timeout(300)
+        with pg.expect_file_chooser() as fc:pg.click('[data-bk="file"]')
+        fc.value.set_files(path);pg.wait_for_timeout(800);pg.click('[data-bkm="replace"]');pg.click('#bkGo');pg.wait_for_timeout(300)
+        ok(len(st(pg)['sessions'])==n0 and T(pg,'#bkGo')=='Confirmer le remplacement','O remplacer : demande une confirmation')
+        pg.click('#bkGo');pg.wait_for_timeout(900);ok(len(st(pg)['sessions'])==3,'O remplacer : données de la sauvegarde')
+        pg.click('#undo');pg.wait_for_timeout(700);ok(len(st(pg)['sessions'])==n0,'O remplacer : annulable')
+        with pg.expect_download() as dl:pg.click('#bk7 [data-bk="exp"]')
+        j=json.load(open(dl.value.path()));ok(j['app']=='carnet-de-seances' and len(j['data']['sessions'])==n0 and dl.value.suggested_filename.startswith('carnet-sauvegarde-'),'O export : fichier .json complet')
+        pg.evaluate("(()=>{const o=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k==='carnet-seances'){const e=new Error('q');e.name='QuotaExceededError';throw e}return o.call(this,k,v)};window.__o=o})()")
+        pg.evaluate("location.hash='#records'");pg.wait_for_timeout(400);pg.click('[data-rplus="0"]');pg.wait_for_timeout(400)
+        ok(pg.locator('#bkWarn').count()==1,'O enregistrement impossible (espace plein) : alerte discrète avec « Exporter »')
+        pg.evaluate("(()=>{Storage.prototype.setItem=window.__o})()");pg.click('[data-rminus="0"]');pg.wait_for_timeout(400);ok(pg.locator('#bkWarn').count()==0,'O alerte retirée quand l\'enregistrement remarche')
+        pg.evaluate("localStorage.removeItem('carnet-seances')");pg.reload();pg.wait_for_timeout(3600)
+        ok('Données retrouvées' in T(pg,'#gbox') and pg.locator('#onb').count()==0,'O données effacées du téléphone : sauvegarde automatique retrouvée et proposée')
+    step('O6',O6)
     ctx.close();b.close()
 print('\n'.join(log));print('TOTAL',sum(1 for l in log if l.startswith('OK')),'/',len(log));print('ERRORS',errs[:12])

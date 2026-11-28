@@ -1,5 +1,5 @@
 /* ===================== v6 : base (état, thèmes, typo, ambiance) ===================== */
-const APP6='7.5.0';
+const APP6='7.6.0';
 ['th','accX','todBg','seas','font','fsz','fdyn','dens','masc','splash','cards','tabs','tone','emo','pops','vol','voiceN','lang','char','photo','useP','nick','goalT','meas','chal','chalH','rw','lvSeen','recapW','popLast','musSeen','bdSeen','anim','nut','carnet','voiceU','hscn'].forEach(k=>{if(!EXTRA.includes(k))EXTRA.push(k)});
 /* v6.3 : animations « Toujours » (par défaut, même si l'iPhone réduit les animations) ou « Selon l'iPhone » */
 const RM_Q='(prefers-reduced-motion: reduce)';

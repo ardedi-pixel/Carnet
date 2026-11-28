@@ -15,7 +15,7 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 - Pour un travail visuel, montrer un brouillon tôt (planche d'images) **et continuer le travail pendant qu'il regarde** ; corriger en route selon ses retours. Ne jamais s'arrêter en attendant sa réponse.
 - Design : minimaliste, moderne, cohérent, pensé mobile d'abord. Pas de doublons, pas d'éléments décoratifs gratuits, pas d'émojis ni de look enfantin.
 - Comportement d'appli (v7.3.1) : pas de sélection de texte ni de menu au long appui (`body{user-select:none;-webkit-touch-callout:none}`), sauf champs de saisie et code de transfert.
-- **Ne jamais commit ni push sans son accord explicite.** Quand il l'a donné, finir par le lien et la version entre guillemets : `https://ardedi-pixel.github.io/Carnet/ « 7.5.0 »`.
+- **Ne jamais commit ni push sans son accord explicite.** Quand il l'a donné, finir par le lien et la version entre guillemets : `https://ardedi-pixel.github.io/Carnet/ « 7.6.0 »`.
 - Ne jamais dire « testé » sans l'avoir réellement testé (tests automatiques + captures).
 - Tenir `dev/PLAN.md` à jour à chaque version (section « vX.Y.Z »).
 
@@ -24,15 +24,16 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 - `dev/build.py` assemble : `src/head.html` + `src/style.css` + `src/css/*.css` (ordre alphabétique) + `src/body.html` + `src/app.js`, où les modules `src/js/*.js` (ordre alphabétique) sont insérés au marqueur `/*@@MODS@@*/`.
 - Tout le JavaScript est dans **un seul bloc `{ … }`** : les `const`/`let` d'un module sont visibles des autres modules, mais pas depuis la console ou `page.evaluate` ; les déclarations `function` deviennent globales (testables depuis Playwright). Les `const` d'un module ne sont prêts qu'une fois ce module exécuté : à l'appel au chargement, attention à l'ordre des fichiers.
 - État : objet `S` dans `localStorage` (clé `carnet-seances`). Toute nouvelle clé doit être ajoutée à `EXTRA` (`src/js/10_core6.js`). Version des données `S.v` = 10 (migrations dans `v6Load`, `10_core6.js`).
-- Service worker `sw.js` : cache `carnet-v7-5-0`, à changer à chaque version (le cache `carnet-ics`, fichier d'agenda des compléments, est gardé).
+- Service worker `sw.js` : cache `carnet-v7-6-0`, à changer à chaque version (le cache `carnet-ics`, fichier d'agenda des compléments, est gardé).
 - Onglets : Accueil · Calendrier (Mois, Semaine, Compléments) · Nutrition (Repas, Compléments) · Outils (Minuteurs, Échauffement, Conseils, Tutos) · Progrès (Mesures, Stats, Records, Skills) + Carnet (`notes`, masqué par défaut, donc lien en haut d'Outils) (`TABS6`, `src/js/30_ui6.js`).
-- **v7.5.0 publiée** (compléments alimentaires : cycles ON/OFF automatiques, routine du jour, rappels, calendrier dédié, historique, stock, agenda du téléphone) ; v7.4.0 : plus de sélection de texte, iPhone et Android, tutoriel d'installation, partage par lien, traductions complètes, nouvelles mensurations, minuteur indépendant ; détails dans `dev/PLAN.md`. Accueil choisi par Diego : piste C « Immersif » + widgets de la piste B (`43_home72.js`) ; la scène suit le lieu le plus fréquent (`homePlace()`, réglage `S.hscn`).
+- **v7.6.0 publiée** (fondations : traductions sûres et vérifiées dans le code, néerlandais sans anglais, messages plus courts, animation d'entrée raccourcie, sauvegarde automatique avec historique, fichier, aperçu et fusion) ; chantier en cours par étapes : 7.7 planificateur, 7.8 mode séance + analyse + bibliothèque, 7.9+ analyses avancées (voir `dev/PLAN.md` v7.6.0) ; v7.5.0 : compléments alimentaires (cycles ON/OFF automatiques, routine du jour, rappels, calendrier dédié, historique, stock, agenda du téléphone) ; v7.4.0 : plus de sélection de texte, iPhone et Android, tutoriel d'installation, partage par lien, traductions complètes, nouvelles mensurations, minuteur indépendant ; détails dans `dev/PLAN.md`. Accueil choisi par Diego : piste C « Immersif » + widgets de la piste B (`43_home72.js`) ; la scène suit le lieu le plus fréquent (`homePlace()`, réglage `S.hscn`).
 
 ### Modules importants
 | Fichier | Rôle |
 |---|---|
 | `src/app.js` | routeur, calendrier (vues mois et semaine, détail du jour), formulaire de séance ; `scene()` délègue à `illScene()` |
 | `src/js/10_core6.js` | thèmes (`THEMES`, dont les 4 saisons), `applyAcc()`, migrations, `EXTRA` |
+| `src/js/15_backup.js` | **sauvegarde (v7.6)** : sauvegardes automatiques IndexedDB `carnet-bk` (`bkSnap()`, `bkList()`, `bkGet()`, `bkPrune()`), export `.json` (`bkExport()`), import avec aperçu (`bkParse()`, `bkPreview()`), **fusion** `bkMerge()` (rien supprimé, le plus récent gagne si connu par `u`/`t`, sinon ce téléphone ; langue du téléphone gardée), `bkApply('merge'|'replace')` annulable, alerte d'échec d'écriture `bkSaveFail()`, données retrouvées au démarrage `bkBoot()` |
 | `src/js/12_plat.js` | **iPhone / Android** : `PLAT` (ios, and, br, inapp), `isStandalone()`, classes `html.ios`/`html.android`, long appui bloqué hors champs, bouton Retour d'Android qui ferme les feuilles |
 | `src/js/20_chars.js` | moteur des persos (style « Athlète ») : `charSvg()`, poses `CH_POSE`, primitives `chLimb`, `chP`… ; `charAnim(o,dur,p1,p2,once)` (once = une répétition lancée par `beginElement()`) ; jambes libres `P.lp` + chaussure tournée `chShoeR` (hip thrust) |
 | `src/js/25_icon6.js` | `charOf()` / `myChar()` (perso de l'utilisateur), `seaOf()` (tenue de saison) ; coupe par perso `S.char.hsp[homme|femme]` |
@@ -53,7 +54,7 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 | `src/js/80_timers6.js` | minuteurs v6 + **minuteur indépendant (v7.4)** : `tmShow(full)`, mini-lecteur `tmMiniSync()`, `tmSave()`/`tmRestore()` (`localStorage carnet-tm`), `tmResync()`, arrêt annulable `tmStopU()`, notification au choix |
 | `src/js/85_share6.js` | cartes de partage, `exFam()` / `mainEx()` (famille d'exercice) |
 | `src/js/94_dict.js`, `95_i18n.js` | traductions EN/NL |
-| `src/css/66_v7.css`, `67_nutri.css`, `68_v71.css`, `70_v72.css`, `71_v73.css`, `72_v74.css`, `73_v75.css` | styles v7 (saisons, nutrition, scènes, mesures, carnet, réglages compacts, été v7.2, veste et pin's v7.3, tutoriel d'installation v7.4, compléments v7.5 : préfixe `sp7`) |
+| `src/css/66_v7.css`, `67_nutri.css`, `68_v71.css`, `70_v72.css`, `71_v73.css`, `72_v74.css`, `73_v75.css`, `74_v76.css` | styles v7 (saisons, nutrition, scènes, mesures, carnet, réglages compacts, été v7.2, veste et pin's v7.3, tutoriel d'installation v7.4, compléments v7.5 : préfixe `sp7`, sauvegarde v7.6 : préfixe `bk7`) |
 
 ### Système d'illustrations de saison (v7.1, `src/js/56_ill7.js`)
 - `seaNow()` = saison active : celle du thème de saison (`printemps`, `ete`, `automne`, `hiver`, ou « Selon la saison ») ; avec un autre thème (Nuit, Minimal…), la **saison réelle** (déc.-fév. hiver, mars-mai printemps, juin-août été, sept.-nov. automne). Choix de Diego.
@@ -104,8 +105,12 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 ## Traductions (EN / NL)
 - Le français est la source. Un `MutationObserver` traduit les nœuds de texte et les attributs (`placeholder`, `aria-label`, `title`) avec `trS()`.
 - `shape()` remplace dans la clé : le prénom par `{N0}`, les noms de mois et de jours par `{M0}`/`{D0}`, les nombres par `{0}`, `{1}`… Exemple de clé : `"Reste {0} g"`.
-- Une phrase construite par morceaux ne se traduit pas : mettre chaque morceau dans son propre élément, ou ajouter la phrase complète avec toutes ses variantes de signe (`+`, `−`, `±`).
-- Vérifier tout : `python3 dev/tools/i18n_full.py en` (parcourt chaque écran, chaque guide d'exercice, le tutoriel sur iPhone/Android) ; pour tout attraper, `ALL=1` en `fr` puis `en` et comparer : un texte identique dans les deux langues n'est pas traduit (sauf noms anglais, unités, dates).
+- `trS()` (v7.6) cherche dans l'ordre : texte exact ; clé mise en forme avec puis **sans** le prénom (un texte qui contient « Diego » doit aussi exister tel quel) ; **modèles à trou** `{*}` (ex. `"Pyramide « {*} » prête"`) : la phrase est traduite et le trou à part (nom d'exercice traduit, même en minuscules ; texte de l'utilisateur gardé) ; enfin « A · B » partie par partie. Résultats mis en mémoire. Dans un modèle à trou, écrire les nombres `{*}` aussi (leur numéro dépend de ce qui précède).
+- Une phrase construite par morceaux : préférer un modèle à trou `{*}`, ou mettre chaque morceau dans son propre élément, ou ajouter la phrase complète avec toutes ses variantes de signe (`+`, `−`, `±`).
+- Textes hors de la page (PDF, CSV, partage, notifications, agenda) : passer par `trS()` explicitement.
+- **Vérification du code** : `python3 dev/tools/i18n_static.py` (lit toutes les chaînes du code, même des écrans rarement ouverts ; doit afficher `total 0`) ; `--frag` liste aussi les morceaux à vérifier. Code mort ignoré (compétition de l'époque claude.ai).
+- Néerlandais : vrais termes (optrekken, opdrukken, uitvalspassen, sportschool…), pas d'anglais quand un mot néerlandais existe ; noms de skills internationaux gardés (front lever, L-sit…).
+- Parcours de l'appli : `NAME=Isabel python3 dev/tools/i18n_full.py en` (un autre prénom que Diego) (parcourt chaque écran, chaque guide d'exercice, le tutoriel sur iPhone/Android) ; pour tout attraper, `ALL=1` en `fr` puis `en` et comparer : un texte identique dans les deux langues n'est pas traduit (sauf noms anglais, unités, dates).
 - Les zones de texte (`textarea`) : seul leur texte d'aide (`placeholder`) est traduit, jamais leur contenu.
 - Ajouter : un fichier JSON `{"texte FR": ["EN", "NL"]}` puis `python3 dev/tools/i18n_set.py fichier.json` (ajoute ou corrige dans `src/js/94_dict.js` et `dev/i18n/extra.json`). Vérifier : `python3 dev/tools/i18n_collect.py dev/tools/out/manque.json` (parcourt l'appli en anglais et liste les textes restés en français ; « Comté » est normal).
 - Anglais américain (fiber, color, favorite). Guillemets “ ” dans les traductions.
@@ -131,6 +136,7 @@ cd dev && python3 t16.py                                # tests Playwright (~6 m
 - Sur iPhone, l'appli se met à jour en la fermant puis en la rouvrant.
 
 ## Décisions de Diego (à respecter)
+- v7.6 (« évolution majeure » en 14 parties) : avancer **par étapes**, fondations d'abord ; **publier chaque étape testée** (accord donné pour ce chantier) ; **pas de cloud pour l'instant** (sauvegardes sur le téléphone + fichier, fusion sans écraser) ; **pas de journal photo** ; messages de confirmation courts avec annulation ; animation d'entrée = une traction et demie ; l'appli analyse et propose, ne modifie jamais un programme ou une charge sans validation.
 - v7.5 : module compléments alimentaires complet (fiches, cycles ON/OFF automatiques, calendrier dédié, rappels, routine du jour cochable, historique et statistiques, stock, frise, oublis, conflits d'horaires, décalage de routine) ; intégré au design existant ; aucune supposition médicale.
 - v7.4 : nouvelles mensurations (bras gauche et droit, distance claviculaire, taille) ; minuteur EMOM utilisable en naviguant partout, avec un mini-lecteur permanent et une reprise exacte ; pas de sélection de texte (aspect appli) ; iPhone et Android à égalité ; partage par simple lien ; tutoriel d'installation à la première ouverture, adapté à l'appareil, passable, une seule fois (à retrouver dans Réglages) ; tout traduit en FR et EN (NL gardé).
 - v7.3 : toucher le perso = une répétition (développé couché, traction…) ; perso « Femme » = hip thrust à la place du développé couché ; plus d'accessoires à débloquer ; plus de badges ; veste des badges différente par saison (suit le thème, saison réelle avec un thème sans saison).

@@ -74,7 +74,7 @@ function instClose(){try{localStorage.setItem('carnet-inst','1')}catch(_){}const
 function instFin(){const o=$('inst');if(!o)return;o.querySelector('.in').innerHTML='<div class="i8hd"><span class="i8ap">'+myIconHtml()+'</span><button type="button" class="ib i8x" data-inst="skip" aria-label="Fermer">'+ico('close')+'</button></div><p class="kick">Dernière étape</p><h2>Ouvre Carnet depuis ton écran d\'accueil</h2>'+i8svg('ok','Écran d\'accueil')
   +'<p>Touche son icône : l\'appli s\'ouvre en plein écran.'+(PLAT.ios?' Tes séances seront enregistrées dans l\'appli installée.':'')+'</p><button type="button" class="btn ghost" data-inst="done">Continuer ici</button>'}
 async function instCopy(){try{await navigator.clipboard.writeText(APP_URL);toast('Lien copié')}catch(e){toast(APP_URL)}}
-async function appShare(){const d={title:'Carnet de séances',text:'Mon carnet d\'entraînement : séances, minuteurs, records. Installe-le sur ton écran d\'accueil.',url:APP_URL};
+async function appShare(){const d={title:trS('Carnet de séances'),text:trS('Mon carnet d\'entraînement : séances, minuteurs, records. Installe-le sur ton écran d\'accueil.'),url:APP_URL};
   try{if(navigator.share){await navigator.share(d);return}}catch(e){if(e&&e.name==='AbortError')return}instCopy()}
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-inst],[data-share7]');if(!b)return;if(b.dataset.share7){appShare();return}const a=b.dataset.inst;
   if(a==='open'){if($('onb'))onbGo('done');instShow();return}

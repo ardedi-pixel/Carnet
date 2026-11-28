@@ -214,8 +214,16 @@ function celebrate5(name,v,unit){boomMsg(CHEERS[Math.floor(Math.random()*CHEERS.
 function boomMsg(msg,sub,art){const o=$('boom');
   /* v6.3 : plus de pouces qui volent ni de smiley ; le perso (ou une coche) suffit */
   o.innerHTML='<div class="bx">'+(art||'<span class="bxok" aria-hidden="true">'+ico('check')+'</span>')+'<p class="bt">'+esc(msg)+'</p>'+(sub?'<p class="bs">'+esc(sub)+'</p>':'')+'</div>';
-  o.classList.remove('on');void o.offsetWidth;o.classList.add('on');clearTimeout(o._t);o._t=setTimeout(()=>o.classList.remove('on'),art?3000:2600)}
-function setRec(r,v){v=Math.max(0,Math.round(v*10)/10);const prev=recMax(r),last=r.hist[r.hist.length-1];if(last.d===TK)last.v=v;else r.hist.push({d:TK,v});if(v>prev&&v-prev>=1-1e-9||v>prev&&r.unit==='kg')celebrate(r.name,v,r.unit,prev);if(v>prev)r.beat=(r.beat||0)+1;const gh=checkGoals();save();renderRecs();if(gh.length)setTimeout(()=>boomMsg('Objectif atteint !',goalTxt(gh[0])),v>prev?2800:0)}
+  o.classList.remove('on');void o.offsetWidth;o.classList.add('on');clearTimeout(o._t);o._t=setTimeout(()=>o.classList.remove('on'),art?2400:2000)} /* v7.6 : plus courte */
+/* v7.6 : changer un record (+, −, saisie) n'ouvre plus l'écran « Nouveau record » plein écran : un petit message rapide
+   avec « Annuler » (plusieurs touches de suite = une seule annulation, qui remet la valeur d'avant). L'écran de fête reste
+   pour les records battus en notant une séance. */
+let recU=null;
+function setRec(r,v){v=Math.max(0,Math.round(v*10)/10);const snap={id:r.id,hist:JSON.stringify(r.hist),beat:r.beat||0},prev=recMax(r),last=r.hist[r.hist.length-1];if(last.d===TK)last.v=v;else r.hist.push({d:TK,v});
+  const up=v>prev;if(up)r.beat=(r.beat||0)+1;const gh=checkGoals();save();renderRecs();
+  if(!recU||recU.id!==r.id||$('snack').hidden)recU=snap;const u=recU;
+  snack(up?(r.unit==='kg'?'Bien joué ! Charge augmentée':'Bien joué ! Nouveau record'):'Record mis à jour','Annuler',()=>{const x=S.recs.find(q=>q.id===u.id);if(!x)return;x.hist=JSON.parse(u.hist);x.beat=u.beat;recU=null;save();renderRecs()},3500);
+  if(gh.length)setTimeout(()=>boomMsg('Objectif atteint !',goalTxt(gh[0])),600)}
 function spark(r){const h=r.hist.length>1?r.hist:[r.hist[0],r.hist[0]],W=200,H=56,mn=Math.min(...h.map(x=>x.v)),mx=Math.max(...h.map(x=>x.v)),rg=Math.max(1,mx-mn),X=i=>h.length<2?W/2:6+i*(W-12)/(h.length-1),Y=v=>H-6-(v-mn)/rg*(H-14);
   const d=h.map((x,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(x.v).toFixed(1)).join('');return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none"><path d="'+d+'L'+X(h.length-1)+' '+H+'L'+X(0)+' '+H+'Z" fill="url(#gArea)"/><path d="'+d+'" fill="none" style="stroke:var(--acct)" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>'}
 function renderRecs(){
@@ -248,22 +256,22 @@ function openForm(eid){const es=eid?S.sessions.find(s=>s.id===eid):null,lastP=(l
     :{date:sel>TK?TK:sel,place:lastP||'street',types:[],ex:[],perf:{},tod:(sel===TK||sel>TK)?todNow():'',dur:'',feel:0,note:''};
   $('redo').hidden=!!es||!S.sessions.length;edit=false;$('ok').textContent=es?'Enregistrer':'Coller la séance';$('err').textContent='';$('plHint').hidden=true;$('cPl').classList.remove('need');$('fxQ').value='';drawForm();$('sheet').classList.add('open');$('sheet').querySelector('.box').scrollTop=0}
 function needPlace(){const b=document.querySelector('.box');b.scrollTo({top:0,behavior:'smooth'});const c=$('cPl');c.classList.remove('need');void c.offsetWidth;c.classList.add('need');$('plHint').hidden=false}
-function toast(m){let el=$('toast');if(!el){el=document.createElement('div');el.id='toast';document.body.appendChild(el)}el.textContent=m;el.className='on';clearTimeout(el._t);el._t=setTimeout(()=>el.className='',2600)}
+function toast(m){let el=$('toast');if(!el){el=document.createElement('div');el.id='toast';document.body.appendChild(el)}el.textContent=m;el.className='on';clearTimeout(el._t);el._t=setTimeout(()=>el.className='',1900)} /* v7.6 : 1,9 s au lieu de 2,6 s */
 function close(){$('sheet').classList.remove('open');form=null;edit=false}
 function toggle(a,v){const i=a.indexOf(v);i<0?a.push(v):a.splice(i,1)}
 let pending=false;
 function warnLocal(m){if(!navigator.onLine)return;try{if(localStorage.getItem('carnet-info')===m)return}catch(e){}let b=$('warn');if(!b){b=document.createElement('div');b.id='warn';b.setAttribute('role','alert');b.innerHTML='<span></span><button type="button" class="ib" aria-label="Fermer">✕</button>';b.querySelector('button').addEventListener('click',()=>{try{localStorage.setItem('carnet-info',b.firstChild.textContent)}catch(e){}b.remove()});document.body.prepend(b)}b.firstChild.textContent=m}
 
 async function save(){S.upd=Date.now();const data=JSON.parse(JSON.stringify(packData()));
-  try{localStorage.setItem('carnet-seances',JSON.stringify(data))}catch(e){}
+  try{localStorage.setItem('carnet-seances',JSON.stringify(data));bkSaveOk()}catch(e){bkSaveFail(e)} /* v7.6 : échec signalé, sauvegarde automatique (15_backup.js) */
   if(!store){$('save').textContent='Enregistré sur ce téléphone.';return}
   if(!navigator.onLine){pending=true;$('save').textContent='Hors ligne : enregistré sur ce téléphone, synchronisé au retour du réseau.';return}
   try{await store.set(data);pending=false;$('save').textContent='Enregistré sur ton compte Claude : retrouvé sur tous tes appareils.'}catch(e){pending=true;$('save').textContent='Enregistré sur ce téléphone, synchronisation dès que possible.';warnLocal('Tes séances sont enregistrées sur ce téléphone. Pour plus de sécurité, copie ta sauvegarde de temps en temps (Réglages ⚙️).')}
   if(S.comps.length)try{publish()}catch(e){}}
 window.addEventListener('online',()=>{if(pending)save()});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&pending&&navigator.onLine)save()});
-function load(v){try{v=v?JSON.parse(JSON.stringify(v)):null}catch(e){v=null}const exg=v&&Array.isArray(v.exg)&&v.exg.length?v.exg:clone(EXG0);if(v&&Array.isArray(v.custom)&&v.custom.length)exg.push(['Mes exercices',v.custom]);const comps=v&&Array.isArray(v.comps)?v.comps:[],recs=v&&Array.isArray(v.recs)?v.recs:[];
-  if(v&&Array.isArray(v.sessions)&&!v.demo&&v.sessions.length+((v.rest||[]).length)+((v.recs||[]).length)>=0){S={sessions:v.sessions,rest:Array.isArray(v.rest)?v.rest:[],exg,comps,decoys:Array.isArray(v.decoys)?v.decoys:[],recs,demo:false}}else{S={sessions:[],rest:[],exg,comps,decoys:[],recs,demo:false}}S.upd=v&&v.upd||0;S.name=v&&v.name||'';S.fav=v&&Array.isArray(v.fav)?v.fav:[];S.onb=!!(v&&v.onb);loadExtra(v);render()}
+function load(v,q){try{v=v?JSON.parse(JSON.stringify(v)):null}catch(e){v=null} /* q : sans affichage (aperçu d'une sauvegarde) */const exg=v&&Array.isArray(v.exg)&&v.exg.length?v.exg:clone(EXG0);if(v&&Array.isArray(v.custom)&&v.custom.length)exg.push(['Mes exercices',v.custom]);const comps=v&&Array.isArray(v.comps)?v.comps:[],recs=v&&Array.isArray(v.recs)?v.recs:[];
+  if(v&&Array.isArray(v.sessions)&&!v.demo&&v.sessions.length+((v.rest||[]).length)+((v.recs||[]).length)>=0){S={sessions:v.sessions,rest:Array.isArray(v.rest)?v.rest:[],exg,comps,decoys:Array.isArray(v.decoys)?v.decoys:[],recs,demo:false}}else{S={sessions:[],rest:[],exg,comps,decoys:[],recs,demo:false}}S.upd=v&&v.upd||0;S.name=v&&v.name||'';S.fav=v&&Array.isArray(v.fav)?v.fav:[];S.onb=!!(v&&v.onb);loadExtra(v);if(!q)render()}
 const BED='<svg viewBox="0 0 80 56" aria-hidden="true"><rect x="4" y="12" width="7" height="40" rx="2" fill="#a59c90"/><rect x="69" y="30" width="6" height="22" rx="2" fill="#a59c90"/><rect x="4" y="40" width="71" height="6" rx="2" fill="#a59c90"/><rect x="11" y="32" width="58" height="9" rx="3" fill="#f4f1ea"/><rect x="12" y="24" width="19" height="10" rx="5" fill="#fff"/><circle cx="21" cy="24" r="7" fill="#f2c29b"/><path d="M14 23a7 7 0 0 1 14-2q-5-3-10 0z" fill="#2b1d14"/><path d="M18 26q2 1.6 4 0" stroke="#2b1d14" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M27 34q2-12 18-11q16 1 24 6v5z" fill="#e4ff1a"/><path d="M30 30q14-5 38 1" stroke="#9fb300" stroke-width="1.6" fill="none"/><text x="31" y="17" font-family="Archivo,sans-serif" font-weight="900" font-size="9" fill="#fff">z</text><text x="38" y="10" font-family="Archivo,sans-serif" font-weight="900" font-size="11" fill="#fff">Z</text></svg>';
 
 const lastSess=()=>S.sessions.slice().sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.id<b.id?-1:1).pop();
@@ -298,7 +306,7 @@ function showOnb(n){onbStep=n;let o=$('onb');if(!o){o=document.createElement('di
   o.querySelector('input')?.focus()}
 function onbGo(a){if(onbStep===0){const v=($('onbName')||{}).value;S.name=(v||'').trim()}if(a==='done'){S.onb=true;S.lastSeen=Date.now();$('onb')?.remove();save();route();return}save();showOnb(Number(a))}
 /* ===================== v4 ===================== */
-const APP_V='7.5.0';
+const APP_V='7.6.0';
 const ACC={jaune:['#e4ff1a','#7d8c00','Jaune fluo','#5c6800'],vert:['#3dff8b','#0c8a45','Vert','#08773a'],orange:['#ff9f1c','#a35a00','Orange','#9a4f00'],bleu:['#38c8ff','#0a6f99','Bleu','#0a6a92'],rose:['#ff5fa8','#a3245f','Rose','#a3245f'],violet:['#b18cff','#5b3fb0','Violet','#5b3fb0']};
 const arr=x=>Array.isArray(x)?x:[],obj=x=>x&&typeof x==='object'&&!Array.isArray(x)?x:{};
 const EXTRA=['name','fav','onb','live','bw','goals','acc','goal','bilanSeen','restAck','calMode','tmc','v','tset','skills','tests','presets','tpls','snd','voice','theme','cnt','deloads','notes','wuNote','wuMode','wuW','fPl','fTy','evo','ptab','icon','links','lastSeen','xtab'];
@@ -506,7 +514,7 @@ function drawMeta5(){if(!form)return;const d=form.date||sel,yest=key(add(T,-1)),
 function ctxSnap(){const wk=monday(T).getTime(),on=badgeList().filter(b=>b.on);return {bad:on.length,badk:on.map(b=>b.k),wn:S.sessions.filter(s=>monday(parse(s.date)).getTime()===wk).length,last:lastSess()}}
 function submitForm(){if(!form)return;const d=form.date&&form.date<=TK?form.date:(sel<=TK?sel:TK);if(!form.place)form.place='street';clearDemo();
   const perf={};form.ex.forEach(x=>{const p=form.perf[x];if(p&&(+p.s||+p.r||+p.kg||+p.sec))perf[x]={s:+p.s||0,r:+p.r||0,kg:+p.kg||0,sec:+p.sec||0}});
-  const ss={id:form.editId||('s'+Date.now().toString(36)),date:d,place:form.place,types:form.types.filter(okT),ex:form.ex.slice()};
+  const ss={id:form.editId||('s'+Date.now().toString(36)),date:d,place:form.place,types:form.types.filter(okT),ex:form.ex.slice(),u:Date.now()}; /* u : dernière modification (fusion de sauvegardes) */
   if(Object.keys(perf).length)ss.perf=perf;if(form.tod)ss.tod=form.tod;if(+form.dur>0)ss.dur=Math.min(600,Math.round(+form.dur));if(form.feel)ss.feel=form.feel;const nt=(form.note||'').trim();if(nt)ss.note=nt.slice(0,500);
   const c=ctxSnap(),wasEdit=!!form.editId;S.rest=S.rest.filter(k=>k!==d);
   if(wasEdit){const i=S.sessions.findIndex(s=>s.id===ss.id);if(i>=0)S.sessions[i]=ss;else S.sessions.push(ss)}else S.sessions.push(ss);
@@ -516,7 +524,10 @@ function submitForm(){if(!form)return;const d=form.date&&form.date<=TK?form.date
 const goalTxt=g=>g.ex+' : '+fmtN(g.target)+' '+unitL(g.unit);
 /* ---------- bandeau du bas (annuler, partager) ---------- */
 let snackFn=null;
-function snack(m,label,fn){const el=$('snack');$('snackT').textContent=m;$('undo').textContent=label||'Annuler';snackFn=fn||null;el.hidden=false;el.classList.remove('on');void el.offsetWidth;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>{el.hidden=true;snackFn=null},label?6000:5000)}
+/* v7.6 : bandeau plus rapide et plus court (4 s avec « Annuler », 3 s sinon), disparition en douceur, toucher le texte le ferme */
+function snackHide(){const el=$('snack');if(el.hidden)return;clearTimeout(el._t);el.classList.remove('on');el.classList.add('off');el._t=setTimeout(()=>{el.hidden=true;el.classList.remove('off');snackFn=null},170)}
+function snack(m,label,fn,ms){const el=$('snack'),ub=$('undo'),lb=label||'Annuler',und=lb==='Annuler';$('snackT').textContent=m;ub.classList.toggle('notr',und);ub.textContent=und&&S.lang!=='fr'?trS('Annuler l\'action'):lb; /* « Annuler » d'un bandeau = Undo / Ongedaan maken (pas Cancel) */snackFn=fn||null;el.hidden=false;el.classList.remove('on','off');void el.offsetWidth;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(snackHide,ms||(fn?4000:3000))}
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#snackT'))snackHide()});
 function delSession(id){const i=S.sessions.findIndex(s=>s.id===id);if(i<0)return;const s=S.sessions[i];S.sessions.splice(i,1);render();save();snack('Séance supprimée','Annuler',()=>{S.sessions.splice(Math.min(i,S.sessions.length),0,s);render();save();toast('Séance restaurée ✓')})}
 
 /* ---------- calendrier : semaine, glisser, repos ---------- */
@@ -624,12 +635,12 @@ const perfPlain=(s,x)=>{const p=s.perf&&s.perf[x];if(!p)return '';let t='';if(p.
 async function shareFile(blob,name){let f=null;try{f=new File([blob],name,{type:blob.type})}catch(e){}
   try{if(f&&navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:name});return}}catch(e){if(e&&e.name==='AbortError')return}
   const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(u);a.remove()},5000)}
-function exportCSV(){const H=['Date','Jour','Moment','Lieu','Types','Exercices','Durée (min)','Ressenti','Volume (kg)','Note'],q=v=>{v=String(v==null?'':v);return /[;"\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
-  const rows=S.sessions.slice().sort((a,b)=>a.date<b.date?1:-1).map(s=>[s.date.split('-').reverse().join('/'),parse(s.date).toLocaleDateString(LOC(),{weekday:'long'}),s.tod?todN[s.tod]:'',plN[s.place]||s.place,s.types.filter(okT).map(t=>tyN[t]).join(', '),s.ex.map(x=>x+perfPlain(s,x)).join(', '),s.dur||'',feelOf(s)?feelOf(s)[2]:'',sVol(s)?Math.round(sVol(s)):'',s.note||'']);
+function exportCSV(){const H=['Date','Jour','Moment','Lieu','Types','Exercices','Durée (min)','Ressenti','Volume (kg)','Note'].map(trS),q=v=>{v=String(v==null?'':v);return /[;"\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+  const rows=S.sessions.slice().sort((a,b)=>a.date<b.date?1:-1).map(s=>[s.date.split('-').reverse().join('/'),parse(s.date).toLocaleDateString(LOC(),{weekday:'long'}),trS(s.tod?todN[s.tod]:''),trS(plN[s.place]||s.place),s.types.filter(okT).map(t=>trS(tyN[t])).join(', '),s.ex.map(x=>trS(x)+trS(perfPlain(s,x))).join(', '),s.dur||'',trS(feelOf(s)?feelOf(s)[2]:''),sVol(s)?Math.round(sVol(s)):'',s.note||'']);
   shareFile(new Blob(['﻿'+[H].concat(rows).map(r=>r.map(q).join(';')).join('\r\n')],{type:'text/csv;charset=utf-8'}),'carnet-seances-'+TK+'.csv')}
 function makePDF(lines){const W=595,H=842,M=46,pages=[];let cur=[],y=H-M;
   const enc=s=>String(s).replace(/[’‘]/g,"'").replace(/[“”]/g,'"').replace(/[–—−]/g,'-').replace(/…/g,'...').replace(/[  ]/g,' ').replace(/œ/g,'oe').replace(/Œ/g,'OE').replace(/[^\x20-\xff]/g,'').replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)');
-  lines.forEach(L=>{const sz=L.s||10,lh=sz*1.4,maxc=Math.floor((W-2*M)/(sz*(L.b?.56:.51))),rows=[];let row='';String(L.t).split(' ').forEach(w=>{const nx=row?row+' '+w:w;if(nx.length>maxc&&row){rows.push(row);row=w}else row=nx});rows.push(row);
+  lines.forEach(L=>{L=Object.assign({},L,{t:trS(String(L.t))}); /* v7.6 : le PDF suit la langue de l'appli */const sz=L.s||10,lh=sz*1.4,maxc=Math.floor((W-2*M)/(sz*(L.b?.56:.51))),rows=[];let row='';String(L.t).split(' ').forEach(w=>{const nx=row?row+' '+w:w;if(nx.length>maxc&&row){rows.push(row);row=w}else row=nx});rows.push(row);
     if(L.gap)y-=L.gap;rows.forEach(r=>{if(y-lh<M){pages.push(cur);cur=[];y=H-M}y-=lh;cur.push('BT /'+(L.b?'F2':'F1')+' '+sz+' Tf '+(L.c||'0 0 0')+' rg '+M+' '+y.toFixed(1)+' Td ('+enc(r)+') Tj ET')})});pages.push(cur);
   const objs=['<< /Type /Catalog /Pages 2 0 R >>','','<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>','<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>'],kids=[];
   pages.forEach(pc=>{const st=pc.join('\n');objs.push('<< /Length '+st.length+' >>\nstream\n'+st+'\nendstream');const cid=objs.length;objs.push('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+W+' '+H+'] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents '+cid+' 0 R >>');kids.push(objs.length)});
@@ -694,7 +705,7 @@ function tmFin(title,sub,word){sGo(word||'Terminé');buzz([300,150,300]);TM={k:'
 function tmLoop5(){if(!TM)return;const now=Date.now();let lab='',big='',sub='',prog=0,ck='',ctl='';
   if(TM.k==='rest'){const rem=Math.max(0,TM.end-now),s=Math.ceil(rem/1000);if(rem<=0){sGo('Go');buzz([250,120,250]);TM={k:'go',until:now+1600,msg:TM.next||''};return tmLoop()}
     if(s!==TM.ls){TM.ls=s;if(s<=3)sTick(s)}lab=TM.lab;big=mmss(s);sub=TM.next||'Récupère bien';prog=1-rem/(TM.total*1000);ck='rest';
-    ctl='<button type="button" class="tbtn" data-tm="m15">−15 s</button><button type="button" class="tbtn" data-tm="p15">+15 s</button><button type="button" class="tbtn main" data-tm="skip">Terminer le repos</button>'}
+    ctl='<button type="button" class="tbtn" data-tm="m15">−15 s</button><button type="button" class="tbtn" data-tm="p15">+15 s</button><button type="button" class="tbtn main" data-tm="skip">'+(TM.lab==='Échauffement'?'Terminer l\'échauffement':'Terminer le repos')+'</button>'}
   else if(TM.k==='go'){if(now>TM.until){tmStop();return}lab='C\'est reparti';big='Go !';sub=TM.msg||'';prog=1;ck='go'}
   else if(TM.k==='emom'){const t=TM.pausedAt||now,el=t-TM.start;
     if(el<0){const s=Math.ceil(-el/1000);if(s!==TM.ls){TM.ls=s;if(s<=3&&!TM.pausedAt)sTick(s)}lab='EMOM · prépare-toi';big=String(s);sub=TM.n+' × '+mmssL(TM.iv);prog=1+el/10000}
@@ -752,7 +763,7 @@ function renderTm(){$('tmSeg').innerHTML=[['rest','Repos'],['emom','EMOM'],['pyr
   $('tmBox').innerHTML=tmTab==='rest'?'<p class="findsub">Touche une durée pour lancer le repos.</p><div class="tgrid">'+[30,45,60,90,120,150,165,180].map(s=>'<button type="button" class="tchip" data-rsec="'+s+'">'+mmssL(s)+'</button>').join('')+'</div><p class="note">Conseil : 2 min 45 à 3 min entre chaque série.</p>':tmTab==='emom'?emHtml():tmTab==='pyr'?pyHtml():lestHtml();
   if(tmTab==='lest')renderLC()}
 function renderLC(){const bw=parseFloat(($('lcBw')||{}).value)||0,l=parseFloat(($('lcL')||{}).value)||0,p=parseFloat(($('lcP')||{}).value)||0,r5=v=>Math.round(v*2)/2;
-  $('lcOut').innerHTML=bw?(l?'<div><b>'+fmtN(l/bw*100)+' %</b><span>de ton poids du corps</span></div><div><b>'+fmtN(bw+l)+' kg</b><span>charge totale soulevée</span></div>':'<p class="note">Entre ton lest pour voir le pourcentage.</p>'):'<p class="note">Entre ton poids du corps. Il est repris de « Poids du corps » (Progrès → Stats) si tu l\'as noté.</p>';
+  $('lcOut').innerHTML=bw?(l?'<div><b>'+fmtN(l/bw*100)+' %</b><span>de ton poids du corps</span></div><div><b>'+fmtN(bw+l)+' kg</b><span>charge totale soulevée</span></div>':'<p class="note">Entre ton lest pour voir le pourcentage.</p>'):'<p class="note">Entre ton poids du corps. Il est repris de tes mesures (Progrès → Mesures) si tu l\'as noté.</p>';
   $('lcOut2').innerHTML=bw&&p?'<div><b>'+fmtN(r5(bw*p/100))+' kg</b><span>de lest pour '+fmtN(p)+' % de ton poids</span></div>':'';
   $('lcTab').innerHTML=bw?[10,20,30,40,50].map(q=>'<span>+'+q+' % <b>'+fmtN(r5(bw*q/100))+' kg</b></span>').join(''):''}
 
@@ -875,7 +886,7 @@ function actSheet(id){const s=S.sessions.find(x=>x.id===id);if(!s)return;openShe
 function sAct(v){const p=v.indexOf(':'),a=v.slice(0,p),id=v.slice(p+1),s=S.sessions.find(x=>x.id===id);if(!s)return;
   if(a==='share'){closeSheet();shareCard(id);return}if(a==='del'){closeSheet();delSession(id);return}
   const d=$(a==='dup'?'dupD':'movD').value;if(!d||d>TK){toast('Choisis un jour passé');return}
-  if(a==='dup'){const n=clone(s);n.id='s'+Date.now().toString(36);n.date=d;S.sessions.push(n)}else s.date=d;
+  if(a==='dup'){const n=clone(s);n.id='s'+Date.now().toString(36);n.date=d;n.u=Date.now();S.sessions.push(n)}else{s.date=d;s.u=Date.now()}
   S.rest=S.rest.filter(k=>k!==d);sel=d;view=new Date(parse(d).getFullYear(),parse(d).getMonth(),1);closeSheet();render();save();toast((a==='dup'?'Séance dupliquée le ':'Séance déplacée au ')+dLong(d)+' ✓')}
 
 /* ---------- carte de séance en image ---------- */
@@ -919,7 +930,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)r
   if(ds.edit){openForm(ds.edit);return}
   if(ds.more){actSheet(ds.more);return}
   if(ds.sact){sAct(ds.sact);return}
-  if(t.id==='undo'){const f=snackFn;$('snack').hidden=true;snackFn=null;if(f)f();return}
+  if(t.id==='undo'){const f=snackFn;clearTimeout($('snack')._t);$('snack').hidden=true;$('snack').classList.remove('on','off');snackFn=null;if(f)f();return}
   if(t.id==='updGo'){location.reload();return}
   if(t.id==='back'){location.hash=lastH||'#accueil';return}
   if(ds.cal){S.calMode=ds.cal;save();render();return}
@@ -1062,9 +1073,9 @@ let canStore=true;try{localStorage.setItem('carnet-t','1');canStore=localStorage
 const bkData=()=>JSON.stringify(packData());
 $('bk').addEventListener('toggle',()=>{if($('bk').open&&!$('bkT').value)$('bkT').value=bkData()});
 $('bkC').addEventListener('click',async()=>{const t=$('bkT');t.value=bkData();t.focus();t.select();try{await navigator.clipboard.writeText(t.value);toast('Sauvegarde copiée ✓')}catch(e){try{document.execCommand('copy')?toast('Sauvegarde copiée ✓'):toast('Sélectionne le texte et copie-le')}catch(_){toast('Sélectionne le texte et copie-le')}}});
-$('bkR').addEventListener('click',()=>{try{const v=JSON.parse($('bkT').value.trim());if(!v||!Array.isArray(v.sessions))throw 0;load(v);save();toast('Données restaurées ✓')}catch(e){toast('Code de sauvegarde invalide')}});
+$('bkR').addEventListener('click',()=>{bkFromText($('bkT').value)}); /* v7.6 : aperçu puis fusionner ou remplacer */
 /*@@MODS@@*/
 load(local);route();if(!S.onb&&!S.sessions.length){if(instFirst())instShow(()=>{if(!S.onb&&!$('onb'))showOnb(0)});else showOnb(0)}else if(!S.onb){S.onb=true} /* v7.4 : nouvel utilisateur sur téléphone, pas encore installée : le tutoriel d'installation d'abord */
 v6Init();setTimeout(checkUpd,3000);if(S.onb&&!$('onb')){if(!maybeBilan())maybeHello()}else S.lastSeen=Date.now();if(!canStore)setTimeout(()=>{const b=document.createElement('div');b.id='warn';b.setAttribute('role','alert');b.innerHTML='<span>Ce navigateur bloque l\'enregistrement : tes séances seront perdues à la fermeture. Ouvre le lien dans '+(PLAT.ios?'Safari':PLAT.and?'Chrome':'ton navigateur habituel')+' (pas en navigation privée).</span>';document.body.prepend(b)},0);$('save').textContent='Enregistré sur ce téléphone.';
-warnLocal("Tes séances sont enregistrées sur ce téléphone. Pour plus de sécurité, copie ta sauvegarde de temps en temps (Réglages ⚙️).");
+bkBoot(!!local); /* v7.6 : sauvegardes automatiques ; rappel d'export discret (remplace l'ancien bandeau) */
 }

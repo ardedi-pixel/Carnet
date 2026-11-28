@@ -61,8 +61,9 @@ function spHistV(){const s=SP(),k=spToday(),f=s.hf&&spById(s.hf)?s.hf:'',S7=spSt
   if(EV.length)h+='<section class="panel wide sp7evs"><details><summary>'+spJ([spS('Modifications des programmes'),spS(String(EV.length))])+'</summary>'+EV.map(e=>'<p><span class="sp7evd">'+esc(spDl(key(new Date(e.t))))+'</span><span class="'+(e.id?'notr ':'')+'sp7evn">'+esc(e.n)+'</span>'+spEvTxt(e.x)+'</p>').join('')+'</details></section>';
   return h}
 /* texte d'une modification (codes simples, traduits à l'affichage) */
+/* v7.6 : les dates sont gardées en AAAA-MM-JJ et écrites à l'affichage, dans la langue du moment */
 function spEvTxt(x){const p=String(x).split('|'),k=p[0],L={add:'Ajouté',edit:'Fiche modifiée',cyc:'Cycle modifié',mode:'Mode de prise changé',start:'Date de départ du cycle changée',pause:'Mis en pause',res:'Repris',resx:'Repris (cycle décalé)',end:'Terminé',react:'Réactivé',del:'Supprimé',dose:'Changement de dose programmé',stock:'Stock rechargé',time:'Horaire changé',shift:'Routine décalée'};
-  return '<span class="sp7evx">'+spS(L[k]||k)+(p[1]?'<span class="sp7sep"> · </span>'+p.slice(1).join(' ').split(' → ').map(z=>spS(z)).join('<span> → </span>'):'')+'</span>'}
+  return '<span class="sp7evx">'+spS(L[k]||k)+(p[1]?'<span class="sp7sep"> · </span>'+p.slice(1).join(' ').split(' → ').map(z=>spS(/^\d{4}-\d{2}-\d{2}$/.test(z)?spDl(z):z)).join('<span> → </span>'):'')+'</span>'}
 /* ---- fiche d'un complément (ajout rapide, tout le reste facultatif) ---- */
 let spF=null,spF0b=null;
 function spEdit(id,pre){const x=id?spById(id):null;const td=spToday();
@@ -139,7 +140,7 @@ function spSave(){spFormRead();const f=spF,s=SP(),td=spToday();if(!f.n){toast('D
   const pchg=f.mode!==x.mode||(f.mode==='ponc'&&(JSON.stringify(f.pw)!==JSON.stringify(x.pw)||JSON.stringify(f.pd)!==JSON.stringify(x.pd)));
   if(pchg){const old=SPMODE[x.mode];spProgSet(x,{mode:f.mode,pw:f.pw,pd:f.pd,on:f._on,off:f._off,a:spIsD(f._a)?f._a:td});spEv(x,'mode|'+old+' → '+SPMODE[f.mode])}
   else if(f.mode==='cyc'){const g=spSeg(x,td>=spF0(x)?td:spF0(x)),a0=spCycA(x,td);
-    if(spIsD(f._a)&&f._a!==a0){spCycStart(x,f._a,f._on,f._off);spEv(x,'start|'+spDl(f._a))}
+    if(spIsD(f._a)&&f._a!==a0){spCycStart(x,f._a,f._on,f._off);spEv(x,'start|'+f._a)}
     else if(g.on!==f._on||g.off!==f._off){const ol=spCycL(g);spCycleSet(x,f._on,f._off);spEv(x,'cyc|'+ol+' → '+spCycL({on:f._on,off:f._off}))}}
   if(f.stock.on!==x.stock.on||(f.stock.on&&(spStock(x)||{}).left!==f.stock.q)||f.stock.su!==x.stock.su||f.stock.pi!==x.stock.pi||f.stock.low!==x.stock.low){x.stock=Object.assign({},f.stock,{at:td,add:[]});if(f.stock.on)ch.push('stock')}
   if(ch.length){if(ch.includes('dz')&&JSON.stringify(o.dz)!==JSON.stringify(x.dz))spEv(x,'dose');if(ch.includes('tk'))spEv(x,'time');if(ch.some(c=>!['dz','tk','c','stock'].includes(c)))spEv(x,'edit')}
@@ -251,7 +252,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-sp],[data-
   if(d.sphf!==undefined){s.hf=d.sphf;re();return}
   if(d.sphm){s.hn=(Math.max(14,+s.hn||14))+14;re();return}
   if(d.spia){const [k,kk,a]=d.spia.split('~');spAct(k,kk,a);return}
-  if(d.spps){const x=spById(d.spps);if(!x)return;const a=$('spPa').value||spToday(),b=$('spPb').value||'';if(b&&b<a){toast('La reprise est avant le début de la pause');return}spPause(x,a,b);spEv(x,'pause|'+spDl(a)+(b?' → '+spDl(b):''));save();closeSheet();toast('Complément en pause');spRefresh();return}
+  if(d.spps){const x=spById(d.spps);if(!x)return;const a=$('spPa').value||spToday(),b=$('spPb').value||'';if(b&&b<a){toast('La reprise est avant le début de la pause');return}spPause(x,a,b);spEv(x,'pause|'+a+(b?' → '+spDl(b):''));save();closeSheet();toast('Complément en pause');spRefresh();return}
   if(d.sprs){const [id,sh]=d.sprs.split('~'),x=spById(id);if(x)spDoResume(x,sh==='1');return}
   if(d.sprq){const x=spById(d.sprq),q=+String(($('spRq')||{}).value||'').replace(',','.');if(!x||!(q>0)){toast('Indique la quantité ajoutée');return}x.stock.add.push({d:spToday(),q});spEv(x,'stock|+'+fmtN(q)+' '+x.stock.su);save();closeSheet();toast('Stock mis à jour');spRefresh();return}
   if(d.spsh){const n=+d.spsh;spShift(n);save();document.querySelectorAll('[data-spmt]').forEach(i=>{i.value=s.mt[i.dataset.spmt]});toast('Routine décalée de '+(n>0?'+':'−')+(Math.abs(n)===60?'1 h':Math.abs(n)+' min'));s.ev.push({t:Date.now(),id:'',n:'Routine',x:'shift|'+(n>0?'+':'−')+Math.abs(n)+' min'});spRefresh();return}

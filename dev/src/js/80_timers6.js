@@ -81,7 +81,7 @@ async function tmNotifToggle(){if(!tmNotifOk())return;if(S.tmNotif&&Notification
   let p=Notification.permission;try{if(p==='default')p=await Notification.requestPermission()}catch(e){}S.tmNotif=p==='granted';save();tmNotifRow();toast(S.tmNotif?'Notification activée':'Notifications bloquées : autorise-les dans les réglages du téléphone')}
 function tmDesc(){const now=Date.now();let t='',b='';
   if(TM.k==='emom'){const el=(TM.pausedAt||now)-TM.start,r=Math.max(0,Math.min(TM.n-1,Math.floor(el/(TM.iv*1000))));t='EMOM en cours';b=TM.pausedAt?'En pause · intervalle '+(r+1)+' sur '+TM.n:el<0?'Départ à '+tmHM(TM.start,1):'Intervalle '+(r+1)+' sur '+TM.n+' · fin prévue à '+tmHM(TM.start+TM.n*TM.iv*1000)}
-  else if(TM.k==='rest'){t='Repos en cours';b='Fin du repos à '+tmHM(TM.end,1)}
+  else if(TM.k==='rest'){const wu=TM.lab==='Échauffement';t=wu?'Échauffement en cours':'Repos en cours';b=(wu?'Fin de l\'échauffement à ':'Fin du repos à ')+tmHM(TM.end,1)}
   else if(TM.k==='pyr'){t='Pyramide en cours';b=TM.phase==='work'?'Marche '+(TM.i+1)+' sur '+TM.steps.length+' : '+TM.steps[TM.i]+' rép.':'Repos jusqu\'à '+tmHM(TM.end,1)}
   return {t:trS(t),b:trS(b)}}
 async function tmNotifShow(){try{if(!TM||!S.tmNotif||!tmNotifOk()||Notification.permission!=='granted'||TM.k==='fin'||TM.k==='go')return;const r=await navigator.serviceWorker.ready,d=tmDesc();

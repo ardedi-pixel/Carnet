@@ -31,7 +31,7 @@ let spSigR='';
 /* texte d'un rappel : seul ou groupé */
 function spRemTxt(k,L){const m=L[0].m,t=L[0].t,lab=trS(spMomL(m))+' · '+t,res=L.filter(it=>spIsRes(it.x,k));
   const one=it=>it.x.n+(it.q!==null&&it.q!==undefined?' — '+trS(spU(it.q,it.x.u)):'')+(it.x.r==='jeun'||it.x.r==='repas'?' — '+trS(SPR[it.x.r].toLowerCase()):'');
-  const title=L.length===1?lab:lab+' · '+trS(L.length+' compléments'),body=(res.length?trS('Reprise aujourd\'hui')+' : '+res.map(it=>it.x.n).join(', ')+'. ':'')+(L.length===1?one(L[0]):L.map(it=>it.x.n+(it.q!==null&&it.q!==undefined?' '+trS(spU(it.q,it.x.u)):'')).join(' · '));
+  const title=L.length===1?lab:lab+' · '+trS(L.length+' compléments'),body=(res.length?trS('Reprise aujourd\'hui')+(S.lang==='fr'?' : ':': ')+res.map(it=>it.x.n).join(', ')+'. ':'')+(L.length===1?one(L[0]):L.map(it=>it.x.n+(it.q!==null&&it.q!==undefined?' '+trS(spU(it.q,it.x.u)):'')).join(' · '));
   return {title,body}}
 function spRemind(k,L){if(!document.hidden){spBanner(k,L);return}const r=spRemTxt(k,L);
   spNotify(r.title,r.body,'supp-'+k+'-'+L[0].t,{supp:1,day:k,keys:L.map(it=>it.key),u:'./#complements'},[{action:'take',title:trS(L.length>1?'Tout pris':'Pris')}])}

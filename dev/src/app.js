@@ -59,15 +59,16 @@ const streak=()=>{let n=0,d=new Date(T);if(!sOf(key(d)).length)d=add(d,-1);while
 const weekCounts=()=>{const w={};S.sessions.forEach(s=>{const k=wkOf(s.date);w[k]=(w[k]||0)+1});return w};
 
 let lastH='#accueil',curV='home';
-function setHead(){const v=curV,hc=v==='home',T2={cal:['Calendrier','Tes séances'],pr:['Progrès','Tes performances'],tools:['Outils',{tm:'Minuteurs',wu:'Échauffement',adv:'Conseils',tuto:'Tutos'}[S.xtab]||'Outils'],set:['Carnet de séances','Réglages'],nut:['Nutrition',typeof nutHead==='function'?nutHead():'Aujourd\'hui'],notes:['Carnet','Mes notes']};
+function setHead(){const v=curV,hc=v==='home',T2={cal:['Calendrier','Tes séances'],pr:['Progrès','Tes performances'],tools:['Outils',{tm:'Minuteurs',wu:'Échauffement',adv:'Conseils',tuto:'Tutos'}[S.xtab]||'Outils'],set:['Carnet de séances','Réglages'],nut:['Nutrition',S.ntab==='supp'?'Compléments':typeof nutHead==='function'?nutHead():'Aujourd\'hui'],notes:['Carnet','Mes notes']};
   document.body.dataset.v=v;$('hLogo').hidden=!hc;$('figs').hidden=!hc;$('back').hidden=v!=='set';$('gear').hidden=v==='set';
   if(hc){$('hKick').textContent='Carnet de séances';$('hello').textContent=shownName()?'Salut '+shownName()+' !':'Salut !'}else{$('hKick').textContent=T2[v][0];$('hello').textContent=T2[v][1]}}
 function route5(){const h=location.hash.slice(1);
-  const M={calendrier:'cal',progres:'pr',mesures:'pr',stats:'pr',graphiques:'pr',records:'pr',skills:'pr',outils:'tools',seance:'tools',minuteurs:'tools',plus:'tools',echauffement:'tools',conseils:'tools',tutos:'tools',nutrition:'nut',carnet:'notes',reglages:'set'},v=h.startsWith('reglages')?'set':(M[h]||'home');
+  const M={calendrier:'cal',progres:'pr',mesures:'pr',stats:'pr',graphiques:'pr',records:'pr',skills:'pr',outils:'tools',seance:'tools',minuteurs:'tools',plus:'tools',echauffement:'tools',conseils:'tools',tutos:'tools',nutrition:'nut',repas:'nut',complements:'nut',carnet:'notes',reglages:'set'},v=h.startsWith('reglages')?'set':(M[h]||'home');
   if(v==='pr'&&h!=='progres')S.ptab=h==='graphiques'?'stats':h==='mesures'?'mz':h;
   if(v==='tools')S.xtab={echauffement:'wu',conseils:'adv',tutos:'tuto',plus:S.xtab&&S.xtab!=='tm'?S.xtab:'wu'}[h]||'tm';
+  if(v==='nut'){if(h==='complements')S.ntab='supp';else if(h==='repas')S.ntab='meal';if(S.ntab!=='supp')S.ntab='meal'} /* v7.5 : Nutrition = Repas | Compléments */
   if(v!=='set')lastH='#'+(h||'accueil');curV=v;const pt=S.ptab,xt=S.xtab;
-  const show={vHome:v==='home',vCal:v==='cal',progBar:v==='pr',vMz:v==='pr'&&pt==='mz',vGr:v==='pr'&&pt==='stats',vRe:v==='pr'&&pt==='records',vSk:v==='pr'&&pt==='skills',vTools:v==='tools'&&xt==='tm',plusBar:v==='tools',vWu:v==='tools'&&xt==='wu',vAdv:v==='tools'&&xt==='adv',vTuto:v==='tools'&&xt==='tuto',vNut:v==='nut',vNotes:v==='notes',vSet:v==='set',vCo:false};
+  const show={vHome:v==='home',vCal:v==='cal',progBar:v==='pr',vMz:v==='pr'&&pt==='mz',vGr:v==='pr'&&pt==='stats',vRe:v==='pr'&&pt==='records',vSk:v==='pr'&&pt==='skills',vTools:v==='tools'&&xt==='tm',plusBar:v==='tools',vWu:v==='tools'&&xt==='wu',vAdv:v==='tools'&&xt==='adv',vTuto:v==='tools'&&xt==='tuto',nutBar:v==='nut',vNut:v==='nut'&&S.ntab!=='supp',vSupp:v==='nut'&&S.ntab==='supp',vNotes:v==='notes',vSet:v==='set',vCo:false};
   Object.keys(show).forEach(id=>{$(id).hidden=!show[id]});$('fab').hidden=v!=='cal';
   [['tHome','home'],['tCal','cal'],['tNut','nut'],['tTools','tools'],['tPr','pr'],['tNotes','notes']].forEach(([id,x])=>{const e=$(id);if(e)e.setAttribute('aria-current',v===x?'page':'false')});
   setHead();
@@ -76,13 +77,18 @@ function route5(){const h=location.hash.slice(1);
   if(v==='home')renderHome();if(v==='cal')render();
   if(v==='pr'){if(pt==='mz')renderMz();else if(pt==='stats')renderStatsPage();else if(pt==='records'){renderTests();renderGoals();renderRecs();renderBadges()}else renderSkills()}
   if(v==='tools'){if(xt==='tm')renderTm();else if(xt==='wu')renderWU();else if(xt==='adv')renderAdv();else{renderLinks();renderGuideList()}}
-  if(v==='nut'&&typeof renderNut==='function')renderNut();
+  if(v==='nut')$('nutSeg').innerHTML=[['meal','Repas'],['supp','Compléments']].map(x=>'<button type="button" data-nt="'+x[0]+'" aria-pressed="'+((S.ntab==='supp'?'supp':'meal')===x[0])+'">'+x[1]+'</button>').join('');
+  if(v==='nut'&&S.ntab!=='supp'&&typeof renderNut==='function')renderNut();
+  if(v==='nut'&&S.ntab==='supp'&&typeof renderSupp==='function')renderSupp();
   if(v==='notes'&&typeof renderNotes==='function')renderNotes();
   if(v==='set'){renderSet();renderSet2()}
-  window.scrollTo(0,0);if(v==='home')countUp($('figs'));const cur=Object.keys(show).find(id=>show[id]&&id!=='progBar'&&id!=='plusBar');if(cur)countUp($(cur))}
+  window.scrollTo(0,0);if(v==='home')countUp($('figs'));const cur=Object.keys(show).find(id=>show[id]&&id!=='progBar'&&id!=='plusBar'&&id!=='nutBar');if(cur)countUp($(cur))}
 function render(){
-  const wkm=S.calMode==='w',g=$('grid');
-  $('calSeg').innerHTML='<button type="button" data-cal="m" aria-pressed="'+!wkm+'">Mois</button><button type="button" data-cal="w" aria-pressed="'+wkm+'">Semaine</button>';
+  const spc=typeof spCalOn==='function'&&spCalOn(),cm=S.calMode==='c'&&spc,wkm=S.calMode==='w',g=$('grid');
+  $('calSeg').innerHTML='<button type="button" data-cal="m" aria-pressed="'+(!wkm&&!cm)+'">Mois</button><button type="button" data-cal="w" aria-pressed="'+(wkm&&!cm)+'">Semaine</button>'+(spc?'<button type="button" data-cal="c" aria-pressed="'+cm+'">Compléments</button>':'');
+  /* v7.5 : calendrier « Compléments alimentaires », distinct du calendrier des séances */
+  const csp=$('calSp');if(csp){csp.hidden=!cm;document.querySelector('#vCal .calhead').hidden=cm;g.hidden=cm;$('detail').hidden=cm;$('fab').hidden=cm||curV!=='cal';
+    if(cm){document.querySelector('.dow').hidden=true;csp.innerHTML=spCalHtml();return}}
   document.querySelector('.dow').hidden=wkm;
   if(wkm){const m0=monday(parse(sel)),days=[0,1,2,3,4,5,6].map(i=>add(m0,i)),e=days[6];
     $('month').innerHTML='Semaine '+isoW(m0)+'<small>'+esc(m0.getDate()+(m0.getMonth()!==e.getMonth()?' '+mName(m0.getFullYear(),m0.getMonth()):'')+' – '+e.getDate()+' '+mName(e.getFullYear(),e.getMonth())+' '+e.getFullYear())+'</small>';
@@ -292,7 +298,7 @@ function showOnb(n){onbStep=n;let o=$('onb');if(!o){o=document.createElement('di
   o.querySelector('input')?.focus()}
 function onbGo(a){if(onbStep===0){const v=($('onbName')||{}).value;S.name=(v||'').trim()}if(a==='done'){S.onb=true;S.lastSeen=Date.now();$('onb')?.remove();save();route();return}save();showOnb(Number(a))}
 /* ===================== v4 ===================== */
-const APP_V='7.4.0';
+const APP_V='7.5.0';
 const ACC={jaune:['#e4ff1a','#7d8c00','Jaune fluo','#5c6800'],vert:['#3dff8b','#0c8a45','Vert','#08773a'],orange:['#ff9f1c','#a35a00','Orange','#9a4f00'],bleu:['#38c8ff','#0a6f99','Bleu','#0a6a92'],rose:['#ff5fa8','#a3245f','Rose','#a3245f'],violet:['#b18cff','#5b3fb0','Violet','#5b3fb0']};
 const arr=x=>Array.isArray(x)?x:[],obj=x=>x&&typeof x==='object'&&!Array.isArray(x)?x:{};
 const EXTRA=['name','fav','onb','live','bw','goals','acc','goal','bilanSeen','restAck','calMode','tmc','v','tset','skills','tests','presets','tpls','snd','voice','theme','cnt','deloads','notes','wuNote','wuMode','wuW','fPl','fTy','evo','ptab','icon','links','lastSeen','xtab'];

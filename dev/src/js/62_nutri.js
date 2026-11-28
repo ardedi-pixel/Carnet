@@ -96,8 +96,8 @@ function nutEdit(m,i){const it=arr(nDay(nutD)[m])[i];if(!it)return;const v=itv(i
 /* ---- événements ---- */
 document.addEventListener('click',e=>{const b=e.target.closest('[data-nu],[data-ne],[data-nh],[data-eq],[data-nqf],[data-nqk]');if(!b)return;const d=b.dataset;
   if(d.nu){const a=d.nu;
-    if(a==='go'){if(location.hash==='#nutrition')route();else location.hash='#nutrition';return}
-    if(a==='add'){nutD=TK;if(location.hash==='#nutrition')renderNut();else location.hash='#nutrition';setTimeout(()=>{const i=$('nqN');if(i){i.scrollIntoView({block:'center'});i.focus({preventScroll:true})}},450);return}
+    if(a==='go'){S.ntab='meal';if(location.hash==='#nutrition')route();else location.hash='#nutrition';return}
+    if(a==='add'){nutD=TK;S.ntab='meal';if(location.hash==='#nutrition')renderNut();else location.hash='#nutrition';setTimeout(()=>{const i=$('nqN');if(i){i.scrollIntoView({block:'center'});i.focus({preventScroll:true})}},450);return}
     if(a==='qadd'){nqAdd();return}
     if(a==='prev'){nutD=key(add(parse(nutD||TK),-1));renderNut();setHead();return}
     if(a==='next'){if(nutD<TK){nutD=key(add(parse(nutD),1));renderNut();setHead()}return}

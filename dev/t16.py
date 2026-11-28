@@ -605,5 +605,128 @@ with sync_playwright() as p:
         pg.evaluate("tmStop()");pg.evaluate("tmStart({k:'pyr',steps:[1,2,1],name:'Tractions'})");pg.wait_for_timeout(300);pg.evaluate("tmAct('min')");pg.wait_for_timeout(300)
         pg.click('#tpA');pg.wait_for_timeout(400);ok(T(pg,'#tpL').startswith('Repos · marche 2/3'),'M pyramide : « Fait » directement depuis le mini-lecteur');pg.evaluate("tmStop()")
     step('M3',M3)
+    ctx.close()
+    # ===== N : v7.5 : compléments alimentaires (cycles, modes, routine, rappels, calendrier, historique, stock, agenda) =====
+    import datetime as _dt
+    def DD(n):return (_dt.date.fromisoformat(TK0)+_dt.timedelta(days=n)).isoformat()
+    d=dict(SEED);d['lang']='fr';d['th']='nuit'
+    d['supp']={'list':[
+      {'id':'ash','n':'Ashwagandha','q':600,'u':'mg','tk':[{'m':'s','t':''}],'r':'repas','mode':'cyc','d0':DD(-33),'cy':[{'f':DD(-33),'a':DD(-33),'on':56,'off':28}],'c':6,'pr':'Notice lue'},
+      {'id':'bore','n':'Bore','q':3,'u':'mg','tk':[{'m':'m','t':''}],'r':'repas','mode':'cyc','d0':DD(-20),'cy':[{'f':DD(-20),'a':DD(-20),'on':14,'off':14}],'c':2},
+      {'id':'mg','n':'Magnésium bisglycinate','q':350,'u':'mg','tk':[{'m':'s','t':''}],'r':'repas','mode':'cont','d0':DD(-40),'c':5,'no':'Avec un grand verre d\'eau'},
+      {'id':'om','n':'Oméga-3','q':2,'u':'gélule','tk':[{'m':'m','t':''},{'m':'s','t':''}],'r':'repas','mode':'cont','d0':DD(-60),'c':4,'stock':{'on':True,'q':20,'su':'gélules','pi':1,'at':DD(-2),'low':10}},
+      {'id':'pre','n':'Pré-workout','q':1,'u':'dose','tk':[{'m':'a','t':'17:30'}],'r':'indif','mode':'ponc','pw':[_dt.date.fromisoformat(TK0).isoweekday()],'d0':DD(-30),'c':7},
+      {'id':'fer','n':'Fer','q':None,'u':'mg','tk':[{'m':'m','t':''}],'r':'jeun','mode':'def','d0':TK0,'c':0}],
+      'log':{DD(-1):{'om|0':{'s':'ok','t':0,'n':'Oméga-3','q':2,'un':'gélule','m':'m','h':'08:00'},'om|1':{'s':'ok','t':0,'n':'Oméga-3','q':2,'un':'gélule','m':'s','h':'19:30'},'mg|0':{'s':'late','t':0,'n':'Magnésium bisglycinate','q':350,'un':'mg','m':'s','h':'19:30'},'ash|0':{'s':'miss','t':0,'n':'Ashwagandha','q':600,'un':'mg','m':'s','h':'19:30'}}}}
+    ctx,pg=mku(UA_AND,d,vw=390,vh=844);ctx.grant_permissions(['notifications']);pg.goto(U+'#complements');pg.wait_for_timeout(2600);pg.mouse.click(5,5);pg.evaluate(CLEAN)
+    def N1():
+        r=pg.evaluate("(()=>{const x=spFix({n:'T',mode:'cyc',d0:'2026-12-01',cy:[{f:'2026-12-01',a:'2026-12-01',on:56,off:28}],tk:[{m:'s'}]});return [spPh(x,'2027-01-25').k,spPh(x,'2027-01-26').k,spPh(x,'2027-02-22').k,spPh(x,'2027-02-23').k,spPh(x,'2027-02-23').day,spPh(x,'2027-01-26').next]})()")
+        ok(r==['on','off','off','on',1,'2027-02-23'],'N cycle 8 sem. ON / 4 sem. OFF commencé le 1er décembre : OFF le 26 janvier, reprise le 23 février '+str(r))
+        a=pg.evaluate("(k=>{const x=SP().list.find(z=>z.id==='ash'),p=spPh(x,k);return [p.k,p.day,p.len,p.end,p.next]})('"+TK0+"')")
+        ok(a==['on',34,56,DD(22),DD(23)],'N Ashwagandha : ON, jour 34 sur 56, fin le J+22, OFF le J+23 '+str(a))
+        b2=pg.evaluate("(k=>{const x=SP().list.find(z=>z.id==='bore'),p=spPh(x,k);return [p.k,p.day,p.next]})('"+TK0+"')");ok(b2==['off',7,DD(8)],'N Bore 2/2 sem. : OFF jour 7, reprise J+8 '+str(b2))
+        f=pg.evaluate("(k=>{const x=SP().list.find(z=>z.id==='fer');return [spPh(x,k).k,spDay(k).some(i=>i.x.id==='fer'),spWarn(x).join('|')]})('"+TK0+"')")
+        ok(f[0]=='def' and not f[1] and 'Cycle non renseigné' in f[2] and 'Dosage non renseigné' in f[2],'N sans cycle renseigné : « à définir », jamais mis en OFF, aucune prise prévue, avertissements')
+        c=pg.evaluate("(k=>{const x=SP().list.find(z=>z.id==='mg');return [spPh(x,k).k,spPh(x,'2030-01-01').k]})('"+TK0+"')");ok(c==['on','on'],'N prise continue : ON tous les jours')
+        po=pg.evaluate("(()=>{const x=SP().list.find(z=>z.id==='pre');return [spPh(x,'"+TK0+"').k,spPh(x,'"+DD(1)+"').k]})()");ok(po==['on','none'],'N ponctuelle : seulement les jours choisis')
+        su=pg.evaluate("(()=>{const x=JSON.parse(JSON.stringify(SP().list.find(z=>z.id==='ash')));spFix(x);const b=spPh(x,'"+DD(5)+"').day;spPause(x,'"+TK0+"','"+DD(3)+"');const p=spPh(x,'"+TK0+"');return [p.k,p.b.k,spPh(x,'"+DD(5)+"').day===b]})()")
+        ok(su==['sus','on',True],'N suspension : en pause sans modifier le cycle '+str(su))
+        sh=pg.evaluate("(()=>{const x=JSON.parse(JSON.stringify(SP().list.find(z=>z.id==='ash')));spFix(x);spPause(x,'"+DD(-10)+"','');spResume(x,'"+TK0+"',true);return spPh(x,'"+TK0+"').day})()");ok(sh==24,'N reprise « là où il en était » : les 10 jours de pause ne comptent pas (jour 24) '+str(sh))
+        cy=pg.evaluate("(()=>{const x=JSON.parse(JSON.stringify(SP().list.find(z=>z.id==='ash')));spFix(x);spCycleSet(x,42,14);const p=spPh(x,'"+TK0+"'),q=spPh(x,'"+DD(-10)+"');return [p.day,p.len,q.day,q.len,x.cy.length]})()")
+        ok(cy==[34,42,24,56,2],'N cycle modifié en cours : appliqué à partir d\'aujourd\'hui, passé conservé '+str(cy))
+        md=pg.evaluate("(()=>{const x=JSON.parse(JSON.stringify(SP().list.find(z=>z.id==='mg')));spFix(x);spProgSet(x,{mode:'cyc',on:7,off:7,a:'"+TK0+"'});return [spPh(x,'"+DD(-5)+"').k,spPh(x,'"+TK0+"').k,spPh(x,'"+DD(7)+"').k,x.hist.length]})()")
+        ok(md==['on','on','off',1],'N passage de continu à cycle : les jours passés restent en prise continue '+str(md))
+        dz=pg.evaluate("(()=>{const x=JSON.parse(JSON.stringify(SP().list.find(z=>z.id==='mg')));x.dz=[{d:'"+DD(5)+"',q:200}];spFix(x);return [spDose(x,'"+DD(4)+"'),spDose(x,'"+DD(5)+"')]})()");ok(dz==[350,200],'N changement de dose programmé')
+        ok(pg.evaluate("spNext(SP().list.find(z=>z.id==='ash'),'"+DD(1)+"',60).map(e=>e.k+'@'+e.d).join(',')")=='off@'+DD(23)+',res@'+DD(51),'N prochains changements : OFF puis reprise')
+    step('N1',N1)
+    def N2():
+        ok(pg.locator('#nutSeg [data-nt="supp"][aria-pressed="true"]').count()==1 and T(pg,'#hello')=='Compléments','N Nutrition > Compléments (sous-onglet)')
+        t=T(pg,'#vSupp');ok('Cycle non renseigné' in t and 'Bore' in T(pg,'#vSupp .sp7off') and 'reprise le' in T(pg,'#vSupp .sp7off'),'N aujourd\'hui : fiche à compléter signalée, Bore en OFF avec sa reprise')
+        ok(pg.locator('#vSupp .sp7g').count()>=2 and 'Ashwagandha' in t and 'Magnésium bisglycinate' in t and 'Pré-workout' in t and pg.locator('#vSupp .sp7g [data-spk*="fer"]').count()==0,'N routine du jour : compléments actifs seulement')
+        pg.locator('#vSupp [data-spk="'+TK0+'~mg|0"]').click();pg.wait_for_timeout(300);e=st(pg)['supp']['log'].get(TK0,{}).get('mg|0',{})
+        ok(e.get('s') in ('ok','late') and e.get('n')=='Magnésium bisglycinate','N cocher une prise : enregistrée (nom, dose gardés) '+str(e.get('s')))
+        pg.click('#undo');pg.wait_for_timeout(300);ok('mg|0' not in st(pg)['supp']['log'].get(TK0,{}),'N « Annuler » : la prise redevient à faire')
+        pg.locator('#vSupp [data-spm="'+TK0+'~ash|0"]').click();pg.wait_for_timeout(300);pg.click('[data-spia="'+TK0+'~ash|0~skip"]');pg.wait_for_timeout(300)
+        ok(st(pg)['supp']['log'][TK0]['ash|0']['s']=='skip','N ignorer volontairement une prise')
+        pg.locator('#vSupp [data-spm="'+TK0+'~om|0"]').click();pg.wait_for_timeout(300);pg.click('[data-spia="'+TK0+'~om|0~s30"]');pg.wait_for_timeout(300);e=st(pg)['supp']['log'][TK0]['om|0']
+        ok(e['s']=='snz' and e['k']==1 and e['u']>time.time()*1000,'N reporter de 30 min')
+        pg.evaluate("spIntake('"+DD(-1)+"','mg|0')");pg.wait_for_timeout(300);ok(pg.locator('[data-spia$="~miss"]').count()==1 and pg.locator('[data-spia*="~s10"]').count()==0,'N jour passé : « Oubliée » possible, pas de report')
+        pg.click('[data-spia$="~miss"]');pg.wait_for_timeout(400);ok('Ne double pas la prise suivante' in T(pg,'#gbox') and st(pg)['supp']['log'][DD(-1)]['mg|0']['s']=='miss','N oubli noté, sans conseil de doubler la dose')
+        pg.evaluate(CLEAN);pg.evaluate("renderSupp()");n0=pg.locator('#vSupp [data-spall]').count()
+        if n0:pg.locator('#vSupp [data-spall]').first.click();pg.wait_for_timeout(300)
+        ok(n0==0 or 'Prises notées' in T(pg,'#snackT'),'N « Tout pris » pour un moment')
+        pg.reload();pg.wait_for_timeout(2600);pg.evaluate(CLEAN);ok(st(pg)['supp']['log'][TK0]['ash|0']['s']=='skip' and pg.locator('#vSupp .sp7g').count()>=2,'N rechargement : routine et prises conservées')
+    step('N2',N2)
+    def N3():
+        pg.locator('#vSupp [data-sp="add"]').first.click();pg.wait_for_timeout(400);pg.fill('#spN','Zinc');pg.fill('#spQ','15');pg.select_option('#spU','mg')
+        pg.click('[data-spfm="s"]');pg.click('[data-spfm="m"]');pg.click('[data-spfmo="cyc"]');pg.wait_for_timeout(200);pg.click('[data-spfq="56/28"]');pg.wait_for_timeout(200)
+        ok('Reprise' in T(pg,'#spCyP') and 'ON' in T(pg,'#spCyP'),'N fiche : aperçu des dates du cycle (ON, OFF, reprise)')
+        pg.click('[data-spf="save"]');pg.wait_for_timeout(400);z=[x for x in st(pg)['supp']['list'] if x['n']=='Zinc'][0]
+        ok(z['mode']=='cyc' and z['cy'][0]['on']==56 and z['cy'][0]['off']==28 and z['tk']==[{'m':'s','t':''}] and z['q']==15,'N ajout rapide : Zinc 15 mg, soir, cycle 8/4 sem.')
+        pg.locator('#vSupp [data-sp="add"]').first.click();pg.wait_for_timeout(400);pg.fill('#spN','Spiruline');pg.click('[data-spfmo="def"]');pg.wait_for_timeout(200);ok('Cycle non renseigné' in T(pg,'#spModeP'),'N « À définir » : message clair dans la fiche')
+        pg.click('[data-spf="save"]');pg.wait_for_timeout(400);sp=[x for x in st(pg)['supp']['list'] if x['n']=='Spiruline'][0];ok(sp['mode']=='def','N complément sans cycle enregistré « à définir »')
+        zid=z['id'];pg.evaluate("spEdit('"+zid+"')");pg.wait_for_timeout(300);pg.fill('#spOn','6');pg.wait_for_timeout(100);pg.click('[data-spf="save"]');pg.wait_for_timeout(400);z=[x for x in st(pg)['supp']['list'] if x['id']==zid][0]
+        ok(z['cy'][-1]['on']==42,'N durée ON modifiée (6 sem.)')
+        pg.evaluate("spEdit('mg')");pg.wait_for_timeout(300);pg.click('[data-spf="pause"]');pg.wait_for_timeout(300);pg.click('[data-spps="mg"]');pg.wait_for_timeout(400)
+        m=[x for x in st(pg)['supp']['list'] if x['id']=='mg'][0];ok(m['sus'] and m['sus'][-1]['a']==TK0 and pg.locator('#vSupp .sp7g [data-spk*="~mg|"]').count()==0,'N mettre en pause : plus dans la routine du jour')
+        pg.evaluate("spEdit('mg')");pg.wait_for_timeout(300);pg.click('[data-spf="resume"]');pg.wait_for_timeout(400);ok(pg.locator('#vSupp .sp7g [data-spk*="~mg|"]').count()==1,'N reprendre')
+        pg.evaluate("spEdit('"+sp['id']+"')");pg.wait_for_timeout(300);pg.click('[data-spf="del"]');pg.wait_for_timeout(300);g=not any(x['n']=='Spiruline' for x in st(pg)['supp']['list']);pg.click('#undo');pg.wait_for_timeout(300)
+        ok(g and any(x['n']=='Spiruline' for x in st(pg)['supp']['list']),'N supprimer puis annuler')
+    step('N3',N3)
+    def N4():
+        pg.click('#vSupp [data-spt="cyc"]');pg.wait_for_timeout(400);ok(pg.locator('#vSupp .sp7tr').count()>=5 and pg.locator('#vSupp .sp7tday').count()>=5,'N frise des cycles : une ligne par complément, repère du jour')
+        ok('Semaine 5 sur 8' in T(pg,'#vSupp .sp7pg') and 'Reprise dans 8 jours' in T(pg,'#vSupp .sp7pg'),'N progression : « Semaine 5 sur 8 », OFF jusqu\'à la reprise')
+        pg.locator('#vSupp .sp7tr[data-spe="ash"]').click();pg.wait_for_timeout(300);ok('Ashwagandha' in pg.input_value('#spN'),'N toucher la frise ouvre la fiche');pg.evaluate(CLEAN)
+        pg.click('#vSupp [data-spt="cal"]');pg.wait_for_timeout(300);pg.click('#vSupp [data-spcv="m"]');pg.wait_for_timeout(300);ok(pg.locator('#vSupp .sp7mc').count() in (35,42),'N calendrier mensuel des compléments')
+        pg.locator('#vSupp .sp7mc[data-spd="'+TK0+'"]').click();pg.wait_for_timeout(300);ok(pg.locator('#vSupp [data-spcv="d"][aria-pressed="true"]').count()==1 and pg.locator('#vSupp .sp7g').count()>=1,'N toucher un jour : vue du jour')
+        pg.click('#vSupp [data-spcv="w"]');pg.wait_for_timeout(300);ok(pg.locator('#vSupp .sp7wd').count()==7,'N vue semaine : 7 jours')
+        pg.evaluate("location.hash='#calendrier'");pg.wait_for_timeout(500);ok(pg.locator('#calSeg [data-cal="c"]').count()==1,'N onglet Calendrier : 3e choix « Compléments »')
+        pg.click('#calSeg [data-cal="c"]');pg.wait_for_timeout(400);ok(pg.locator('#calSp:not([hidden]) .sp7ch').count()==1 and pg.evaluate("document.getElementById('grid').hidden"),'N calendrier des compléments distinct de celui des séances')
+        pg.click('#calSeg [data-cal="m"]');pg.wait_for_timeout(300);ok(pg.evaluate("document.getElementById('calSp').hidden&&!document.getElementById('grid').hidden"),'N retour au calendrier des séances')
+        pg.evaluate("location.hash='#complements'");pg.wait_for_timeout(400);pg.click('#vSupp [data-spt="hist"]');pg.wait_for_timeout(400);t=T(pg,'#vSupp')
+        ok('7 jours' in t and '30 jours' in t and 'Prises effectuées' in t and 'jamais comptée comme prise' in t and pg.locator('#vSupp .sp7reg').count()>=4,'N historique : % sur 7 et 30 jours, régularité par complément')
+        ok(pg.locator('#vSupp .sp7hr.h-miss').count()>=1 and pg.locator('#vSupp .sp7hr.h-skip').count()>=1,'N historique : prises oubliées et ignorées retrouvées')
+        r=pg.evaluate("(()=>{const s=spStats('"+DD(-1)+"','"+DD(-1)+"');return [s.plan,s.taken,s.miss]})()");ok(r==[4,2,2],'N statistiques d\'un jour : 2 prises sur 4 (l\'oubli noté compte comme non pris) '+str(r))
+    step('N4',N4)
+    def N5():
+        s=pg.evaluate("(()=>{const r=spStock(SP().list.find(z=>z.id==='om'));return [r.left,r.days,r.low]})()");ok(s[0] in (17,18) and s[2] is True,'N stock : restant estimé selon les prises notées, alerte stock faible '+str(s))
+        pg.click('#vSupp [data-spt="today"]');pg.wait_for_timeout(300);ok('Stock faible' in T(pg,'#vSupp .sp7al'),'N alerte « Stock faible » dans la routine')
+        pg.locator('#vSupp [data-sprf="om"]').click();pg.wait_for_timeout(300);pg.fill('#spRq','60');pg.click('[data-sprq="om"]');pg.wait_for_timeout(300)
+        ok(pg.evaluate("spStock(SP().list.find(z=>z.id==='om')).left")==s[0]+60,'N stock racheté : +60')
+    step('N5',N5)
+    def N6():
+        now=time.localtime();t=time.strftime('%H:%M',time.localtime(time.time()-120))
+        pg.evaluate("(t=>{const L=SP().list;L.push(spFix({id:'r1',n:'Rappel A',q:1,u:'gélule',tk:[{m:'a',t}],mode:'cont',d0:'"+DD(-1)+"'}),spFix({id:'r2',n:'Rappel B',q:5,u:'mg',tk:[{m:'a',t}],mode:'cont',d0:'"+DD(-1)+"'}),spFix({id:'r3',n:'Rappel OFF',q:5,u:'mg',tk:[{m:'a',t}],mode:'cyc',d0:'"+DD(-20)+"',cy:[{f:'"+DD(-20)+"',a:'"+DD(-20)+"',on:14,off:14}]}),spFix({id:'r4',n:'Rappel pause',q:5,u:'mg',tk:[{m:'a',t}],mode:'cont',d0:'"+DD(-5)+"',sus:[{a:'"+DD(-1)+"',b:''}]}));SP().ntf=true})('"+t+"')")
+        n=pg.evaluate("(async()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});spTick();await new Promise(r=>setTimeout(r,900));spTick();await new Promise(r=>setTimeout(r,900));const r=await navigator.serviceWorker.getRegistration();const L=(await r.getNotifications()).filter(n=>n.tag.startsWith('supp-'+'"+TK0+"'));return L.map(n=>[n.title,n.body,n.data.keys.join(',')])})()")
+        ok(len(n)==1 and '2 compléments' in n[0][0] and 'Rappel A' in n[0][1] and 'Rappel B' in n[0][1] and 'Rappel OFF' not in n[0][1] and 'Rappel pause' not in n[0][1],'N rappel groupé (2 compléments à la même heure), un seul, rien pour OFF ni pause '+str(n))
+        pg.evaluate("Object.defineProperty(document,'hidden',{configurable:true,get:()=>false})")
+        sw=ctx.service_workers[0] if ctx.service_workers else None
+        if sw:sw.evaluate("spAct({day:'"+TK0+"',keys:['r1|0']},'take')");pg.wait_for_timeout(800)
+        else:pg.evaluate("(async()=>{const db=await spIdb();await new Promise(ok=>{const tx=db.transaction('q','readwrite');tx.objectStore('q').add({k:'take',day:'"+TK0+"',keys:['r1|0'],t:Date.now()});tx.oncomplete=ok})})()")
+        pg.evaluate("spDrain()");pg.wait_for_timeout(600);e=st(pg)['supp']['log'].get(TK0,{}).get('r1|0',{})
+        ok(e.get('s') in ('ok','late') and e.get('via')=='notif','N « Pris » depuis la notification : enregistré dans le suivi '+('(service worker)' if sw else '(file)'))
+        pg.evaluate("(t=>{SP().list.push(spFix({id:'r5',n:'Rappel C',q:1,u:'dose',tk:[{m:'a',t}],mode:'cont',d0:'"+DD(-1)+"'}))})('"+t+"')");pg.evaluate("spTick()");pg.wait_for_timeout(600)
+        ok(pg.locator('#sp7rb.on').count()==1 and 'Rappel C' in T(pg,'#sp7rb'),'N appli à l\'écran : bandeau de rappel')
+        pg.click('#sp7rb [data-sprb="ok"]');pg.wait_for_timeout(300);ok(st(pg)['supp']['log'][TK0]['r5|0']['s'] in ('ok','late'),'N bandeau : « Pris »')
+        nt=st(pg)['supp']['nt'][TK0];ok(len([k for k in nt if k.startswith('r1|0@')])==1,'N rappels mémorisés : jamais deux fois le même')
+    step('N6',N6)
+    def N7():
+        ics=pg.evaluate("spIcs()");L=ics.split('\r\n');uids=[l for l in L if l.startswith('UID:')]
+        ok(L[0]=='BEGIN:VCALENDAR' and 'X-WR-CALNAME:Compléments alimentaires' in ics and ics.count('BEGIN:VEVENT')==len(uids)>5,'N agenda : calendrier séparé « Compléments alimentaires »')
+        ok(len(set(uids))==len(uids),'N agenda : aucun événement en double ('+str(len(uids))+')')
+        ok(all(len(l.encode('utf-8'))<=75 for l in L),'N agenda : lignes de 75 octets maximum (norme iCalendar)')
+        ok('RRULE:FREQ=DAILY;COUNT=' in ics and 'TRIGGER:PT0M' in ics and 'TRIGGER:PT9H' in ics and 'Reprise : Bore' in ics.replace('\r\n ','') and 'période OFF' in ics.replace('\r\n ',''),'N agenda : alarmes à chaque prise, périodes ON/OFF, reprises')
+        ok('Fer' not in ics.replace('\r\n ','').split('Ferm')[0] or 'SUMMARY:Fer' not in ics,'N agenda : rien pour un complément à définir')
+        with pg.expect_download() as dl:pg.evaluate("spIcsOpen('file')")
+        ok(dl.value.suggested_filename=='complements-alimentaires.ics' and pg.evaluate("spIcsState()")=='ok','N agenda : fichier enregistré, état « à jour »')
+        pg.evaluate("(()=>{SP().list.find(z=>z.id==='mg').q=300})()");ok(pg.evaluate("spIcsState()")=='old','N agenda : « à mettre à jour » après une modification')
+    step('N7',N7)
+    def N8():
+        pg.evaluate("location.hash='#accueil'");pg.wait_for_timeout(700);ok(pg.locator('#hStart .h72sp').count()==1 and 'Compléments' in T(pg,'#hStart .h72sp'),'N accueil : bloc « Compléments » du jour')
+        c=pg.locator('#hStart .h72sp [data-spk]');n=c.count()
+        if n:c.first.click();pg.wait_for_timeout(300)
+        ok(n==0 or 'Prise notée' in T(pg,'#snackT'),'N accueil : cocher sans ouvrir la fiche')
+        dd=st(pg);ok('supp' in dd and len(dd['supp']['list'])>=8 and 'ntab' in dd,'N sauvegarde : compléments, cycles, horaires et historique dans les données')
+    step('N8',N8)
     ctx.close();b.close()
 print('\n'.join(log));print('TOTAL',sum(1 for l in log if l.startswith('OK')),'/',len(log));print('ERRORS',errs[:12])

@@ -12,6 +12,20 @@ TD=datetime.date.today().isoformat()
 SEED=json.load(open(DEV/'seed.json'));SEED.update({'musSeen':2,'th':'hiver','lang':LANG,'onb':True,'rest':[TD]})
 SEED['carnet']=[{'id':'n1','c':'nut','t':'Repas','b':'Test','pin':True,'d':1764100000000,'u':1764150000000}]
 SEED['bw']=[{'d':'2026-11-05','v':77.6},{'d':'2026-11-19','v':78.1},{'d':TD,'v':78.4}];SEED['meas']={'taille':[{'d':TD,'v':82}],'brasG':[{'d':'2026-11-05','v':36},{'d':TD,'v':36.5}],'brasD':[{'d':'2026-11-05','v':36.5},{'d':TD,'v':37}],'clav':[{'d':TD,'v':41}],'haut':[{'d':TD,'v':1.78}]}
+def _dd(n):return (datetime.date.today()+datetime.timedelta(days=n)).isoformat()
+SEED['supp']={'list':[{'id':'ash','n':'Ashwagandha','q':600,'u':'mg','tk':[{'m':'s','t':''}],'r':'repas','mode':'cyc','d0':_dd(-33),'cy':[{'f':_dd(-33),'a':_dd(-33),'on':56,'off':28}],'c':6},
+ {'id':'bore','n':'Bore','q':3,'u':'mg','tk':[{'m':'m','t':''}],'r':'jeun','mode':'cyc','d0':_dd(-20),'cy':[{'f':_dd(-20),'a':_dd(-20),'on':14,'off':14}],'c':2,'dz':[{'d':_dd(9),'q':2}]},
+ {'id':'mg','n':'Magnésium','q':350,'u':'mg','tk':[{'m':'s','t':''},{'m':'c','t':''}],'r':'repas','mode':'cont','d0':_dd(-40),'c':5,'no':'x','far':['om'],'farH':2,'sus':[{'a':_dd(-12),'b':_dd(-10)}]},
+ {'id':'om','n':'Oméga-3','q':2,'u':'gélule','tk':[{'m':'m','t':''},{'m':'s','t':''}],'r':'autre','rn':'x','mode':'cont','d0':_dd(-60),'c':4,'stock':{'on':True,'q':6,'su':'gélules','pi':1,'at':_dd(-2),'low':7}},
+ {'id':'pre','n':'Pré','q':1,'u':'dose','tk':[{'m':'a','t':'17:30'}],'r':'indif','mode':'ponc','pw':[1,3],'d0':_dd(-30),'c':7},
+ {'id':'dem','n':'Dem','q':1,'u':'sachet','tk':[{'m':'d','t':''}],'r':'indif','mode':'ponc','d0':_dd(-30),'c':3},
+ {'id':'fut','n':'Fut','q':1,'u':'comprimé','tk':[{'m':'m','t':''}],'r':'indif','mode':'cont','d0':_dd(5),'d1':_dd(60),'c':1},
+ {'id':'old','n':'Old','q':1,'u':'cuillère','tk':[{'m':'m','t':''}],'r':'indif','mode':'cont','d0':_dd(-90),'d1':_dd(-30),'c':0},
+ {'id':'pau','n':'Pau','q':1,'u':'goutte','tk':[{'m':'m','t':''}],'r':'indif','mode':'cyc','d0':_dd(-50),'cy':[{'f':_dd(-50),'a':_dd(-50),'on':21,'off':7}],'sus':[{'a':_dd(-2),'b':''}],'c':6},
+ {'id':'fer','n':'Fer','q':None,'u':'mg','tk':[{'m':'m','t':''}],'r':'jeun','mode':'def','d0':_dd(0),'c':0}],
+ 'log':{_dd(-1):{'om|0':{'s':'ok','t':0,'n':'Oméga-3','q':2,'un':'gélule','m':'m','h':'08:00'},'om|1':{'s':'late','t':0,'n':'Oméga-3','q':2,'un':'gélule','m':'s','h':'19:30'},'mg|0':{'s':'miss','t':0,'n':'Magnésium','q':350,'un':'mg','m':'s','h':'19:30'},'ash|0':{'s':'skip','t':0,'n':'Ashwagandha','q':600,'un':'mg','m':'s','h':'19:30'},'dem|x1':{'s':'ok','t':0,'n':'Dem','q':1,'un':'sachet','m':'a','h':'15:00'}},
+  _dd(0):{'om|0':{'s':'snz','t':0,'u':0,'k':1,'n':'Oméga-3','q':2,'un':'gélule','m':'m','h':'08:00'}},_dd(-45):{'gone|0':{'s':'ok','t':0,'n':'Ancien','q':1,'un':'mg','m':'m','h':'08:00'}}},
+ 'ev':[{'t':0,'id':'ash','n':'Ashwagandha','x':k} for k in ['add|Prise continue','edit','cyc|8 sem. ON / 4 sem. OFF → 6 sem. ON / 2 sem. OFF','mode|x → y','start|1 déc.','pause|1 déc.','res','resx','end','react','del','dose','stock|+60 gélules','time|10:00','shift|+15 min']],'ics':{'at':_dd(-3),'sig':'x','to':_dd(100)}}
 FR=r"[àâçéèêëîïôûùüÿœ]|\b(le|la|les|des|du|une|un|ton|ta|tes|pour|avec|et|sans|par|jours?|repas|aliments?|séances?|semaine|touche|choisis|ouvre|installe)\b"
 if os.environ.get('ALL'):FR=r"[A-Za-zÀ-ÿ]{3,}"  # ALL=1 : tous les textes visibles (pour comparer deux langues)
 JS="""(fr)=>{const re=new RegExp(fr,'i'),out=new Set(),w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())){const t=n.nodeValue.trim();if(!t||!/[a-zA-Zàâçéèêëîïôûùüÿœ]{3,}/.test(t))continue;const p=n.parentElement;if(!p||p.closest('script,style,textarea,.notr,.snote,code'))continue;
@@ -59,6 +73,32 @@ with sync_playwright() as p:
             pg.evaluate("tmAct('pdone')");pg.wait_for_timeout(500);grab('mini-lecteur repos');pg.evaluate("tmShow(true)");pg.wait_for_timeout(400);grab('minuteur repos')
         pg.evaluate("tmStop()");pg.wait_for_timeout(300);grab('arrêt')
     pg.evaluate("tmStart({k:'pyr',steps:[1],name:''})");pg.wait_for_timeout(300);pg.evaluate("tmAct('pdone')");pg.wait_for_timeout(700);grab('fin pyramide');pg.evaluate("tmStop()")
+    # compléments alimentaires (v7.5) : chaque vue, chaque feuille, le bandeau, l'accueil, le calendrier
+    pg.evaluate('location.hash="#complements"');pg.wait_for_timeout(700);grab('compléments')
+    for t in ['list','cyc','cal','hist','today']:
+        pg.click('#vSupp [data-spt="'+t+'"]');grab('compléments '+t)
+        if t=='cyc':
+            for w in ['30','180']:pg.click('#vSupp [data-sptw="'+w+'"]');grab('frise '+w)
+        if t=='cal':
+            for v in ['w','d','m']:pg.click('#vSupp [data-spcv="'+v+'"]');grab('calendrier compléments '+v)
+            pg.click('#vSupp [data-spcf="ash"]');grab('filtre');pg.click('#vSupp [data-spcf=""]')
+        if t=='hist':
+            pg.click('#vSupp [data-sphm]');grab('historique plus');pg.evaluate("document.querySelector('#vSupp .sp7evs details').open=true");grab('journal')
+    for fn in ["spEdit()","spEdit('ash')","spEdit('pau')","spEdit('old')","spEdit('pre')","spEdit('fer')","spEdit(null,{mode:'cyc'})","spEdit(null,{mode:'ponc'})","spEdit(null,{mode:'def'})","spSettings()","spAgenda()","spPauseSheet('mg')","spResumeSheet('ash')","spRefill('om')"]:
+        try:
+            pg.evaluate(fn);pg.wait_for_timeout(250);pg.evaluate("document.querySelectorAll('#gbox details').forEach(d=>d.open=true)");grab(fn);close()
+        except Exception:pass
+    k=datetime.date.today().isoformat()
+    for kk in ['om|0','om|1','mg|0','ash|0','pre|0']:
+        for day in [k,_dd(-1),_dd(2)]:
+            try:pg.evaluate("spIntake('"+day+"','"+kk+"')");grab('prise '+kk);close()
+            except Exception:pass
+    try:pg.evaluate("spIntake('"+_dd(-1)+"','mg|0')");pg.click('[data-spia$="~miss"]');grab('oubli');close()
+    except Exception:pass
+    pg.evaluate("spBanner('"+k+"',spDay('"+k+"').slice(0,2))");grab('bandeau');pg.evaluate("spBanner('"+k+"',spDay('"+k+"').slice(0,1))");grab('bandeau 1')
+    pg.evaluate('location.hash="#accueil"');pg.wait_for_timeout(600);grab('accueil compléments')
+    pg.evaluate('location.hash="#calendrier"');pg.wait_for_timeout(500);pg.click('#calSeg [data-cal="c"]');grab('calendrier onglet compléments');pg.click('#calSeg [data-cal="m"]')
+    pg.evaluate("document.querySelector('#hStart')&&0")
     # formulaire de séance, jour de repos, défi
     pg.evaluate('location.hash="#calendrier"');pg.wait_for_timeout(500);grab('repos')
     pg.evaluate("openForm()");pg.wait_for_timeout(500);grab('formulaire');close()

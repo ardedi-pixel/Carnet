@@ -15,7 +15,7 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 - Pour un travail visuel, montrer un brouillon tôt (planche d'images) **et continuer le travail pendant qu'il regarde** ; corriger en route selon ses retours. Ne jamais s'arrêter en attendant sa réponse.
 - Design : minimaliste, moderne, cohérent, pensé mobile d'abord. Pas de doublons, pas d'éléments décoratifs gratuits, pas d'émojis ni de look enfantin.
 - Comportement d'appli (v7.3.1) : pas de sélection de texte ni de menu au long appui (`body{user-select:none;-webkit-touch-callout:none}`), sauf champs de saisie et code de transfert.
-- **Ne jamais commit ni push sans son accord explicite.** Quand il l'a donné, finir par le lien et la version entre guillemets : `https://ardedi-pixel.github.io/Carnet/ « 7.4.0 »`.
+- **Ne jamais commit ni push sans son accord explicite.** Quand il l'a donné, finir par le lien et la version entre guillemets : `https://ardedi-pixel.github.io/Carnet/ « 7.5.0 »`.
 - Ne jamais dire « testé » sans l'avoir réellement testé (tests automatiques + captures).
 - Tenir `dev/PLAN.md` à jour à chaque version (section « vX.Y.Z »).
 
@@ -24,9 +24,9 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 - `dev/build.py` assemble : `src/head.html` + `src/style.css` + `src/css/*.css` (ordre alphabétique) + `src/body.html` + `src/app.js`, où les modules `src/js/*.js` (ordre alphabétique) sont insérés au marqueur `/*@@MODS@@*/`.
 - Tout le JavaScript est dans **un seul bloc `{ … }`** : les `const`/`let` d'un module sont visibles des autres modules, mais pas depuis la console ou `page.evaluate` ; les déclarations `function` deviennent globales (testables depuis Playwright). Les `const` d'un module ne sont prêts qu'une fois ce module exécuté : à l'appel au chargement, attention à l'ordre des fichiers.
 - État : objet `S` dans `localStorage` (clé `carnet-seances`). Toute nouvelle clé doit être ajoutée à `EXTRA` (`src/js/10_core6.js`). Version des données `S.v` = 10 (migrations dans `v6Load`, `10_core6.js`).
-- Service worker `sw.js` : cache `carnet-v7-4-0`, à changer à chaque version.
-- Onglets : Accueil · Calendrier · Nutrition · Outils (Minuteurs, Échauffement, Conseils, Tutos) · Progrès (Mesures, Stats, Records, Skills) + Carnet (`notes`, masqué par défaut, donc lien en haut d'Outils) (`TABS6`, `src/js/30_ui6.js`).
-- **v7.4.0 publiée** (plus de sélection de texte, iPhone et Android, tutoriel d'installation, partage par lien, traductions complètes, nouvelles mensurations, minuteur indépendant avec mini-lecteur) ; détails dans `dev/PLAN.md`. Accueil choisi par Diego : piste C « Immersif » + widgets de la piste B (`43_home72.js`) ; la scène suit le lieu le plus fréquent (`homePlace()`, réglage `S.hscn`).
+- Service worker `sw.js` : cache `carnet-v7-5-0`, à changer à chaque version (le cache `carnet-ics`, fichier d'agenda des compléments, est gardé).
+- Onglets : Accueil · Calendrier (Mois, Semaine, Compléments) · Nutrition (Repas, Compléments) · Outils (Minuteurs, Échauffement, Conseils, Tutos) · Progrès (Mesures, Stats, Records, Skills) + Carnet (`notes`, masqué par défaut, donc lien en haut d'Outils) (`TABS6`, `src/js/30_ui6.js`).
+- **v7.5.0 publiée** (compléments alimentaires : cycles ON/OFF automatiques, routine du jour, rappels, calendrier dédié, historique, stock, agenda du téléphone) ; v7.4.0 : plus de sélection de texte, iPhone et Android, tutoriel d'installation, partage par lien, traductions complètes, nouvelles mensurations, minuteur indépendant ; détails dans `dev/PLAN.md`. Accueil choisi par Diego : piste C « Immersif » + widgets de la piste B (`43_home72.js`) ; la scène suit le lieu le plus fréquent (`homePlace()`, réglage `S.hscn`).
 
 ### Modules importants
 | Fichier | Rôle |
@@ -42,6 +42,9 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 | `src/js/57_season7.js` | décor au trait des thèmes de saison (glyphes, liseré de la barre du bas), particules `#fx7`, `sea7Sync()` |
 | `src/js/58_foods.js` | base d'aliments (100 aliments, valeurs pour 100 g CIQUAL/USDA, portions) : aide à la saisie et lecture des anciennes entrées |
 | `src/js/62_nutri.js` | nutrition « carnet » (v7.2) |
+| `src/js/63_supp.js` | **compléments (moteur)** : données `S.supp` (champs décrits en tête), `SP()`, phases `spPh()` (modes, cycles `spCyc`, programmes `spProg`), prises `spDay()`/`spLog()`/`spSet()`, stats `spStats()`, stock `spStock()`, conflits `spConf()`, `spCycleSet()`, `spProgSet()`, `spPause()`/`spResume()` |
+| `src/js/63_suppn.js` | compléments : rappels `spTick()` (bandeau `spBanner()`, notification `spNotify()`), actions du service worker `spDrain()`, agenda `.ics` (`spIcs()`, `spIcsOpen()`, `spIcsState()`) |
+| `src/js/63_suppui.js`, `63_suppv.js` | compléments : écrans (`renderSupp()`, Aujourd'hui, Mes compléments, Cycles, `spHome()` de l'accueil), calendrier `spCalHtml()`, historique, fiche `spEdit()`, prise `spIntake()`, réglages `spSettings()`, agenda `spAgenda()` |
 | `src/js/64_notes.js` | Carnet de notes (`#carnet`) |
 | `src/js/66_mesures.js` | page Mesures (`#mesures`, 1er sous-onglet de Progrès) : poids, tour de taille, **bras G/D, distance claviculaire, taille (m)** ; champs partagés `mzFields`/`mzRead`/`mzWrite` |
 | `src/js/70_stats6.js` | Progrès, « Poids et mensurations » (`renderBW`, consigne `#mzTip`) ; badges en pin's sur la veste (`renderJacket`, `PIN_C`) ; liste des badges : `badgeList()` dans `app.js` (32, étiquette `l`) |
@@ -50,7 +53,7 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 | `src/js/80_timers6.js` | minuteurs v6 + **minuteur indépendant (v7.4)** : `tmShow(full)`, mini-lecteur `tmMiniSync()`, `tmSave()`/`tmRestore()` (`localStorage carnet-tm`), `tmResync()`, arrêt annulable `tmStopU()`, notification au choix |
 | `src/js/85_share6.js` | cartes de partage, `exFam()` / `mainEx()` (famille d'exercice) |
 | `src/js/94_dict.js`, `95_i18n.js` | traductions EN/NL |
-| `src/css/66_v7.css`, `67_nutri.css`, `68_v71.css`, `70_v72.css`, `71_v73.css`, `72_v74.css` | styles v7 (saisons, nutrition, scènes, mesures, carnet, réglages compacts, été v7.2, veste et pin's v7.3, tutoriel d'installation v7.4) |
+| `src/css/66_v7.css`, `67_nutri.css`, `68_v71.css`, `70_v72.css`, `71_v73.css`, `72_v74.css`, `73_v75.css` | styles v7 (saisons, nutrition, scènes, mesures, carnet, réglages compacts, été v7.2, veste et pin's v7.3, tutoriel d'installation v7.4, compléments v7.5 : préfixe `sp7`) |
 
 ### Système d'illustrations de saison (v7.1, `src/js/56_ill7.js`)
 - `seaNow()` = saison active : celle du thème de saison (`printemps`, `ete`, `automne`, `hiver`, ou « Selon la saison ») ; avec un autre thème (Nuit, Minimal…), la **saison réelle** (déc.-fév. hiver, mars-mai printemps, juin-août été, sept.-nov. automne). Choix de Diego.
@@ -87,6 +90,14 @@ Ce fichier est lu automatiquement au début de chaque session. Il résume tout c
 - Écran plein (`#tmo`, la barre d'onglets reste au-dessus) ou mini-lecteur (`#tpill`) sur toutes les pages ; bouton Retour d'Android = réduire.
 - Notifications : seulement ce que le téléphone permet (Android ; iPhone si l'appli est installée) ; elles ne se mettent pas à jour en direct, et les bips ne sonnent pas appli fermée. Ne pas prétendre le contraire.
 
+### Compléments alimentaires (v7.5, `63_supp*.js`)
+- Même principe que la nutrition : **pas un coach**. L'appli organise et enregistre ce que la personne saisit ; elle n'invente, ne calcule ni ne conseille aucun dosage, cycle ou supplémentation, ne suppose aucune compatibilité, et ne conseille jamais de doubler une dose oubliée. Avertissement « outil d'organisation » visible.
+- Nutrition > Compléments (`#complements`, `S.ntab`), bloc d'accueil (`supp` dans `HCARDS`), 3e choix « Compléments » du Calendrier (`S.calMode='c'`, `#calSp`).
+- Quatre modes distincts : `cont`, `cyc`, `ponc` (jours, dates ou à la demande), `def` (à définir : jamais en OFF, aucun rappel) ; la suspension (`sus`) est à part et ne touche pas au cycle.
+- Le passé ne bouge jamais : durée de cycle modifiée = nouveau segment `cy` à partir d'aujourd'hui ; changement de mode = ancien programme dans `hist`. Jours comptés en UTC (`spDn`/`spDk`), heures en heure locale. Une prise non validée n'est jamais comptée comme prise ; le journal garde nom, dose et heure (historique juste même si la fiche change).
+- Rappels : seulement quand l'appli tourne (bandeau, ou notification Android / iPhone installé) ; appli fermée = agenda du téléphone (`.ics`, calendrier séparé « Compléments alimentaires », alarmes). Ne pas prétendre à des notifications programmées appli fermée : il faudrait un serveur (Web Push), non retenu.
+- Fonctions `async` non visibles depuis Playwright : `spDrain()` et `spIcsOpen()` sont des fonctions normales qui renvoient une promesse.
+
 ### Voix (v7.2)
 - Ne jamais retrouver une voix par son nom : sur iPhone, les mêmes noms existent dans plusieurs langues (cause des voix allemandes). Toujours `pickVoice()` (`app.js`) : voix de la langue de l'appli seulement, identifiant `S.voiceU` (voiceURI), sinon meilleure voix ; texte dit passé par `trS()`.
 
@@ -120,6 +131,7 @@ cd dev && python3 t16.py                                # tests Playwright (~6 m
 - Sur iPhone, l'appli se met à jour en la fermant puis en la rouvrant.
 
 ## Décisions de Diego (à respecter)
+- v7.5 : module compléments alimentaires complet (fiches, cycles ON/OFF automatiques, calendrier dédié, rappels, routine du jour cochable, historique et statistiques, stock, frise, oublis, conflits d'horaires, décalage de routine) ; intégré au design existant ; aucune supposition médicale.
 - v7.4 : nouvelles mensurations (bras gauche et droit, distance claviculaire, taille) ; minuteur EMOM utilisable en naviguant partout, avec un mini-lecteur permanent et une reprise exacte ; pas de sélection de texte (aspect appli) ; iPhone et Android à égalité ; partage par simple lien ; tutoriel d'installation à la première ouverture, adapté à l'appareil, passable, une seule fois (à retrouver dans Réglages) ; tout traduit en FR et EN (NL gardé).
 - v7.3 : toucher le perso = une répétition (développé couché, traction…) ; perso « Femme » = hip thrust à la place du développé couché ; plus d'accessoires à débloquer ; plus de badges ; veste des badges différente par saison (suit le thème, saison réelle avec un thème sans saison).
 - v7.2 : accueil = piste C « Immersif » (scène de saison avec le perso, au lieu où la personne s'entraîne le plus : street, garage ou salle, réglable) + widgets de la piste B (Mesures, Nutrition, puis Carnet, Progrès) ; printemps personnalisé (arbres en fleurs, verts, pommiers, buissons) ; appli personnelle, pas de coach : objectifs nutrition saisis par l'utilisateur (Kcal et Prot seulement) ; carnet de notes ; Mesures en 1er sous-onglet de Progrès avec la consigne de pesée ; Outils et Réglages gardés tels quels ; été plus « mer et soleil », hiver inchangé ; nouvel accueil seulement après validation d'une des maquettes.

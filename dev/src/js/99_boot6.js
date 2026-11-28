@@ -7,4 +7,4 @@ function splash6(){const sp=$('splash');if(!sp)return;try{localStorage.setItem('
   let done=0;const end=()=>{if(done)return;done=1;sp.classList.add('out');setTimeout(()=>sp.remove(),420)};
   sp.addEventListener('click',end);setTimeout(end,S.splash==='anim'?2350:1100)}
 function v6Init(){measureDyn();applyAcc();applyIcon();renderTabs();sheetDrag($('sheet'),close,()=>!form||(!form.ex.length&&!Object.keys(form.perf||{}).length&&!(form.note||'').trim()));sheetDrag($('gsheet'),closeSheet);
-  rmSync();chalSync();splash6();miniSync();i18nStart();if(S.onb&&!$('onb'))setTimeout(()=>{if(!$('bil'))afterRewards()},2500);route();tmRestore()} /* v7.4 : un minuteur en cours reprend où il en était */
+  rmSync();chalSync();splash6();miniSync();i18nStart();if(S.onb&&!$('onb'))setTimeout(()=>{if(!$('bil'))afterRewards()},2500);route();tmRestore();if(typeof spTickStart==='function'&&S.supp){spTickStart();spDrain()}} /* v7.4 : un minuteur en cours reprend où il en était */
